@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CNSA 시뮬레이션</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    h1 {
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 span {
+      background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1.1rem;
+    }
+
+    .section {
+      margin-bottom: 3rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .section-icon {
+      font-size: 1.8rem;
+    }
+
+    .section-title {
+      color: white;
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+
+    .section-badge {
+      background: rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.8);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 1rem;
+    }
+
+    .tag {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+    }
+
+    .card-status {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .status-dot.live {
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    .status-dot.dev {
+      background: #f59e0b;
+    }
+
+    .status-text {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .section-header {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><span>CNSA</span> 시뮬레이션</h1>
+      <p class="subtitle">충남삼성고 과학 교육용 인터랙티브 시뮬레이션</p>
+    </header>
+
+    <!-- 통합과학1 -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-icon">🔬</span>
+        <h2 class="section-title">통합과학1</h2>
+        <span class="section-badge">물질과 에너지</span>
+      </div>
+      <div class="cards">
+        <a href="https://fbwiqb.github.io/thermalbalance/" class="card" target="_blank">
+          <span class="card-icon">🌡️</span>
+          <h3 class="card-title">열평형 시뮬레이션</h3>
+          <p class="card-desc">두 물체 사이의 열 이동과 열평형 과정을 시각화합니다.</p>
+          <div class="card-tags">
+            <span class="tag">열역학</span>
+            <span class="tag">에너지</span>
+          </div>
+          <div class="card-status">
+            <span class="status-dot live"></span>
+            <span class="status-text">Live</span>
+          </div>
+        </a>
+
+        <a href="https://fbwiqb.github.io/spectrum/" class="card" target="_blank">
+          <span class="card-icon">🌈</span>
+          <h3 class="card-title">스펙트럼 시뮬레이션</h3>
+          <p class="card-desc">빛의 스펙트럼과 원소별 방출/흡수 스펙트럼을 탐구합니다.</p>
+          <div class="card-tags">
+            <span class="tag">빛</span>
+            <span class="tag">원소</span>
+          </div>
+          <div class="card-status">
+            <span class="status-dot live"></span>
+            <span class="status-text">Live</span>
+          </div>
+        </a>
+
+        <a href="https://fbwiqb.github.io/magnet/" class="card" target="_blank">
+          <span class="card-icon">🧲</span>
+          <h3 class="card-title">자기장 시뮬레이션</h3>
+          <p class="card-desc">자석 주변의 자기장과 자기력선을 시각화합니다.</p>
+          <div class="card-tags">
+            <span class="tag">자기장</span>
+            <span class="tag">전자기</span>
+          </div>
+          <div class="card-status">
+            <span class="status-dot live"></span>
+            <span class="status-text">Live</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 통합과학2 -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-icon">🌍</span>
+        <h2 class="section-title">통합과학2</h2>
+        <span class="section-badge">시스템과 상호작용</span>
+      </div>
+      <div class="cards">
+        <a href="https://fbwiqb.github.io/ecosystem/" class="card" target="_blank">
+          <span class="card-icon">🦁</span>
+          <h3 class="card-title">생태계 시뮬레이션</h3>
+          <p class="card-desc">포식자-피식자 관계와 개체군 동태를 모델링합니다.</p>
+          <div class="card-tags">
+            <span class="tag">생태계</span>
+            <span class="tag">개체군</span>
+          </div>
+          <div class="card-status">
+            <span class="status-dot live"></span>
+            <span class="status-text">Live</span>
+          </div>
+        </a>
+
+        <a href="https://fbwiqb.github.io/enso-simulation/" class="card" target="_blank">
+          <span class="card-icon">🌊</span>
+          <h3 class="card-title">엘니뇨 시뮬레이션</h3>
+          <p class="card-desc">엘니뇨/라니냐 현상과 대기-해양 상호작용을 탐구합니다.</p>
+          <div class="card-tags">
+            <span class="tag">기후</span>
+            <span class="tag">해양</span>
+          </div>
+          <div class="card-status">
+            <span class="status-dot live"></span>
+            <span class="status-text">Live</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 생명과학 -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-icon">🧬</span>
+        <h2 class="section-title">생명과학</h2>
+        <span class="section-badge">생명 시스템</span>
+      </div>
+      <div class="cards">
+        <a href="https://fbwiqb.github.io/neuronsimul/" class="card" target="_blank">
+          <span class="card-icon">🧠</span>
+          <h3 class="card-title">뉴런 시뮬레이션</h3>
+          <p class="card-desc">신경세포의 활동전위 발생과 전달 과정을 시각화합니다.</p>
+          <div class="card-tags">
+            <span class="tag">신경계</span>
+            <span class="tag">활동전위</span>
+          </div>
+          <div class="card-status">
+            <span class="status-dot live"></span>
+            <span class="status-text">Live</span>
+          </div>
+        </a>
+
+        <a href="https://fbwiqb.github.io/musclesimul/" class="card" target="_blank">
+          <span class="card-icon">💪</span>
+          <h3 class="card-title">근수축 시뮬레이션</h3>
+          <p class="card-desc">근육의 수축 원리와 활주설을 인터랙티브하게 학습합니다.</p>
+          <div class="card-tags">
+            <span class="tag">근육</span>
+            <span class="tag">활주설</span>
+          </div>
+          <div class="card-status">
+            <span class="status-dot live"></span>
+            <span class="status-text">Live</span>
+          </div>
+        </a>
+
+        <a href="https://fbwiqb.github.io/Evosnail/" class="card" target="_blank">
+          <span class="card-icon">🐌</span>
+          <h3 class="card-title">진화 시뮬레이션</h3>
+          <p class="card-desc">자연선택에 의한 달팽이 껍데기 색 진화를 관찰합니다.</p>
+          <div class="card-tags">
+            <span class="tag">진화</span>
+            <span class="tag">자연선택</span>
+          </div>
+          <div class="card-status">
+            <span class="status-dot live"></span>
+            <span class="status-text">Live</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 화학 -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-icon">⚗️</span>
+        <h2 class="section-title">화학</h2>
+        <span class="section-badge">물질의 변화</span>
+      </div>
+      <div class="cards">
+        <a href="https://fbwiqb.github.io/acid-base/" class="card" target="_blank">
+          <span class="card-icon">🧪</span>
+          <h3 class="card-title">산-염기 적정</h3>
+          <p class="card-desc">산-염기 중화 반응과 적정 곡선을 시뮬레이션합니다.</p>
+          <div class="card-tags">
+            <span class="tag">중화반응</span>
+            <span class="tag">pH</span>
+          </div>
+          <div class="card-status">
+            <span class="status-dot live"></span>
+            <span class="status-text">Live</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <footer>
+      <p><a href="https://cnsa.kr">← CNSA Tools</a> · © 2026 충남삼성고등학교</p>
+    </footer>
+  </div>
+</body>
+</html>
