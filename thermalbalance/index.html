@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>지구 시스템 열수지 시뮬레이션</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background: linear-gradient(to bottom, #000000, #001a33);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .visualization {
+            background: rgba(0, 20, 40, 0.5);
+            border-radius: 15px;
+            padding: 30px;
+            position: relative;
+            min-height: 600px;
+        }
+
+        .control-panel {
+            background: rgba(20, 40, 60, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .control-group {
+            margin-bottom: 30px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            margin: 10px 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-value {
+            text-align: center;
+            font-size: 18px;
+            color: #FFD700;
+            margin-top: 5px;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: -5px;
+        }
+
+        .energy-display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .energy-display h3 {
+            margin-bottom: 15px;
+            color: #4CAF50;
+        }
+
+        .energy-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .energy-item.balanced {
+            border-left: 3px solid #4CAF50;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .preset-btn {
+            padding: 12px;
+            background: rgba(76, 175, 80, 0.3);
+            border: 1px solid #4CAF50;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .preset-btn:hover {
+            background: rgba(76, 175, 80, 0.5);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #3d4e9f;
+            color: white;
+            text-align: center;
+            padding: 10px 20px;
+            font-size: 14px;
+            z-index: 999;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #3d4e9f 0%, #667eea 100%);
+            color: white;
+            padding: 20px;
+            margin: -30px -30px 20px -30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            color: white;
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .modal-close {
+            background: none;
+            color: white;
+            border: none;
+            font-size: 30px;
+            cursor: pointer;
+            padding: 0;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 10px;
+            color: #333;
+            line-height: 1.8;
+        }
+
+        .help-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #3d4e9f;
+        }
+
+        .help-section h3 {
+            color: #3d4e9f;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .help-section p, .help-section ul {
+            margin: 10px 0;
+        }
+
+        .help-section ul {
+            padding-left: 25px;
+        }
+
+        .help-section li {
+            margin: 8px 0;
+        }
+
+        .help-section strong {
+            color: #3d4e9f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 지구 시스템 열수지 시뮬레이션</h1>
+        
+        <div class="main-content">
+            <div class="visualization">
+                <canvas id="energyCanvas"></canvas>
+            </div>
+
+            <div class="control-panel">
+                <div class="control-group">
+                    <label>☀️ 태양 복사 에너지 강도</label>
+                    <input type="range" id="solarInput" min="50" max="250" value="100" step="1">
+                    <div class="slider-value" id="solarValue">100</div>
+                    <div class="slider-labels">
+                        <span>50</span>
+                        <span>250</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>🌍 지구 반사도 (알베도)</label>
+                    <input type="range" id="albedoInput" min="0" max="100" value="30" step="1">
+                    <div class="slider-value" id="albedoValue">30%</div>
+                    <div class="slider-labels">
+                        <span>0%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>🌫️ 대기 두께</label>
+                    <input type="range" id="atmosphereInput" min="0" max="100" value="0" step="1">
+                    <div class="slider-value" id="atmosphereValue">0% (대기 없음)</div>
+                    <div class="slider-labels">
+                        <span>없음</span>
+                        <span>최대</span>
+                    </div>
+                </div>
+
+                <div class="preset-buttons">
+                    <button class="preset-btn" onclick="setPreset('none')">대기 없음</button>
+                    <button class="preset-btn" onclick="setPreset('earth')">현재 지구</button>
+                    <button class="preset-btn" onclick="setPreset('mars')">화성형</button>
+                    <button class="preset-btn" onclick="setPreset('venus')">금성형</button>
+                </div>
+
+                <div style="text-align: center; margin-top: 15px;">
+                    <button class="preset-btn" onclick="showHelp()" style="background: rgba(255, 215, 0, 0.3); border: 1px solid #FFD700;">📖 사용법</button>
+                </div>
+
+                <div class="energy-display">
+                    <h3>📊 에너지 수치</h3>
+                    <div class="energy-item balanced">
+                        <span>태양 복사 에너지 입사</span>
+                        <span id="solarIn">100</span>
+                    </div>
+                    <div class="energy-item balanced">
+                        <span>반사 (알베도)</span>
+                        <span id="reflected">30</span>
+                    </div>
+                    <div class="energy-item balanced">
+                        <span>지표 흡수 (태양 복사)</span>
+                        <span id="surfaceAbsorb">70</span>
+                    </div>
+                    <div class="energy-item balanced">
+                        <span>대기 흡수 (지구 복사)</span>
+                        <span id="atmAbsorbed">0</span>
+                    </div>
+                    <div class="energy-item balanced">
+                        <span>대기 → 지표 (재방출)</span>
+                        <span id="atmToSurface">0</span>
+                    </div>
+                    <div class="energy-item balanced">
+                        <span>대기 → 우주 (재방출)</span>
+                        <span id="atmToSpace">0</span>
+                    </div>
+                                        <div class="energy-item balanced">
+                            <span>지구 복사 에너지</span>
+                            <span id="surfaceTotal" style="color: #FFD700; font-weight: bold;">70</span>
+                        </div>
+                    <div class="energy-item balanced">
+                        <span>우주로 방출 (총)</span>
+                        <span id="toSpace">70</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        ⓒ 2025 충남삼성고등학교 신도경T<br>
+        <a href="mailto:pantarei01@cnsa.hs.kr">pantarei01@cnsa.hs.kr</a>
+    </div>
+
+    <!-- 사용법 모달 -->
+    <div class="modal" id="helpModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📖 지구 시스템 열수지 시뮬레이션 사용법</h2>
+                <button class="modal-close" onclick="closeHelp()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h3>🌍 프로그램 소개</h3>
+                    <p><strong>지구 시스템 열수지 시뮬레이션</strong>은 태양 복사 에너지가 지구에 들어오고 나가는 과정을 시각적으로 관찰할 수 있는 교육용 프로그램입니다. 온실효과가 있을 때와 없을 때를 비교하고, 각 변수들이 지구의 에너지 평형에 어떤 영향을 미치는지 실시간으로 확인할 수 있습니다.</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>🎮 기본 사용법</h3>
+                    
+                    <p><strong>1. 태양 복사 강도 조절</strong></p>
+                    <ul>
+                        <li><strong>☀️ 태양 복사 강도 슬라이더</strong>: 태양으로부터 지구에 도달하는 태양 복사 에너지의 양을 조절합니다</li>
+                        <li>범위: 50~250 (상대값, 100이 기준)</li>
+                        <li>값이 클수록 더 많은 태양 복사 에너지가 지구에 도달합니다</li>
+                    </ul>
+
+                    <p><strong>2. 지구 반사도 (알베도) 조절</strong></p>
+                    <ul>
+                        <li><strong>🌍 지구 반사도 슬라이더</strong>: 지구로 들어온 태양 복사 중 반사되어 나가는 비율을 설정합니다</li>
+                        <li>범위: 0~100%</li>
+                        <li>반사도가 높을수록 더 많은 태양 복사가 우주로 돌아가고, 지표가 흡수하는 에너지는 줄어듭니다</li>
+                        <li>예: 눈과 얼음이 많으면 반사도가 높아집니다</li>
+                    </ul>
+
+                    <p><strong>3. 대기 두께 조절</strong></p>
+                    <ul>
+                        <li><strong>🌫️ 대기 두께 슬라이더</strong>: 온실기체의 양을 조절합니다</li>
+                        <li>범위: 0~100%</li>
+                        <li>0%: 대기가 없는 상태 (온실효과 없음)</li>
+                        <li>값이 클수록 대기가 지구 복사를 더 많이 흡수하고 재방출합니다</li>
+                        <li>대기가 두꺼울수록 온실효과가 강해져 지표 에너지가 증가합니다</li>
+                    </ul>
+
+                    <p><strong>4. 프리셋 버튼</strong></p>
+                    <ul>
+                        <li><strong>대기 없음</strong>: 온실효과가 전혀 없는 상태</li>
+                        <li><strong>현재 지구</strong>: 지구의 현재 조건 (온실효과 포함)</li>
+                        <li><strong>화성형</strong>: 태양 복사가 약하고 대기가 얇은 조건</li>
+                        <li><strong>금성형</strong>: 태양 복사가 강하고 대기가 매우 두꺼운 극한 온실효과 조건</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>📊 시각화 이해하기</h3>
+                    
+                    <p><strong>화살표의 의미:</strong></p>
+                    <ul>
+                        <li><strong>노란색 화살표</strong>: 태양 복사 에너지</li>
+                        <li><strong>주황빛 화살표 (#FF6666)</strong>: 지표의 지구 복사 (적외선)</li>
+                        <li><strong>빨간색 화살표 (#FF4444)</strong>: 대기의 복사 재방출 (적외선)</li>
+                        <li><strong>화살표 두께</strong>: 에너지의 양에 비례 (두꺼울수록 많은 에너지)</li>
+                        <li><strong>화살표 위의 숫자</strong>: 해당 에너지 흐름의 크기 (상대값)</li>
+                    </ul>
+
+                    <p><strong>에너지 흐름:</strong></p>
+                    <ul>
+                        <li><strong>왼쪽</strong>: 지표 지구 복사 → 대기 → 우주 (주황색)</li>
+                        <li><strong>중앙</strong>: 태양 복사 → 지구 (노란색)</li>
+                        <li><strong>오른쪽</strong>: 대기 지구 복사 재방출 → 지표/우주 (빨간색)</li>
+                    </ul>
+
+                    <p><strong>각 영역의 에너지 표시:</strong></p>
+                    <ul>
+                        <li><strong>우주로 방출</strong>: 지구 시스템에서 최종적으로 우주로 나가는 총 에너지</li>
+                        <li><strong>대기 흡수</strong>: 대기가 지표의 지구 복사로부터 흡수한 에너지</li>
+                        <li><strong>↑ 우주 / ↓ 지표</strong>: 대기가 위(우주)와 아래(지표)로 방출하는 에너지</li>
+                        <li><strong>지구 복사 에너지지</strong>: 지표가 받는 총 에너지 (태양 복사 직접 흡수 + 대기 재방출)</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>🔬 에너지 수치 패널</h3>
+                    <p>오른쪽 패널에서 각 에너지 흐름의 정확한 수치를 확인할 수 있습니다:</p>
+                    <ul>
+                        <li><strong>태양 복사 에너지 입사</strong>: 지구에 도달하는 총 태양 복사 에너지</li>
+                        <li><strong>반사 (알베도)</strong>: 우주로 반사되어 나가는 태양 복사 에너지</li>
+                        <li><strong>지표 흡수 (태양 복사)</strong>: 지표가 태양 복사로부터 직접 흡수하는 에너지</li>
+                        <li><strong>대기 흡수 (지구 복사)</strong>: 대기가 지표의 지구 복사로부터 흡수하는 에너지</li>
+                        <li><strong>대기 → 지표 (재방출)</strong>: 대기가 지표로 재방출하는 에너지 (온실효과)</li>
+                        <li><strong>대기 → 우주 (재방출)</strong>: 대기가 우주로 방출하는 에너지</li>
+                        <li><strong>지구 복사 에너지</strong>: 지표가 받는 총 에너지 (단위: W/m², 지표 온도와 관련)</li>
+                        <li><strong>우주로 방출 (총)</strong>: 지구 시스템에서 최종적으로 우주로 나가는 총 에너지</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>💡 학습 팁</h3>
+                    <ul>
+                        <li><strong>온실효과 관찰</strong>: 대기 두께를 0%에서 100%로 변화시키며 지표 총 에너지가 어떻게 증가하는지 확인하세요</li>
+                        <li><strong>에너지 평형 이해</strong>: "태양 복사 입사 - 반사 = 우주로 방출"이 항상 성립함을 확인하세요</li>
+                        <li><strong>반사도 효과</strong>: 반사도를 높이면 지표 에너지가 감소하는 것을 관찰하세요 (빙하-알베도 되먹임)</li>
+                        <li><strong>행성 비교</strong>: 지구형, 화성형, 금성형을 비교하며 각 행성의 조건 차이를 이해하세요</li>
+                        <li><strong>극단 실험</strong>: 극단적인 값들을 설정해보며 각 변수의 역할을 명확히 파악하세요</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>🌡️ 과학적 배경</h3>
+                    
+                    <p><strong>온실효과란?</strong></p>
+                    <p>대기가 지표에서 방출된 지구 복사(적외선)를 흡수하고 다시 지표로 재방출하는 현상입니다. 이로 인해 지표의 온도가 대기가 없을 때보다 높아집니다.</p>
+                    
+                    <p><strong>에너지 평형:</strong></p>
+                    <p>평형 상태에서는 지구가 받는 에너지(태양 복사 입사 - 반사)와 내보내는 에너지(우주로 방출)가 같습니다. 만약 균형이 깨지면 지구의 온도가 변합니다.</p>
+                    
+                    <p><strong>태양 복사와 지구 복사:</strong></p>
+                    <ul>
+                        <li><strong>태양 복사</strong>: 주로 가시광선과 자외선 영역의 단파 복사 (고온의 태양에서 방출)</li>
+                        <li><strong>지구 복사</strong>: 적외선 영역의 장파 복사 (상대적으로 저온인 지표와 대기에서 방출)</li>
+                        <li>대기는 태양 복사는 대부분 통과시키지만, 지구 복사는 많이 흡수합니다 (온실효과)</li>
+                    </ul>
+                    
+                    <p><strong>실제 지구:</strong></p>
+                    <ul>
+                        <li>태양 상수: 약 1361 W/m² (전지구 평균 약 340 W/m²)</li>
+                        <li>알베도: 약 30%</li>
+                        <li>온실효과로 인한 지표 온도 상승: 약 33°C</li>
+                        <li>대기가 없다면 지구 평균 온도는 -18°C, 대기 덕분에 15°C 유지</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>❓ FAQ</h3>
+                    
+                    <p><strong>Q: 대기가 두꺼워지면 왜 지표 에너지가 증가하나요?</strong></p>
+                    <p>A: 대기가 지표의 지구 복사를 흡수한 후 절반을 다시 지표로 되돌려 보내기 때문입니다. 이것이 온실효과의 핵심입니다.</p>
+                    
+                    <p><strong>Q: 금성형에서 왜 지표 에너지가 지구보다 높나요?</strong></p>
+                    <p>A: 금성은 매우 두꺼운 대기로 인한(지구의 약 90배) 극심한 온실효과 때문에 지표 온도가 460°C에 달합니다.</p>
+                    
+                    <p><strong>Q: 에너지 수치의 단위는 무엇인가요?</strong></p>
+                    <p>A: 상대값으로 표시됩니다. 100을 기준으로 비율을 나타내며, 실제로는 W/m² 단위를 사용합니다.</p>
+                    
+                    <p><strong>Q: 태양 복사와 지구 복사의 차이는 무엇인가요?</strong></p>
+                    <p>A: 태양 복사는 고온의 태양에서 나오는 단파 복사이고, 지구 복사는 상대적으로 저온인 지표와 대기에서 나오는 장파 복사입니다. 대기는 태양 복사는 잘 통과시키지만 지구 복사는 많이 흡수합니다.</p>
+                    
+                    <p><strong>Q: 왜 주황색과 빨간색을 구분했나요?</strong></p>
+                    <p>A: 지표에서 직접 나오는 지구 복사(주황색)와 대기에서 재방출되는 지구 복사(빨간색)를 시각적으로 구분하기 위함입니다.</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>©️ 저작권 정보</h3>
+                    <p>
+                        <strong>지구 시스템 열수지 시뮬레이션</strong><br><br>
+                        ⓒ 2025 충남삼성고등학교 신도경 교사<br>
+                        이메일: <a href="mailto:pantarei01@cnsa.hs.kr">pantarei01@cnsa.hs.kr</a><br><br>
+                        
+                        본 프로그램은 교육 목적으로 제작되었으며, 자유롭게 사용하실 수 있습니다.<br>
+                        상업적 이용 시에는 제작자에게 문의해 주시기 바랍니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+    <script>
+        // 전역 변수로 선언
+        let canvas, ctx;
+        let solarInput, albedoInput, atmosphereInput;
+        let solarValue, albedoValue, atmosphereValue;
+
+        // DOM 로드 완료 후 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            // 요소 가져오기
+            canvas = document.getElementById('energyCanvas');
+            ctx = canvas.getContext('2d');
+            
+            solarInput = document.getElementById('solarInput');
+            albedoInput = document.getElementById('albedoInput');
+            atmosphereInput = document.getElementById('atmosphereInput');
+            
+            solarValue = document.getElementById('solarValue');
+            albedoValue = document.getElementById('albedoValue');
+            atmosphereValue = document.getElementById('atmosphereValue');
+
+            // Canvas 크기 초기 설정
+            resizeCanvas();
+
+            // 이벤트 리스너 등록
+            window.addEventListener('resize', resizeCanvas);
+            solarInput.addEventListener('input', updateAndDraw);
+            albedoInput.addEventListener('input', updateAndDraw);
+            atmosphereInput.addEventListener('input', updateAndDraw);
+
+            // 초기 그리기
+            updateAndDraw();
+        });
+
+        function resizeCanvas() {
+            if (!canvas) return;
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth - 60;
+            canvas.height = container.clientHeight - 60;
+            if (solarInput) {
+                draw();
+            }
+        }
+
+        function updateAndDraw() {
+            // 슬라이더 값 표시 업데이트
+            solarValue.textContent = solarInput.value;
+            albedoValue.textContent = albedoInput.value + '%';
+            
+            const atmValue = atmosphereInput.value;
+            if (atmValue == 0) {
+                atmosphereValue.textContent = '0% (대기 없음)';
+            } else {
+                atmosphereValue.textContent = atmValue + '%';
+            }
+
+            draw();
+        }
+
+        function calculateEnergy() {
+            const solar = parseFloat(solarInput.value);
+            const albedo = parseFloat(albedoInput.value) / 100;
+            const atmosphere = parseFloat(atmosphereInput.value) / 100;
+
+            const reflected = solar * albedo;
+            const surfaceAbsorb = solar * (1 - albedo);
+            
+            // 대기 복사 계산 (등비급수 수렴값)
+            let atmToSurface = 0;
+            let atmAbsorbed = 0;
+            let atmToSpace = 0;
+            
+            if (atmosphere > 0) {
+                atmToSurface = surfaceAbsorb * atmosphere / (2 - atmosphere);
+            }
+            
+            const surfaceTotal = surfaceAbsorb + atmToSurface;
+            
+            // 대기가 흡수하는 총 에너지와 우주로 방출하는 에너지
+            if (atmosphere > 0) {
+                atmAbsorbed = surfaceTotal * atmosphere;
+                atmToSpace = atmAbsorbed / 2; // 대기가 위로 방출
+            }
+            
+            const toSpace = surfaceAbsorb; // 평형 상태에서 우주로 나가는 총량
+
+            // UI 업데이트
+            document.getElementById('solarIn').textContent = solar.toFixed(1);
+            document.getElementById('reflected').textContent = reflected.toFixed(1);
+            document.getElementById('surfaceAbsorb').textContent = surfaceAbsorb.toFixed(1);
+            document.getElementById('atmAbsorbed').textContent = atmAbsorbed.toFixed(1);
+            document.getElementById('atmToSurface').textContent = atmToSurface.toFixed(1);
+            document.getElementById('atmToSpace').textContent = atmToSpace.toFixed(1);
+            document.getElementById('surfaceTotal').textContent = surfaceTotal.toFixed(1);
+            document.getElementById('toSpace').textContent = toSpace.toFixed(1);
+
+            return {
+                solar,
+                reflected,
+                surfaceAbsorb,
+                atmosphere,
+                atmToSurface,
+                atmAbsorbed,
+                atmToSpace,
+                surfaceTotal,
+                toSpace
+            };
+        }
+
+        function drawArrow(fromX, fromY, toX, toY, width, color, label) {
+            const headlen = width * 2.0; // 화살표 머리 길이 = 두께의 2배
+            const headWidth = width * 1.2; // 화살표 머리 너비 = 두께의 1.2배
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+
+            // 화살표 머리 시작점 계산 (삼각형의 밑변)
+            const headBaseX = toX - headlen * Math.cos(angle);
+            const headBaseY = toY - headlen * Math.sin(angle);
+
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = width;
+            ctx.lineCap = 'round';
+
+            // 화살표 몸통 (머리 시작점까지만)
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(headBaseX, headBaseY);
+            ctx.stroke();
+
+            // 화살표 머리 (삼각형)
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(
+                headBaseX - headWidth * Math.sin(angle),
+                headBaseY + headWidth * Math.cos(angle)
+            );
+            ctx.lineTo(
+                headBaseX + headWidth * Math.sin(angle),
+                headBaseY - headWidth * Math.cos(angle)
+            );
+            ctx.closePath();
+            ctx.fill();
+
+            // 레이블
+            if (label) {
+                ctx.font = 'bold 14px Malgun Gothic';
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                const midX = (fromX + toX) / 2;
+                const midY = (fromY + toY) / 2;
+                ctx.fillText(label, midX + 30, midY);
+            }
+        }
+
+        function draw() {
+            if (!canvas || !ctx) return;
+            
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            // 배경 클리어
+            ctx.clearRect(0, 0, w, h);
+
+            const energy = calculateEnergy();
+            
+            // 레이아웃 위치 정의
+            const sunY = 50;
+            const atmTop = h * 0.25;
+            const atmBottom = h * 0.45;
+            const surfaceY = h * 0.6;
+            const centerX = w / 2;
+
+            // 태양 그리기
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(centerX, sunY, 25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 태양빛 광선 효과
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI * 2 / 8) * i;
+                ctx.beginPath();
+                ctx.moveTo(centerX + Math.cos(angle) * 30, sunY + Math.sin(angle) * 30);
+                ctx.lineTo(centerX + Math.cos(angle) * 45, sunY + Math.sin(angle) * 45);
+                ctx.stroke();
+            }
+
+            // 대기 그리기 (있을 경우)
+            if (energy.atmosphere > 0) {
+                const atmHeight = atmBottom - atmTop;
+                const atmOpacity = 0.2 + energy.atmosphere * 0.5;
+                const gradient = ctx.createLinearGradient(0, atmTop, 0, atmBottom);
+                gradient.addColorStop(0, `rgba(135, 206, 250, ${atmOpacity * 0.3})`);
+                gradient.addColorStop(1, `rgba(135, 206, 250, ${atmOpacity})`);
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(50, atmTop, w - 100, atmHeight);
+                
+                // 대기 테두리
+                ctx.strokeStyle = `rgba(135, 206, 250, ${atmOpacity})`;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(50, atmTop, w - 100, atmHeight);
+
+                // 대기 레이블
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 16px Malgun Gothic';
+                ctx.fillText('대기', 70, atmTop + 25);
+            }
+
+            // 지표면 그리기
+            const gradient = ctx.createLinearGradient(0, surfaceY, 0, h - 50);
+            gradient.addColorStop(0, '#8B4513');
+            gradient.addColorStop(0.5, '#654321');
+            gradient.addColorStop(1, '#228B22');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(50, surfaceY, w - 100, h - surfaceY - 50);
+
+            // 지표면 레이블
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Malgun Gothic';
+            ctx.fillText('지표면', 70, surfaceY + 25);
+
+            // 화살표 두께 계산 (에너지에 비례)
+            const maxWidth = 20;
+            const solarWidth = Math.max(2, (energy.solar / 250) * maxWidth);
+            const reflectedWidth = Math.max(2, (energy.reflected / 250) * maxWidth);
+            const irWidth = Math.max(2, (energy.surfaceAbsorb / 250) * maxWidth);
+            const atmWidth = Math.max(2, (energy.atmToSurface / 250) * maxWidth);
+
+            // 1. 태양 → 지표/대기 (가시광선)
+            const targetY = energy.atmosphere > 0 ? atmTop : surfaceY;
+            drawArrow(centerX, sunY + 35, centerX, targetY - 10, solarWidth, '#FFD700', energy.solar.toFixed(0));
+
+            // 2. 반사광 (태양광이 닿는 지점에서 시작) - 원래대로
+            if (energy.reflected > 0.5) {
+                const reflectStartY = targetY - 10; // 입사광이 닿는 지점
+                drawArrow(centerX + 20, reflectStartY, centerX + 100, sunY + 60, reflectedWidth, '#FFEB99', energy.reflected.toFixed(0));
+            }
+
+            // 3. 대기가 있을 경우
+            if (energy.atmosphere > 0) {
+                // 대기를 통과해서 지표로
+                const absorbedBySurface = energy.surfaceAbsorb;
+                drawArrow(centerX, atmBottom + 10, centerX, surfaceY - 10, irWidth, '#FFD700', absorbedBySurface.toFixed(0));
+
+                // 지표 → 대기 (적외선) - 주황빛 붉은색, 더 왼쪽으로
+                const surfaceIRWidth = Math.max(2, (energy.surfaceTotal / 250) * maxWidth);
+                drawArrow(centerX - 150, surfaceY - 10, centerX - 150, atmBottom + 10, surfaceIRWidth, '#FF6666', energy.surfaceTotal.toFixed(0));
+
+                // 지표 → 우주 직접 (대기 통과, 흡수 안됨) - 같은 x 위치에서 연장
+                const directWidth = Math.max(2, (energy.surfaceTotal * (1 - energy.atmosphere) / 250) * maxWidth);
+                if (energy.surfaceTotal * (1 - energy.atmosphere) > 0.5) {
+                    drawArrow(centerX - 150, atmTop - 10, centerX - 150, sunY + 80, directWidth, '#FF6666', (energy.surfaceTotal * (1 - energy.atmosphere)).toFixed(0));
+                }
+
+                // 대기 → 지표 (재방출) - 더 오른쪽으로
+                if (energy.atmToSurface > 0.5) {
+                    drawArrow(centerX + 150, atmBottom + 10, centerX + 150, surfaceY - 10, atmWidth, '#FF4444', energy.atmToSurface.toFixed(0));
+                }
+
+                // 대기 → 우주 - 더 오른쪽으로
+                const atmSpaceWidth = Math.max(2, (energy.atmToSpace / 250) * maxWidth);
+                drawArrow(centerX + 150, atmTop - 10, centerX + 150, sunY + 80, atmSpaceWidth, '#FF4444', energy.atmToSpace.toFixed(0));
+            } else {
+                // 대기 없을 때: 지표 → 우주 직접
+                drawArrow(centerX - 150, surfaceY - 10, centerX - 150, sunY + 80, irWidth, '#FF6666', energy.toSpace.toFixed(0));
+            }
+
+            // 각 영역 에너지 표시
+            ctx.font = 'bold 18px Malgun Gothic';
+            ctx.textAlign = 'left';
+            
+            // 우주 공간 (나가는 에너지)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillText(`우주로 방출: ${energy.toSpace.toFixed(1)}`, w - 200, 30);
+            
+            // 대기 에너지
+            if (energy.atmosphere > 0) {
+                const atmCenterY = (atmTop + atmBottom) / 2;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                ctx.fillText(`대기 흡수: ${energy.atmAbsorbed.toFixed(1)}`, w - 200, atmCenterY - 20);
+                ctx.fillText(`↑ 우주: ${energy.atmToSpace.toFixed(1)}`, w - 200, atmCenterY + 5);
+                ctx.fillText(`↓ 지표: ${energy.atmToSurface.toFixed(1)}`, w - 200, atmCenterY + 30);
+            }
+            
+            // 지표 총 에너지
+            ctx.fillStyle = '#FFD700';
+            ctx.fillText(`지구 복사 에너지: ${energy.surfaceTotal.toFixed(1)}`, w - 230, surfaceY + 50);
+            
+            // 범례
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Malgun Gothic';
+            ctx.textAlign = 'left';
+            ctx.fillText('노란색: 가시광선 (태양빛)', 60, h - 25);
+            ctx.fillStyle = '#FF6666';
+            ctx.fillText('주황빛: 지표 복사', 280, h - 25);
+            ctx.fillStyle = '#FF4444';
+            ctx.fillText('빨간색: 대기 방출', 450, h - 25);
+        }
+
+        function setPreset(type) {
+            switch(type) {
+                case 'none':
+                    solarInput.value = 100;
+                    albedoInput.value = 30;
+                    atmosphereInput.value = 0;
+                    break;
+                case 'earth':
+                    solarInput.value = 100;
+                    albedoInput.value = 30;
+                    atmosphereInput.value = 60;
+                    break;
+                case 'mars':
+                    solarInput.value = 60;
+                    albedoInput.value = 25;
+                    atmosphereInput.value = 10;
+                    break;
+                case 'venus':
+                    solarInput.value = 200;
+                    albedoInput.value = 65;
+                    atmosphereInput.value = 98;
+                    break;
+            }
+            updateAndDraw();
+        }
+
+        // 모달 함수
+        function showHelp() {
+            document.getElementById('helpModal').style.display = 'block';
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').style.display = 'none';
+        }
+
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const helpModal = document.getElementById('helpModal');
+            if (event.target === helpModal) {
+                helpModal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

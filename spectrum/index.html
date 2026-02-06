@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>원소 방출 스펙트럼 퀴즈</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #3d4e9f;
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 60px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 0;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            height: calc(100vh - 100px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            color: #3d4e9f;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 15px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .left-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .spectrum-display {
+            background: white;
+            border-radius: 0;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #3d4e9f;
+        }
+
+        .spectrum-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .quiz-section {
+            background: white;
+            border-radius: 0;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #3d4e9f;
+        }
+
+        .quiz-section.hidden {
+            display: none;
+        }
+
+        .quiz-spectrum {
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .quiz-spectrum h3 {
+            margin-bottom: 10px;
+            text-align: center;
+            color: #3d4e9f;
+            font-weight: bold;
+        }
+
+        .element-spectrum {
+            border: 2px solid transparent;
+            border-radius: 0;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .element-spectrum.highlighted {
+            border-color: #ff4444;
+            background-color: #ffe5e5;
+        }
+
+        .element-label {
+            font-weight: bold;
+            margin-bottom: 3px;
+            font-size: 12px;
+            text-align: center;
+            flex-shrink: 0;
+            color: #3d4e9f;
+        }
+
+        .spectrum-bar {
+            height: 25px;
+            background: linear-gradient(to right, #000 0%, #000 100%);
+            position: relative;
+            border: 1px solid #ccc;
+            border-radius: 0;
+            flex-shrink: 0;
+        }
+
+        .quiz-spectrum .spectrum-bar {
+            height: 40px;
+        }
+
+        .spectral-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+        }
+
+        .wavelength-scale {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2px;
+            font-size: 9px;
+            color: #666;
+            flex-shrink: 0;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .btn-tutorial {
+            background: #27ae60;
+            grid-column: span 2;
+        }
+
+        .btn {
+            background: #3d4e9f;
+            color: white;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #2d3e8f;
+            transform: translateY(-1px);
+        }
+
+        .btn.show {
+            background: #27ae60;
+        }
+
+        .btn.hide {
+            background: #e74c3c;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 0;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 2px solid #3d4e9f;
+            background: white;
+            color: #3d4e9f;
+            user-select: none;
+        }
+
+        .checkbox-item:hover {
+            background: #f0f0ff;
+        }
+
+        .checkbox-item.selected {
+            background: #3d4e9f;
+            color: white;
+        }
+
+        .checkbox-item input {
+            display: none;
+        }
+
+        .submit-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+
+        .submit-btn:hover {
+            background: #c0392b;
+        }
+
+        .result-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .result-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result-partial {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .footer-container {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .copyright {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .copyright a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+        }
+
+        .copyright a:hover {
+            color: rgba(255, 255, 255, 1);
+            text-decoration: underline;
+        }
+
+        .footer-btn {
+            background: rgba(61, 78, 159, 0.8);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 15px;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .footer-btn:hover {
+            background: rgba(61, 78, 159, 1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 0;
+            border: 2px solid #3d4e9f;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 0;
+        }
+
+        .modal-header {
+            background: #3d4e9f;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #2d3e8f;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.3em;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            opacity: 0.7;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .log-entry {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-date {
+            color: #3d4e9f;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .log-text {
+            color: #333;
+            line-height: 1.6;
+            font-size: 13px;
+        }
+
+        .log-text strong {
+            color: #3d4e9f;
+        }
+
+        .log-text a {
+            color: #3d4e9f;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>원소 방출 스펙트럼 퀴즈</h1>
+        
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="spectrum-display">
+                    <div class="spectrum-grid" id="spectrumGrid">
+                        <!-- 스펙트럼이 여기에 동적으로 생성됩니다 -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="controls">
+                    <button class="btn btn-tutorial" onclick="showTutorial()">📖 사용법 안내</button>
+                    <button class="btn" onclick="generateQuiz(2, 'emission')">방출 2개</button>
+                    <button class="btn" onclick="generateQuiz(3, 'emission')">방출 3개</button>
+                    <button class="btn" onclick="generateQuiz(2, 'absorption')">흡수 2개</button>
+                    <button class="btn" onclick="generateQuiz(3, 'absorption')">흡수 3개</button>
+                    <button class="btn" onclick="generateQuiz(4, 'emission')">방출 4개</button>
+                    <button class="btn" onclick="generateQuiz(5, 'emission')">방출 5개</button>
+                    <button class="btn" onclick="generateQuiz(4, 'absorption')">흡수 4개</button>
+                    <button class="btn" onclick="generateQuiz(5, 'absorption')">흡수 5개</button>
+                    <button class="btn show" onclick="showAnswer()">정답 표시</button>
+                    <button class="btn hide" onclick="hideAnswer()">정답 숨김</button>
+                </div>
+
+                <div class="quiz-section hidden" id="quizSection">
+                    <div class="quiz-spectrum" id="quizSpectrum">
+                        <!-- 퀴즈 스펙트럼이 여기에 표시됩니다 -->
+                    </div>
+
+                    <div class="checkbox-grid" id="checkboxGrid">
+                        <!-- 체크박스가 여기에 동적으로 생성됩니다 -->
+                    </div>
+
+                    <button class="submit-btn" onclick="checkAnswer()">정답 확인</button>
+                    <div id="resultMessage"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-container">
+        <div class="copyright">
+            ⓒ 2025 충남삼성고등학교 신도경T<br>
+            <a href="mailto:pantarei01@cnsa.hs.kr">pantarei01@cnsa.hs.kr</a>
+        </div>
+        <button class="footer-btn" id="TutorialBtn">사용법</button>
+        <button class="footer-btn" id="DevLogBtn">개발자 로그</button>
+    </div>
+
+    <div class="modal" id="tutorialModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📖 사용법 안내</h2>
+                <button class="modal-close" id="closeTutorialModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="log-entry">
+                    <div class="log-date">🎯 프로그램 소개</div>
+                    <div class="log-text">
+                        <strong>원소 방출 스펙트럼 퀴즈</strong>는 각 원소의 고유한 스펙트럼 패턴을 학습하고, 혼합된 스펙트럼에서 원소를 식별하는 능력을 키우기 위한 교육용 프로그램입니다.
+                    </div>
+                </div>
+
+                <div class="log-entry">
+                    <div class="log-date">📚 기본 사용법</div>
+                    <div class="log-text">
+                        <strong>1단계: 원소 스펙트럼 관찰</strong><br>
+                        • 화면 왼쪽에 7개 원소(수소, 헬륨, 네온, 나트륨, 수은, 리튬, 크립톤)의 스펙트럼이 표시됩니다.<br>
+                        • 각 원소는 고유한 파장의 빛을 방출하여 독특한 선 스펙트럼을 형성합니다.<br>
+                        • 스펙트럼 아래의 숫자는 파장(nm)을 나타냅니다.<br><br>
+                        
+                        <strong>2단계: 퀴즈 문제 생성</strong><br>
+                        • 오른쪽 상단의 버튼을 클릭하여 퀴즈를 시작하세요.<br>
+                        • <strong>방출 스펙트럼</strong>: 검은 배경에 색깔 선이 표시됩니다.<br>
+                        • <strong>흡수 스펙트럼</strong>: 연속 스펙트럼에 검은 선이 표시됩니다.<br>
+                        • 숫자(2~5개)는 혼합된 원소의 개수를 의미합니다.<br><br>
+                        
+                        <strong>3단계: 원소 선택</strong><br>
+                        • 혼합 스펙트럼을 보고 어떤 원소들이 섞여 있는지 추론하세요.<br>
+                        • 아래 원소 버튼을 클릭하여 답을 선택합니다.<br>
+                        • 선택된 버튼은 파란색으로 변합니다.<br>
+                        • 다시 클릭하면 선택이 취소됩니다.<br><br>
+                        
+                        <strong>4단계: 정답 확인</strong><br>
+                        • <strong>"정답 확인"</strong> 버튼을 눌러 결과를 확인하세요.<br>
+                        • 모두 맞으면 🎉 완전 정답 메시지가 표시됩니다.<br>
+                        • 일부만 맞으면 맞춘 개수와 원소가 표시됩니다.<br><br>
+                        
+                        <strong>5단계: 정답 보기</strong><br>
+                        • <strong>"정답 표시"</strong> 버튼을 누르면 왼쪽 스펙트럼 목록에서 정답 원소가 빨간 테두리로 강조됩니다.<br>
+                        • <strong>"정답 숨김"</strong> 버튼을 누르면 강조가 사라집니다.
+                    </div>
+                </div>
+
+                <div class="log-entry">
+                    <div class="log-date">💡 학습 팁</div>
+                    <div class="log-text">
+                        <strong>효과적인 학습 방법:</strong><br>
+                        • 먼저 각 원소의 스펙트럼 패턴을 충분히 관찰하세요.<br>
+                        • 특징적인 선의 위치와 색깔을 기억하세요.<br>
+                        • 쉬운 문제(2개)부터 시작해서 점차 난이도를 높이세요.<br>
+                        • 틀린 문제는 "정답 표시"를 통해 복습하세요.<br>
+                        • 반복 연습을 통해 스펙트럼 패턴 인식 능력을 향상시키세요.<br><br>
+                        
+                        <strong>스펙트럼 특징 파악하기:</strong><br>
+                        • 수소(H): 빨강, 청록, 남색, 보라색 4개의 선<br>
+                        • 헬륨(He): 노랑~주황 영역에 여러 선<br>
+                        • 나트륨(Na): 노란색 영역에 밝은 이중선이 특징<br>
+                        • 수은(Hg): 초록색 선이 매우 밝게 나타남
+                    </div>
+                </div>
+
+                <div class="log-entry">
+                    <div class="log-date">🔬 과학적 배경</div>
+                    <div class="log-text">
+                        원자가 에너지를 흡수하면 전자가 높은 에너지 준위로 이동하고, 다시 낮은 준위로 떨어질 때 특정 파장의 빛을 방출합니다. 각 원소는 고유한 에너지 준위 구조를 가지므로, 방출하는 빛의 파장도 원소마다 다릅니다. 이를 이용하면 멀리 있는 별의 구성 원소도 알아낼 수 있습니다!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="devLogModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>개발자 로그</h2>
+                <button class="modal-close" id="closeModal">×</button>
+            </div>
+            <div class="modal-body" id="DevLogContent">
+                <div class="log-entry">
+                    <div class="log-date">2025. 10. 13. (월)</div>
+                    <div class="log-text">
+                        <strong>원소 스펙트럼 서비스 시작</strong><br>
+                        원소 스펙트럼 퀴즈 서비스를 시작하였습니다.. <a href="https://blog.naver.com/rainshadow21/224039391343" target="_blank">https://blog.naver.com/rainshadow21/224039391343</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 원소 데이터 (nm 단위)
+        const ELEMENTS = {
+            'H': [410.2, 434.0, 486.1, 656.3],
+            'He': [447.1, 471.3, 492.2, 501.6, 587.6, 667.8, 706.5],
+            'Ne': [540.1, 585.2, 614.3, 640.2, 650.7, 703.2],
+            'Na': [498.3, 568.3, 568.8, 588.9, 589.6, 615.4, 616.1],
+            'Hg': [404.7, 435.8, 546.1, 577.0, 579.1],
+            'Li': [460.3, 497.2, 610.4, 670.8],
+            'Kr': [427.4, 431.9, 436.3, 450.2, 557.0, 587.1, 760.2, 769.5, 810.4]
+        };
+
+        const ELEMENT_NAMES = {
+            'H': '수소',
+            'He': '헬륨',
+            'Ne': '네온',
+            'Na': '나트륨',
+            'Hg': '수은',
+            'Li': '리튬',
+            'Kr': '크립톤'
+        };
+
+        const allElements = Object.keys(ELEMENTS);
+        let selectedElements = [];
+        let quizMode = 'emission';
+
+        // 파장을 RGB 색상으로 변환
+        function wavelengthToRgb(wavelength, gamma = 0.8) {
+            let r = 0, g = 0, b = 0;
+
+            if (wavelength < 380 || wavelength > 750) {
+                return 'rgb(0, 0, 0)';
+            }
+
+            if (wavelength < 440) {
+                r = -(wavelength - 440) / (440 - 380);
+                g = 0;
+                b = 1;
+            } else if (wavelength < 490) {
+                r = 0;
+                g = (wavelength - 440) / (490 - 440);
+                b = 1;
+            } else if (wavelength < 510) {
+                r = 0;
+                g = 1;
+                b = -(wavelength - 510) / (510 - 490);
+            } else if (wavelength < 580) {
+                r = (wavelength - 510) / (580 - 510);
+                g = 1;
+                b = 0;
+            } else if (wavelength < 645) {
+                r = 1;
+                g = -(wavelength - 645) / (645 - 580);
+                b = 0;
+            } else {
+                r = 1;
+                g = 0;
+                b = 0;
+            }
+
+            let factor = 1.0;
+            if (wavelength < 420) {
+                factor = 0.3 + 0.7 * (wavelength - 380) / (420 - 380);
+            } else if (wavelength > 645) {
+                factor = 0.3 + 0.7 * (750 - wavelength) / (750 - 645);
+            }
+
+            r = Math.round(((r * factor) ** gamma) * 255);
+            g = Math.round(((g * factor) ** gamma) * 255);
+            b = Math.round(((b * factor) ** gamma) * 255);
+
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        // 모든 원소의 스펙트럼 표시 (2열 그리드로)
+        function showAllSpectra(highlight = false) {
+            const display = document.getElementById('spectrumGrid');
+            
+            if (!display) {
+                console.error('spectrumGrid element not found');
+                return;
+            }
+            
+            display.innerHTML = '';
+
+            allElements.forEach(element => {
+                const elementDiv = document.createElement('div');
+                elementDiv.className = 'element-spectrum';
+                if (highlight && selectedElements.includes(element)) {
+                    elementDiv.classList.add('highlighted');
+                }
+
+                const label = document.createElement('div');
+                label.className = 'element-label';
+                label.textContent = `${element}(${ELEMENT_NAMES[element]})`;
+
+                const spectrumBar = document.createElement('div');
+                spectrumBar.className = 'spectrum-bar';
+                spectrumBar.style.background = 'linear-gradient(to right, #000 0%, #000 100%)';
+
+                // 스펙트럼 선 추가
+                ELEMENTS[element].forEach(wavelength => {
+                    if (wavelength >= 380 && wavelength <= 750) {
+                        const line = document.createElement('div');
+                        line.className = 'spectral-line';
+                        line.style.backgroundColor = wavelengthToRgb(wavelength);
+                        line.style.left = `${((wavelength - 380) / (750 - 380)) * 100}%`;
+                        spectrumBar.appendChild(line);
+                    }
+                });
+
+                const scale = document.createElement('div');
+                scale.className = 'wavelength-scale';
+                scale.innerHTML = '<span>400</span><span>500</span><span>600</span><span>700</span>';
+
+                elementDiv.appendChild(label);
+                elementDiv.appendChild(spectrumBar);
+                elementDiv.appendChild(scale);
+                display.appendChild(elementDiv);
+            });
+        }
+
+        // 퀴즈 생성
+        function generateQuiz(numElements, mode) {
+            console.log('Quiz generation started:', numElements, mode);
+            
+            selectedElements = [];
+            while (selectedElements.length < numElements) {
+                const randomElement = allElements[Math.floor(Math.random() * allElements.length)];
+                if (!selectedElements.includes(randomElement)) {
+                    selectedElements.push(randomElement);
+                }
+            }
+            quizMode = mode;
+            
+            console.log('Selected elements:', selectedElements);
+            
+            showAllSpectra(false);
+            showCombinedSpectrum();
+        }
+
+        // 혼합 스펙트럼 표시
+        function showCombinedSpectrum() {
+            const quizSection = document.getElementById('quizSection');
+            const quizSpectrum = document.getElementById('quizSpectrum');
+            const checkboxDiv = document.getElementById('checkboxGrid');
+            const resultDiv = document.getElementById('resultMessage');
+
+            // 퀴즈 섹션 표시
+            quizSection.classList.remove('hidden');
+
+            // 결과 메시지 초기화
+            resultDiv.innerHTML = '';
+
+            // 제목 다음에 스펙트럼 바 추가
+            quizSpectrum.innerHTML = '<h3>혼합 스펙트럼 문제</h3>';
+            
+            const spectrumBar = document.createElement('div');
+            spectrumBar.className = 'spectrum-bar';
+            spectrumBar.style.height = '60px';
+
+            if (quizMode === 'emission') {
+                spectrumBar.style.background = 'black';
+                selectedElements.forEach(element => {
+                    ELEMENTS[element].forEach(wavelength => {
+                        if (wavelength >= 380 && wavelength <= 750) {
+                            const line = document.createElement('div');
+                            line.className = 'spectral-line';
+                            line.style.backgroundColor = wavelengthToRgb(wavelength);
+                            line.style.left = `${((wavelength - 380) / (750 - 380)) * 100}%`;
+                            spectrumBar.appendChild(line);
+                        }
+                    });
+                });
+            } else { // absorption
+                // 연속 스펙트럼 생성
+                for (let wl = 380; wl <= 750; wl++) {
+                    const line = document.createElement('div');
+                    line.style.position = 'absolute';
+                    line.style.top = '0';
+                    line.style.bottom = '0';
+                    line.style.width = '1px';
+                    line.style.backgroundColor = wavelengthToRgb(wl);
+                    line.style.left = `${((wl - 380) / (750 - 380)) * 100}%`;
+                    spectrumBar.appendChild(line);
+                }
+
+                // 흡수선 추가 (검은 선)
+                selectedElements.forEach(element => {
+                    ELEMENTS[element].forEach(wavelength => {
+                        if (wavelength >= 380 && wavelength <= 750) {
+                            const line = document.createElement('div');
+                            line.style.position = 'absolute';
+                            line.style.top = '0';
+                            line.style.bottom = '0';
+                            line.style.width = '2px';
+                            line.style.backgroundColor = 'black';
+                            line.style.left = `${((wavelength - 380) / (750 - 380)) * 100}%`;
+                            spectrumBar.appendChild(line);
+                        }
+                    });
+                });
+            }
+
+            const scale = document.createElement('div');
+            scale.className = 'wavelength-scale';
+            scale.innerHTML = '<span>400</span><span>500</span><span>600</span><span>700</span>';
+
+            quizSpectrum.appendChild(spectrumBar);
+            quizSpectrum.appendChild(scale);
+
+            // 원소 선택 버튼 생성
+            checkboxDiv.innerHTML = '';
+            allElements.forEach(element => {
+                const checkboxItem = document.createElement('div');
+                checkboxItem.className = 'checkbox-item';
+                checkboxItem.textContent = `${element}(${ELEMENT_NAMES[element]})`;
+                checkboxItem.dataset.element = element;
+                
+                checkboxItem.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+                
+                checkboxDiv.appendChild(checkboxItem);
+            });
+        }
+
+        // 정답 확인
+        function checkAnswer() {
+            const selectedItems = document.querySelectorAll('.checkbox-item.selected');
+            const selected = Array.from(selectedItems).map(item => item.dataset.element);
+
+            const correct = new Set(selectedElements);
+            const guessed = new Set(selected);
+            const matched = [...correct].filter(x => guessed.has(x));
+
+            const resultDiv = document.getElementById('resultMessage');
+            
+            if (resultDiv) {
+                if (matched.length === correct.size && matched.length === guessed.size) {
+                    resultDiv.innerHTML = `
+                        <div class="result-message result-success">
+                            🎉 정답입니다! (${matched.length}개: ${matched.sort().join(', ')})
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result-message result-partial">
+                            ${matched.length}개 정답입니다. 맞춘 원소: ${matched.length > 0 ? matched.sort().join(', ') : '없음'}
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // 정답 표시
+        function showAnswer() {
+            showAllSpectra(true);
+        }
+
+        // 정답 숨기기
+        function hideAnswer() {
+            showAllSpectra(false);
+        }
+
+        // 모달 관련 기능
+        function showTutorial() {
+            document.getElementById('tutorialModal').classList.add('show');
+        }
+
+        document.getElementById('TutorialBtn').addEventListener('click', showTutorial);
+
+        document.getElementById('closeTutorialModal').addEventListener('click', function() {
+            document.getElementById('tutorialModal').classList.remove('show');
+        });
+
+        document.getElementById('tutorialModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('show');
+            }
+        });
+
+        document.getElementById('DevLogBtn').addEventListener('click', function() {
+            document.getElementById('devLogModal').classList.add('show');
+        });
+
+        document.getElementById('closeModal').addEventListener('click', function() {
+            document.getElementById('devLogModal').classList.remove('show');
+        });
+
+        // 모달 외부 클릭시 닫기
+        document.getElementById('devLogModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('show');
+            }
+        });
+
+        // 초기 실행
+        function initializeApp() {
+            console.log('Initializing app...');
+            showAllSpectra();
+        }
+        
+        // DOM 로드 후 초기화
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+    </script>
+</body>
+</html>

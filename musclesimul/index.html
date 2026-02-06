@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>근육 수축 슬라이딩 필라멘트 시뮬레이터</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #0066cc 0%, #004999 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        h2 {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #0066cc;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #0066cc;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #0052a3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,102,204,0.3);
+        }
+        
+        .control-panel {
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border: 2px solid #0066cc;
+        }
+        
+        .control-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 18px;
+            color: #0066cc;
+        }
+        
+        .length-value {
+            color: #0066cc;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        
+        .delta-display {
+            color: #666;
+            font-size: 16px;
+            margin-left: 8px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #cce5ff;
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #0066cc;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,102,204,0.5);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: #0066cc;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,102,204,0.5);
+        }
+        
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .svg-container {
+            background: white;
+            border: 2px solid #0066cc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+        
+        svg {
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+        
+        .info-card {
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #0066cc;
+        }
+        
+        .info-card h4 {
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #0066cc;
+        }
+        
+        .info-card ul {
+            list-style: disc;
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .delta-positive {
+            color: #28a745;
+        }
+        
+        .delta-negative {
+            color: #dc3545;
+        }
+        
+        .delta-info {
+            color: #0066cc;
+        }
+        
+        .calculator {
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #0066cc;
+            margin-bottom: 32px;
+        }
+        
+        .calculator h4 {
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: #0066cc;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        th, td {
+            border: 1px solid #0066cc;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background: #0066cc;
+            color: white;
+            font-weight: 600;
+        }
+        
+        td:nth-child(4) {
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        select {
+            width: 100%;
+            padding: 6px;
+            border-radius: 4px;
+            border: 2px solid #0066cc;
+            font-size: 14px;
+        }
+        
+        .operator-select {
+            width: 100%;
+            padding: 6px;
+            border-radius: 4px;
+            border: 2px solid #0066cc;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            background: #f0f7ff;
+        }
+        
+        footer {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f0f7ff;
+            border-radius: 8px;
+            border: 2px solid #0066cc;
+            text-align: center;
+        }
+        
+        .footer-content {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .developer-log {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border: 2px solid #0066cc;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #0066cc;
+        }
+        
+        .modal-header h3 {
+            color: #0066cc;
+            font-size: 22px;
+        }
+        
+        .close {
+            color: #666;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.3s;
+        }
+        
+        .close:hover {
+            color: #0066cc;
+        }
+        
+        .modal-body {
+            line-height: 1.8;
+            color: #333;
+        }
+        
+        .modal-body h4 {
+            color: #0066cc;
+            margin: 20px 0 10px 0;
+            font-size: 18px;
+        }
+        
+        .modal-body ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .modal-body li {
+            margin-bottom: 8px;
+        }
+        
+        .modal-body strong {
+            color: #0066cc;
+        }
+        
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🔬 근육 수축 슬라이딩 필라멘트 시뮬레이터</h2>
+        </div>
+
+        <div class="button-group">
+            <button class="btn" onclick="openModal('theory')">📖 이론 설명</button>
+            <button class="btn" onclick="openModal('usage')">❓ 사용 방법</button>
+        </div>
+
+        <div class="control-panel">
+            <label class="control-label">
+                근절(Sarcomere) 길이: 
+                <span id="lengthDisplay" class="length-value">4.50 μm</span>
+                <span id="deltaDisplay" class="delta-display">(기준값)</span>
+            </label>
+            <input type="range" id="sarcomereSlider" min="0" max="18" value="9" step="1">
+            <div class="range-labels">
+                <span>3.6 μm (최대 수축)</span>
+                <span style="color: #0066cc; font-weight: bold;">4.5 μm (기준값)</span>
+                <span>5.4 μm (이완)</span>
+            </div>
+        </div>
+
+        <div class="svg-container">
+            <svg id="muscleSvg" width="800" height="300"></svg>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h4>📏 현재 길이 정보</h4>
+                <ul id="lengthList"></ul>
+            </div>
+            <div class="info-card">
+                <h4>📊 길이 변화 (기준값 대비)</h4>
+                <ul id="changesList"></ul>
+            </div>
+        </div>
+
+        <div class="calculator">
+            <h4>🧮 길이 계산기</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>선택 1</th>
+                        <th>연산자</th>
+                        <th>선택 2</th>
+                        <th>결과</th>
+                    </tr>
+                </thead>
+                <tbody id="calculatorTable"></tbody>
+            </table>
+        </div>
+
+        <footer>
+            <div class="footer-content">
+                <strong>충남삼성고등학교 과학교사 신도경</strong><br>
+                교육용 시뮬레이터 | 2025
+            </div>
+            <div class="developer-log">
+                버전 1.1 | 수정: 기준값 4.5μm 설정, M선 동적 위치 조정
+            </div>
+        </footer>
+    </div>
+
+    <!-- 이론 설명 모달 -->
+    <div id="theoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📖 슬라이딩 필라멘트 이론</h3>
+                <span class="close" onclick="closeModal('theory')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <h4>기본 원리</h4>
+                <p>근육 수축 시 <strong>액틴(가는 필라멘트)</strong>이 <strong>마이오신(굵은 필라멘트)</strong> 사이로 미끄러져 들어가면서 근절(sarcomere)의 길이가 짧아집니다.</p>
+                
+                <h4>주요 구조</h4>
+                <ul>
+                    <li><strong>Z선</strong>: 근절의 양 끝 경계</li>
+                    <li><strong>M선</strong>: 근절의 정중앙, 마이오신의 중심</li>
+                    <li><strong>A대</strong>: 마이오신 필라멘트가 있는 영역 (1.8 μm, 일정)</li>
+                    <li><strong>I대</strong>: 액틴만 있는 영역 (수축 시 감소)</li>
+                    <li><strong>H대</strong>: 마이오신만 있는 영역 (수축 시 감소)</li>
+                </ul>
+                
+                <h4>수축 시 변화</h4>
+                <ul>
+                    <li>근절 길이 ↓ (Z선 간 거리 감소)</li>
+                    <li>I대 길이 ↓</li>
+                    <li>H대 길이 ↓</li>
+                    <li>A대 길이 = 일정</li>
+                    <li>액틴-마이오신 겹치는 구간 ↑</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사용 방법 모달 -->
+    <div id="usageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>❓ 사용 방법</h3>
+                <span class="close" onclick="closeModal('usage')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <h4>1. 슬라이더 조작</h4>
+                <p>슬라이더를 좌우로 움직여 근절의 길이를 변화시킵니다.</p>
+                <ul>
+                    <li>왼쪽: 최대 수축 상태 (3.6 μm)</li>
+                    <li>중앙: 기준 상태 (4.5 μm)</li>
+                    <li>오른쪽: 이완 상태 (5.4 μm)</li>
+                </ul>
+                
+                <h4>2. 시각화 관찰</h4>
+                <p>각 구조의 변화를 실시간으로 확인합니다.</p>
+                <ul>
+                    <li>파란색 선: 액틴 필라멘트</li>
+                    <li>빨간색 선: 마이오신 필라멘트</li>
+                    <li>파란색 굵은 선: Z선</li>
+                    <li>주황색 점선: M선</li>
+                </ul>
+                
+                <h4>3. 길이 정보 확인</h4>
+                <p>"현재 길이 정보"에서 각 구조의 길이를 확인하고, "길이 변화"에서 기준값(4.5 μm) 대비 변화량을 확인합니다.</p>
+                
+                <h4>4. 계산기 활용</h4>
+                <p>드롭다운 메뉴에서 두 값을 선택하고 연산자를 선택하여 관계식을 검증할 수 있습니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 상수 정의
+        const umToPx = (um) => um / (5.0 / 700);
+        const aBandUm = 1.8;
+        const actinUm = 1.8;
+        const actinLength = umToPx(actinUm);
+        const myosinLengthPx = umToPx(aBandUm);
+        const centerX = (750 + 50) / 2;
+        const baselineSarcomere = 4.5; // 기준값
+
+        // 근절 길이 테이블 (왼쪽: 수축, 오른쪽: 이완)
+        const sarcomereLengthTable = Array.from({ length: 19 }, (_, i) => 3.6 + i * 0.1);
+
+        // 선택 가능한 길이 옵션
+        const lengthOptions = [
+            "A대 길이", "마이오신", "액틴", "H대 길이", 
+            "I대 길이", "겹치는 구간", "½ I대 길이", "½ 겹치는 구간"
+        ];
+
+        // 기준값 (4.5 μm 기준)
+        const referenceValues = {
+            "H대 길이": 0.9,        // 4.5 - 1.8 - 1.8 = 0.9
+            "I대 길이": 2.7,        // 4.5 - 1.8 = 2.7
+            "½ I대 길이": 1.35,     // 2.7 / 2 = 1.35
+            "겹치는 구간": 0.9,     // 5.4 - 4.5 = 0.9
+            "½ 겹치는 구간": 0.45   // 0.9 / 2 = 0.45
+        };
+
+        // 계산기 상태
+        let calculatorRows = Array(6).fill(null).map(() => ["", "+", ""]);
+
+        // 모달 제어
+        function openModal(type) {
+            document.getElementById(type + 'Modal').style.display = 'block';
+        }
+
+        function closeModal(type) {
+            document.getElementById(type + 'Modal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // SVG 그리기 함수
+        function drawMuscle(sarcomereUm) {
+            const svg = document.getElementById('muscleSvg');
+            svg.innerHTML = '';
+
+            const minSarcomereUm = 2 * actinUm;
+            sarcomereUm = Math.max(sarcomereUm, minSarcomereUm);
+
+            const pxToUm = 5.0 / 700;
+            const pxLength = sarcomereUm / pxToUm;
+            const leftZ = centerX - pxLength / 2;
+            const rightZ = centerX + pxLength / 2;
+
+            // 마이오신을 근절 중심에 배치
+            const myosinStart = centerX - myosinLengthPx / 2;
+            const myosinEnd = centerX + myosinLengthPx / 2;
+
+            const hStart = leftZ + actinLength;
+            const hEnd = rightZ - actinLength;
+
+            // Z선
+            svg.innerHTML += `
+                <line x1="${leftZ}" y1="80" x2="${leftZ}" y2="220" stroke="#0066cc" stroke-width="4"/>
+                <line x1="${rightZ}" y1="80" x2="${rightZ}" y2="220" stroke="#0066cc" stroke-width="4"/>
+                <text x="${leftZ}" y="240" font-size="14" text-anchor="middle" fill="#0066cc" font-weight="bold">Z선</text>
+                <text x="${rightZ}" y="240" font-size="14" text-anchor="middle" fill="#0066cc" font-weight="bold">Z선</text>
+            `;
+
+            // 액틴 필라멘트
+            [100, 140, 180, 220].forEach(y => {
+                svg.innerHTML += `
+                    <rect x="${leftZ}" y="${y}" width="${actinLength}" height="6" fill="#4169E1" rx="3"/>
+                    <rect x="${rightZ - actinLength}" y="${y}" width="${actinLength}" height="6" fill="#4169E1" rx="3"/>
+                `;
+            });
+
+            // 마이오신 필라멘트 (중심 기준)
+            [112, 153, 194].forEach(y => {
+                svg.innerHTML += `<rect x="${myosinStart}" y="${y}" width="${myosinLengthPx}" height="18" fill="#DC143C" rx="4"/>`;
+            });
+
+            // M선 (근절 중심)
+            const mLineX = centerX;
+            svg.innerHTML += `
+                <line x1="${mLineX}" y1="80" x2="${mLineX}" y2="220" stroke="#FFA500" stroke-width="3" stroke-dasharray="5 5"/>
+                <text x="${mLineX}" y="70" font-size="14" text-anchor="middle" fill="#FFA500" font-weight="bold">M선</text>
+            `;
+
+            // A대
+            svg.innerHTML += `
+                <rect x="${myosinStart}" y="40" width="${myosinLengthPx}" height="12" stroke="#333" fill="rgba(220,20,60,0.1)" stroke-dasharray="4 2"/>
+                <text x="${mLineX}" y="30" font-size="14" text-anchor="middle" font-weight="bold">A대</text>
+            `;
+
+            // H대
+            if (hEnd > hStart) {
+                svg.innerHTML += `
+                    <rect x="${hStart}" y="250" width="${hEnd - hStart}" height="12" stroke="#4169E1" fill="rgba(65,105,225,0.1)" stroke-dasharray="4 2"/>
+                    <text x="${(hStart + hEnd) / 2}" y="280" font-size="14" text-anchor="middle" fill="#4169E1" font-weight="bold">H대</text>
+                `;
+            }
+
+            // I대
+            if (myosinStart > leftZ) {
+                svg.innerHTML += `
+                    <rect x="${leftZ}" y="270" width="${myosinStart - leftZ}" height="12" stroke="#DC143C" fill="rgba(220,20,60,0.1)" stroke-dasharray="4 2"/>
+                    <text x="${(leftZ + myosinStart) / 2}" y="295" font-size="12" text-anchor="middle" fill="#DC143C">½ I대</text>
+                `;
+            }
+            if (rightZ > myosinEnd) {
+                svg.innerHTML += `
+                    <rect x="${myosinEnd}" y="270" width="${rightZ - myosinEnd}" height="12" stroke="#DC143C" fill="rgba(220,20,60,0.1)" stroke-dasharray="4 2"/>
+                    <text x="${(rightZ + myosinEnd) / 2}" y="295" font-size="12" text-anchor="middle" fill="#DC143C">½ I대</text>
+                `;
+            }
+        }
+
+        // 길이 계산
+        function calculateLengths(sarcomereUm) {
+            const contractionUm = 5.4 - sarcomereUm;
+            const hBandUm = Math.max(0, sarcomereUm - 2 * actinUm);
+            const iBandUmCurrent = Math.max(0, sarcomereUm - aBandUm);
+            const iHalfBandUm = iBandUmCurrent / 2;
+            const overlapUm = contractionUm;
+
+            return {
+                "A대 길이": aBandUm,
+                "마이오신": aBandUm,
+                "액틴": actinUm,
+                "H대 길이": hBandUm,
+                "I대 길이": iBandUmCurrent,
+                "겹치는 구간": overlapUm,
+                "½ I대 길이": iHalfBandUm,
+                "½ 겹치는 구간": overlapUm / 2
+            };
+        }
+
+        // 현재 길이 정보 업데이트
+        function updateLengthInfo(lengths) {
+            const lengthList = document.getElementById('lengthList');
+            const items = [
+                { name: "근절 길이", value: parseFloat(document.getElementById('lengthDisplay').textContent) },
+                { name: "A대 길이", value: lengths["A대 길이"] },
+                { name: "액틴 길이", value: lengths["액틴"] },
+                { name: "H대 길이", value: lengths["H대 길이"] },
+                { name: "I대 길이", value: lengths["I대 길이"] },
+                { name: "겹치는 구간", value: lengths["겹치는 구간"] }
+            ];
+
+            lengthList.innerHTML = items.map(item => 
+                `<li>${item.name}: <strong>${item.value.toFixed(2)} μm</strong></li>`
+            ).join('');
+        }
+
+        // 변화 정보 업데이트
+        function updateChanges(lengths) {
+            const changesList = document.getElementById('changesList');
+            const items = [
+                { name: "H대 길이", value: lengths["H대 길이"], ref: referenceValues["H대 길이"] },
+                { name: "I대 길이", value: lengths["I대 길이"], ref: referenceValues["I대 길이"] },
+                { name: "겹치는 구간", value: lengths["겹치는 구간"], ref: referenceValues["겹치는 구간"] },
+                { name: "½ I대 길이", value: lengths["½ I대 길이"], ref: referenceValues["½ I대 길이"] },
+                { name: "½ 겹치는 구간", value: lengths["½ 겹치는 구간"], ref: referenceValues["½ 겹치는 구간"] }
+            ];
+
+            changesList.innerHTML = items.map(item => {
+                const delta = item.value - item.ref;
+                const deltaClass = delta < 0 ? 'delta-negative' : delta > 0 ? 'delta-positive' : 'delta-info';
+                return `<li>${item.name}: <strong>${item.value.toFixed(2)} μm</strong> <span class="${deltaClass}">(Δ ${delta.toFixed(2)} μm)</span></li>`;
+            }).join('');
+        }
+
+        // 계산기 테이블 생성
+        function createCalculatorTable() {
+            const table = document.getElementById('calculatorTable');
+            table.innerHTML = '';
+
+            for (let i = 0; i < 6; i++) {
+                const row = document.createElement('tr');
+                
+                // 선택 1
+                const select1 = document.createElement('select');
+                select1.innerHTML = '<option value="">선택 안 함</option>' + 
+                    lengthOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                select1.value = calculatorRows[i][0];
+                select1.onchange = () => {
+                    calculatorRows[i][0] = select1.value;
+                    updateCalculator();
+                };
+
+                // 연산자 선택
+                const selectOp = document.createElement('select');
+                selectOp.className = 'operator-select';
+                selectOp.innerHTML = `
+                    <option value="+">+</option>
+                    <option value="-">−</option>
+                    <option value="*">×</option>
+                    <option value="/">÷</option>
+                `;
+                selectOp.value = calculatorRows[i][1];
+                selectOp.onchange = () => {
+                    calculatorRows[i][1] = selectOp.value;
+                    updateCalculator();
+                };
+
+                // 선택 2
+                const select2 = document.createElement('select');
+                select2.innerHTML = '<option value="">선택 안 함</option>' + 
+                    lengthOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                select2.value = calculatorRows[i][2];
+                select2.onchange = () => {
+                    calculatorRows[i][2] = select2.value;
+                    updateCalculator();
+                };
+
+                const td1 = document.createElement('td');
+                td1.appendChild(select1);
+                const td2 = document.createElement('td');
+                td2.appendChild(selectOp);
+                const td3 = document.createElement('td');
+                td3.appendChild(select2);
+                const td4 = document.createElement('td');
+                td4.id = `calc-result-${i}`;
+
+                row.appendChild(td1);
+                row.appendChild(td2);
+                row.appendChild(td3);
+                row.appendChild(td4);
+                table.appendChild(row);
+            }
+        }
+
+        // 계산기 결과 업데이트
+        function updateCalculator() {
+            const slider = document.getElementById('sarcomereSlider');
+            const sarcomereUm = sarcomereLengthTable[slider.value];
+            const lengths = calculateLengths(sarcomereUm);
+
+            calculatorRows.forEach((row, idx) => {
+                const resultCell = document.getElementById(`calc-result-${idx}`);
+                const [key1, operator, key2] = row;
+                
+                if (!key1 && !key2) {
+                    resultCell.textContent = '-';
+                } else if (!key1 || !key2) {
+                    resultCell.textContent = '값을 선택하세요';
+                    resultCell.style.color = '#999';
+                } else {
+                    const v1 = lengths[key1] || 0;
+                    const v2 = lengths[key2] || 0;
+                    let result;
+                    let operatorSymbol;
+                    
+                    switch(operator) {
+                        case '+':
+                            result = v1 + v2;
+                            operatorSymbol = '+';
+                            break;
+                        case '-':
+                            result = v1 - v2;
+                            operatorSymbol = '−';
+                            break;
+                        case '*':
+                            result = v1 * v2;
+                            operatorSymbol = '×';
+                            break;
+                        case '/':
+                            result = v2 !== 0 ? v1 / v2 : 0;
+                            operatorSymbol = '÷';
+                            if (v2 === 0) {
+                                resultCell.textContent = '0으로 나눌 수 없습니다';
+                                resultCell.style.color = '#dc3545';
+                                return;
+                            }
+                            break;
+                        default:
+                            result = v1 + v2;
+                            operatorSymbol = '+';
+                    }
+                    
+                    // 기준값 계산 (더하기일 때만 Δ 표시)
+                    if (operator === '+') {
+                        const ref1 = referenceValues[key1] || 0;
+                        const ref2 = referenceValues[key2] || 0;
+                        const delta = result - (ref1 + ref2);
+                        const deltaClass = delta < 0 ? 'delta-negative' : delta > 0 ? 'delta-positive' : '';
+                        resultCell.innerHTML = `${result.toFixed(2)} μm <span class="${deltaClass}">(Δ ${delta.toFixed(2)} μm)</span>`;
+                    } else {
+                        // 다른 연산은 결과만 표시
+                        resultCell.innerHTML = `<strong>${result.toFixed(2)}</strong> ${operator === '/' ? '' : 'μm'}`;
+                    }
+                    resultCell.style.color = '#333';
+                }
+            });
+        }
+
+        // 메인 업데이트 함수
+        function update() {
+            const slider = document.getElementById('sarcomereSlider');
+            const sarcomereUm = sarcomereLengthTable[slider.value];
+            const delta = sarcomereUm - baselineSarcomere;
+            
+            document.getElementById('lengthDisplay').textContent = `${sarcomereUm.toFixed(2)} μm`;
+            
+            // 기준값과의 차이 표시
+            const deltaDisplay = document.getElementById('deltaDisplay');
+            if (Math.abs(delta) < 0.01) {
+                deltaDisplay.textContent = '(기준값)';
+                deltaDisplay.style.color = '#666';
+            } else {
+                const sign = delta > 0 ? '+' : '';
+                deltaDisplay.textContent = `(${sign}${delta.toFixed(2)} μm)`;
+                deltaDisplay.style.color = delta > 0 ? '#28a745' : '#dc3545';
+            }
+            
+            drawMuscle(sarcomereUm);
+            
+            const lengths = calculateLengths(sarcomereUm);
+            updateLengthInfo(lengths);
+            updateChanges(lengths);
+            updateCalculator();
+        }
+
+        // 초기화
+        document.getElementById('sarcomereSlider').addEventListener('input', update);
+        createCalculatorTable();
+        update();
+    </script>
+</body>
+</html>

@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+        <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>패러데이의 전자기 유도 법칙</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        #canvasContainer {
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            align-items: center;
+        }
+        
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+        }
+        
+        .control-item label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .control-item input[type="range"] {
+            width: 100%;
+        }
+        
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .radio-group label {
+            cursor: pointer;
+            font-weight: normal;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .checkbox-group label {
+            cursor: pointer;
+            font-weight: normal;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            height: fit-content;
+            align-self: center;
+            margin: 2px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button.active {
+            background-color: #2196F3;
+        }
+        
+        button.active:hover {
+            background-color: #0b7dda;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .info-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e3f2fd;
+            border-radius: 5px;
+        }
+        
+        .info-section h2 {
+            color: #1976d2;
+            margin-top: 0;
+        }
+        
+        .info-section p {
+            line-height: 1.6;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>패러데이의 전자기 유도 법칙</h1>
+        
+        <div id="canvasContainer"></div>
+        
+        <div class="controls">
+            <div class="control-item">
+                <label>모드 선택</label>
+                <div class="button-group">
+                    <button id="btnAutoMode" class="active">자동 모드</button>
+                    <button id="btnDragMode">드래그 모드</button>
+                </div>
+            </div>
+            
+            <div class="control-item" id="autoControls">
+                <label for="rangeA">자석의 왕복 운동</label>
+                <input type="range" id="rangeA" min="0" max="20" value="0">
+            </div>
+            
+            <div class="control-item">
+                <label>자석 조작</label>
+                <div class="button-group">
+                    <button id="btnFlipMagnet">자석 극 바꾸기</button>
+                    <button id="btnPause">정지</button>
+                </div>
+            </div>
+            
+            <div class="control-item">
+                <label>코일 방향</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="coilDir" value="0" checked> 오른나사 방향</label>
+                    <label><input type="radio" name="coilDir" value="1"> 왼쪽나사 방향</label>
+                </div>
+            </div>
+            
+            <div class="control-item">
+                <label>표시 옵션</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="checkField"> 자기장</label>
+                    <label><input type="checkbox" id="checkCurrent"> 유도 전류</label>
+                    <label><input type="checkbox" id="checkElectromagnet" checked> 전자석 극</label>
+                </div>
+            </div>
+            
+            <button id="btnReset">리셋</button>
+        </div>
+        
+        <div class="info-section">
+            <h2>전자기 유도</h2>
+            <p>
+                코일 주위에서 자석을 움직이면 코일 내부의 자기장이 변하게 되며, 이에 따라 코일에 전류가 흐르게 됩니다. 
+                이러한 현상을 <strong>전자기 유도</strong>라고 하고, 이때 코일에 흐르는 전류를 <strong>유도 전류</strong>라고 합니다.
+            </p>
+            <p>
+                유도 전류는 자석이 움직여 자기장이 변할 때 흐르고, 자석이 멈추면 자기장이 변하지 않으므로 흐르지 않습니다. 
+                그리고 자석이 빠르게 움직일수록, 자석의 세기가 강할수록 유도 전류의 세기가 커집니다.
+            </p>
+            
+            <h2>렌츠의 법칙</h2>
+            <p>
+                유도 전류에 의한 자기장은 자속의 변화를 방해하는 방향으로 형성됩니다.
+                막대자석이 코일로 접근하면 코일은 반발하는 자기장을, 멀어지면 끌어당기는 자기장을 만듭니다.
+            </p>
+            
+            <h2>사용 방법</h2>
+            <p>
+                <strong>자동 모드:</strong> 슬라이더로 자석의 속도를 조절합니다.<br>
+                <strong>드래그 모드:</strong> 마우스로 자석을 직접 드래그합니다.<br>
+                <strong>정지 버튼:</strong> 현재 상태를 캡처하여 유도 전류를 계속 표시합니다.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // GitHub Raw URL
+        const baseURL = 'https://raw.githubusercontent.com/fbwiqb/magnet/main/';
+        
+        let imgMagnetNS;
+        let imgMagnetSN; // 반대 극 이미지
+        let imgCircuit = [];
+        let imgGlow;
+        
+        let magnetX = 350;
+        let magnetW = 240;
+        let coilX = 750;
+        let centerY = 250;
+        let accel = 0;
+        let theta1 = 0;
+        let magneticField1;
+        let magneticField2;
+        
+        let isDragMode = false;
+        let isDragging = false;
+        let isPaused = false;
+        let pausedAccel = 0;
+        let pausedMagnetX = 0;
+        let magnetFlipped = false;
+        
+        let poleX = [];
+        let poleY = [];
+        let poleVx = [];
+        let poleVy = [];
+        let poleIsN = [];
+        let forceLineX = [];
+        let forceLineY = [];
+        
+        let pathIndex = 0;
+        let pathNode = [[], []];
+        let pathNodeLength = [];
+        let pathNodes = [30, 30];
+        
+        let pathX1 = [
+            [750,750,840,820+10,820+3,820-3,780+10,780+3,780-3,740+10,740+3,740-3,700+10,700+3,700-3,660+10,660+3,660,660],
+            [750,750,840,840,840-3,800+10,800+3,800-3,760+10,760+3,760-3,720+10,720+3,720-3,680+10,680+3,680-3,660,660]
+        ];
+        
+        let pathY1 = [
+            [150,165,165,290,280,220,290,280,220,290,280,220,290,280,220,290,280,250,145],
+            [150,165,165,250,280,210,220,280,210,220,280,210,220,280,210,220,280,215,145]
+        ];
+        
+        let pathX2 = [
+            [750,840,840,820+3,820-3,820-10,780+3,780-3,780-10,740+3,740-3,740-10,700+3,700-3,700-10,660+3,660,660,725],
+            [750,840,840,840-3,840-10,800+3,800-3,800-10,760+3,760-3,760-10,720+3,720-3,720-10,680+3,680-3,680-10,660,725]
+        ];
+        
+        let pathY2 = [
+            [165,165,215,280,220,210,280,220,210,280,220,210,280,220,210,280,250,145,145],
+            [165,165,250,280,290,220,280,290,220,280,290,220,280,290,220,280,290,145,145]
+        ];
+        
+        let path1 = [[], []];
+        let path2 = [[], []];
+        
+        let prevMagnetX = 350;
+        
+        function preload() {
+            imgMagnetNS = loadImage(baseURL + 'faradays_law_mag_ns.png');
+            imgMagnetSN = loadImage(baseURL + 'faradays_law_mag_sn.png');
+            imgCircuit[0] = loadImage(baseURL + 'faradays_law_circuit_0.png');
+            imgCircuit[1] = loadImage(baseURL + 'faradays_law_circuit_1.png');
+            imgGlow = loadImage(baseURL + 'faradays_law_glow.png');
+        }
+        
+        function setup() {
+            let canvas = createCanvas(1000, 450);
+            canvas.parent('canvasContainer');
+            
+            frameRate(20);
+            
+            // 경로 초기화
+            for (let i = 0; i < pathNodes.length; i++) {
+                for (let j = 0; j < pathX1[i].length; j++) {
+                    path1[i][j] = (j === 0) ? 0 : path2[i][j-1];
+                    path2[i][j] = path1[i][j] + dist(pathX1[i][j], pathY1[i][j], pathX2[i][j], pathY2[i][j]);
+                }
+                pathNodeLength[i] = path2[i][pathX1[i].length - 1];
+                pathNodes[i] = round(pathNodeLength[i] / 36);
+                
+                for (let j = 0; j < pathNodes[i]; j++) {
+                    pathNode[i][j] = map(j, 0, pathNodes[i], 0, pathNodeLength[i]);
+                }
+            }
+            
+            updatePathIndex();
+            magneticField1 = calculateMagneticField();
+            
+            // 버튼 이벤트
+            document.getElementById('btnReset').addEventListener('click', () => {
+                theta1 = 0;
+                magnetX = 350;
+                document.getElementById('rangeA').value = 0;
+                isPaused = false;
+                document.getElementById('btnPause').textContent = '정지';
+                document.getElementById('btnPause').classList.remove('active');
+            });
+            
+            document.getElementById('btnFlipMagnet').addEventListener('click', () => {
+                magnetFlipped = !magnetFlipped;
+            });
+            
+            document.getElementById('btnPause').addEventListener('click', () => {
+                isPaused = !isPaused;
+                if (isPaused) {
+                    pausedAccel = accel;
+                    pausedMagnetX = magnetX;
+                    document.getElementById('btnPause').textContent = '재생';
+                    document.getElementById('btnPause').classList.add('active');
+                } else {
+                    document.getElementById('btnPause').textContent = '정지';
+                    document.getElementById('btnPause').classList.remove('active');
+                }
+            });
+            
+            document.getElementById('btnAutoMode').addEventListener('click', () => {
+                isDragMode = false;
+                document.getElementById('btnAutoMode').classList.add('active');
+                document.getElementById('btnDragMode').classList.remove('active');
+                document.getElementById('autoControls').style.display = 'flex';
+            });
+            
+            document.getElementById('btnDragMode').addEventListener('click', () => {
+                isDragMode = true;
+                document.getElementById('btnDragMode').classList.add('active');
+                document.getElementById('btnAutoMode').classList.remove('active');
+                document.getElementById('autoControls').style.display = 'none';
+                document.getElementById('rangeA').value = 0;
+            });
+        }
+        
+        function updatePathIndex() {
+            let coilDir = parseInt(document.querySelector('input[name="coilDir"]:checked').value);
+            pathIndex = coilDir; // 0 또는 1만 사용
+        }
+        
+        function mousePressed() {
+            if (isDragMode && dist(mouseX, mouseY, magnetX, centerY) < magnetW / 2) {
+                isDragging = true;
+            }
+        }
+        
+        function mouseReleased() {
+            isDragging = false;
+        }
+        
+        function draw() {
+            background(255);
+            
+            updatePathIndex();
+            
+            if (!isPaused) {
+                if (isDragMode && isDragging) {
+                    // 드래그 모드 - 왕복 운동과 동일한 범위 (250~450)
+                    magnetX = constrain(mouseX, 250, 450);
+                } else if (!isDragMode) {
+                    // 자동 모드
+                    let rangeA = parseInt(document.getElementById('rangeA').value);
+                    theta1 += 0.01 * rangeA;
+                    magnetX = 350 + 100 * cos(theta1);
+                }
+                
+                magneticField2 = calculateMagneticField();
+                accel = magneticField2.mag() - magneticField1.mag();
+                accel *= 1500000;
+                
+                prevMagnetX = magnetX;
+            } else {
+                // 정지 상태에서는 저장된 값 사용
+                accel = pausedAccel;
+                magnetX = pausedMagnetX;
+            }
+            
+            // 전구 빛 효과 (밝기 3배 증가)
+            if (abs(accel) > 0.001) {
+                imageMode(CENTER);
+                tint(255, abs(150 * accel));
+                image(imgGlow, 750, 100, 360, 360);
+                tint(255, abs(120 * accel));
+                image(imgGlow, 750, 100, 280, 280);
+                tint(255, abs(100 * accel));
+                image(imgGlow, 750, 100, 200, 200);
+                noTint();
+            }
+            
+            // 자기장 표시
+            noFill();
+            stroke(0, 128, 0, 64);
+            strokeWeight(1.5);
+            
+            // 정지 중이 아닐 때만 자기력선 재계산
+            if (!isPaused) {
+                calcMagneticField();
+            }
+            
+            if (document.getElementById('checkField').checked) {
+                // 자기력선 그리기
+                for (let c = 0; c < poleX.length; c++) {
+                    if (forceLineX[c].length > 1) {
+                        beginShape();
+                        for (let i = 0; i < forceLineX[c].length; i++) {
+                            vertex(forceLineX[c][i], forceLineY[c][i]);
+                        }
+                        endShape();
+                    }
+                }
+                
+                // 화살표 추가 (모든 자기력선, 넓은 간격)
+                noStroke();
+                fill(0, 128, 0, 150);
+                for (let c = 0; c < poleX.length; c++) { // 모든 자기력선
+                    if (forceLineX[c].length > 30) {
+                        // 자기력선 중간 부분에만 화살표 추가
+                        let startIdx = Math.floor(forceLineX[c].length * 0.3);
+                        let endIdx = Math.floor(forceLineX[c].length * 0.7);
+                        
+                        for (let i = startIdx; i < endIdx; i += 120) { // 120 포인트마다 (3배)
+                            if (i + 5 < forceLineX[c].length) {
+                                let x1 = forceLineX[c][i];
+                                let y1 = forceLineY[c][i];
+                                let x2 = forceLineX[c][i + 5];
+                                let y2 = forceLineY[c][i + 5];
+                                
+                                let angle = atan2(y2 - y1, x2 - x1);
+                                
+                                push();
+                                translate(x1, y1);
+                                rotate(angle);
+                                triangle(0, 0, -6, -3, -6, 3);
+                                pop();
+                            }
+                        }
+                    }
+                }
+            }
+            strokeWeight(1);
+            
+            // 회로 이미지
+            imageMode(CORNER);
+            image(imgCircuit[pathIndex], 0, 0, 1000, 1000 * imgCircuit[pathIndex].height / imgCircuit[pathIndex].width);
+            
+            // 전자석의 극 표시 (렌츠 법칙 - 코일 방향 무관)
+            if (document.getElementById('checkElectromagnet').checked && abs(accel) > 0.01) {
+                // 1. 자석의 어떤 극이 코일 쪽에 있는가?
+                let magnetCoilSidePole = magnetFlipped ? 'S' : 'N';
+                
+                // 2. 자석이 다가오는가 멀어지는가?
+                let isApproaching = accel > 0;
+                
+                // 3. 렌츠 법칙: 전자석 극은 자석 움직임만으로 결정 (코일 방향 무관!)
+                let coilLeftPole, coilRightPole;
+                if (isApproaching) {
+                    // 다가오면 같은 극으로 밀어냄 (수정됨!)
+                    coilLeftPole = magnetCoilSidePole;
+                    coilRightPole = (coilLeftPole === 'N') ? 'S' : 'N';
+                } else {
+                    // 멀어지면 반대 극으로 끌어당김 (수정됨!)
+                    coilLeftPole = (magnetCoilSidePole === 'N') ? 'S' : 'N';
+                    coilRightPole = magnetCoilSidePole;
+                }
+                
+                // 극 표시 (반대로 수정)
+                let leftPole = coilRightPole;
+                let rightPole = coilLeftPole;
+                
+                // 전자석 극 표시
+                textAlign(CENTER, CENTER);
+                textSize(32);
+                
+                // 왼쪽 극 (배경)
+                fill(leftPole === 'N' ? 255 : 100, 100, leftPole === 'S' ? 255 : 100, 200);
+                noStroke();
+                ellipse(660, centerY, 60, 60);
+                
+                // 왼쪽 극 (텍스트)
+                fill(255);
+                stroke(0);
+                strokeWeight(2);
+                text(leftPole, 660, centerY);
+                
+                // 오른쪽 극 (배경)
+                noStroke();
+                fill(rightPole === 'N' ? 255 : 100, 100, rightPole === 'S' ? 255 : 100, 200);
+                ellipse(840, centerY, 60, 60);
+                
+                // 오른쪽 극 (텍스트)
+                fill(255);
+                stroke(0);
+                strokeWeight(2);
+                text(rightPole, 840, centerY);
+                
+                noStroke();
+            }
+            
+            // 유도 전류 표시
+            if (document.getElementById('checkCurrent').checked) {
+                if (!isPaused) {
+                    for (let j = 0; j < pathNodes[pathIndex]; j++) {
+                        // 극 바꾸기 모드에서는 이동 방향 반대
+                        let direction = (pathIndex % 2 === 0) ? -2 : 2;
+                        if (magnetFlipped) {
+                            direction = -direction;
+                        }
+                        pathNode[pathIndex][j] += accel * direction;
+                        
+                        if (pathNode[pathIndex][j] > pathNodeLength[pathIndex]) {
+                            pathNode[pathIndex][j] -= pathNodeLength[pathIndex];
+                        }
+                        if (pathNode[pathIndex][j] < 0) {
+                            pathNode[pathIndex][j] += pathNodeLength[pathIndex];
+                        }
+                    }
+                }
+                
+                rectMode(CENTER);
+                noStroke();
+                for (let j = 0; j < pathNodes[pathIndex]; j++) {
+                    for (let k = 0; k < pathX1[pathIndex].length; k++) {
+                        if (path1[pathIndex][k] <= pathNode[pathIndex][j] && 
+                            pathNode[pathIndex][j] <= path2[pathIndex][k]) {
+                            let x = map(pathNode[pathIndex][j], path1[pathIndex][k], path2[pathIndex][k], 
+                                       pathX1[pathIndex][k], pathX2[pathIndex][k]);
+                            let y = map(pathNode[pathIndex][j], path1[pathIndex][k], path2[pathIndex][k], 
+                                       pathY1[pathIndex][k], pathY2[pathIndex][k]);
+                            let t = atan2(pathY2[pathIndex][k] - pathY1[pathIndex][k], 
+                                         pathX2[pathIndex][k] - pathX1[pathIndex][k]);
+                            
+                            // 전자석 극 결정 (렌츠 법칙 - 수정됨!)
+                            let magnetCoilSidePole = magnetFlipped ? 'S' : 'N';
+                            let isApproaching = accel > 0;
+                            
+                            let coilLeftIsN;
+                            if (isApproaching) {
+                                // 다가오면 같은 극으로 밀어냄
+                                coilLeftIsN = (magnetCoilSidePole === 'N');
+                            } else {
+                                // 멀어지면 반대 극으로 끌어당김
+                                coilLeftIsN = (magnetCoilSidePole === 'S');
+                            }
+                            
+                            // 코일 방향에 따라 전류 방향 결정
+                            // pathIndex 0: 오른나사 기본 방향
+                            // pathIndex 1: 왼쪽나사 반대 방향
+                            
+                            // 왼쪽이 N극이면 전류 방향 설정
+                            if (coilLeftIsN) {
+                                // 왼쪽 N극 → 오른쪽 S극
+                                // pathIndex 0(오른나사): 기본 방향
+                                // pathIndex 1(왼쪽나사): 이미 반대로 설정됨
+                            } else {
+                                // 왼쪽 S극 → 오른쪽 N극: 반대 방향
+                                t += PI;
+                            }
+                            
+                            drawProton(x, y, t);
+                        }
+                    }
+                }
+            }
+            
+            // 자석 그리기
+            imageMode(CENTER);
+            push();
+            translate(magnetX, centerY);
+            // 극이 바뀌면 다른 이미지 사용
+            let currentMagnetImg = magnetFlipped ? imgMagnetSN : imgMagnetNS;
+            image(currentMagnetImg, 0, 0, magnetW, magnetW * currentMagnetImg.height / currentMagnetImg.width);
+            pop();
+            
+            if (!isPaused) {
+                magneticField1 = magneticField2;
+            }
+        }
+        
+        function calculateMagneticField() {
+            let nPoleX = magnetFlipped ? magnetX + 0.45 * magnetW : magnetX - 0.45 * magnetW;
+            let sPoleX = magnetFlipped ? magnetX - 0.45 * magnetW : magnetX + 0.45 * magnetW;
+            
+            let lenN = dist(nPoleX, 0, coilX, 0);
+            let lenS = dist(sPoleX, 0, coilX, 0);
+            
+            let vecX = 1 / (lenN * lenN) * ((coilX - nPoleX) / lenN);
+            vecX -= 1 / (lenS * lenS) * ((coilX - sPoleX) / lenS);
+            
+            return createVector(vecX, 0);
+        }
+        
+        function calcMagneticField() {
+            poleX = [];
+            poleY = [];
+            poleVx = [];
+            poleVy = [];
+            poleIsN = [];
+            
+            // 막대자석의 극
+            for (let i = 0; i < 2; i++) {
+                for (let j = 0; j < 8; j++) {
+                    let t2 = map(j, 0, 7, HALF_PI, 3 * HALF_PI) + i * PI;
+                    let x2 = cos(t2);
+                    let y2 = sin(t2);
+                    
+                    let polePos = (magnetFlipped ? (i === 1) : (i === 0));
+                    
+                    poleX.push(magnetX + (10 * x2 + 110 * (polePos ? -1 : 1)));
+                    poleY.push(centerY + 16 * y2);
+                    poleVx.push(x2);
+                    poleVy.push(y2);
+                    poleIsN.push(polePos ? true : false);
+                }
+            }
+            
+            // 코일 부근의 전자석 극 (렌츠 법칙 - 수정됨!)
+            let branch = round(abs(accel * 1.5)) * 2;
+            for (let i = 0; i < 2; i++) {
+                for (let j = 0; j < branch; j++) {
+                    let t2 = map(j, -2, branch + 1, HALF_PI, 3 * HALF_PI) + i * PI;
+                    let x2 = cos(t2);
+                    let y2 = sin(t2);
+                    
+                    poleX.push(coilX + 10 * x2 + 100 * ((i === 0) ? -1 : 1));
+                    poleY.push(centerY + 30 * y2);
+                    poleVx.push(x2);
+                    poleVy.push(y2);
+                    
+                    // 자석의 어떤 극이 코일 쪽인가?
+                    let magnetCoilSidePole = magnetFlipped ? 'S' : 'N';
+                    let isApproaching = (magneticField2.x - magneticField1.x) > 0;
+                    
+                    // 코일 왼쪽(i=0)에 생기는 극 (렌츠 법칙 수정!)
+                    let coilLeftIsN;
+                    if (isApproaching) {
+                        // 다가오면 같은 극으로 밀어냄
+                        coilLeftIsN = (magnetCoilSidePole === 'N');
+                    } else {
+                        // 멀어지면 반대 극으로 끌어당김
+                        coilLeftIsN = (magnetCoilSidePole === 'S');
+                    }
+                    
+                    // i=0이 왼쪽, i=1이 오른쪽
+                    if (i === 0) {
+                        poleIsN.push(coilLeftIsN);
+                    } else {
+                        poleIsN.push(!coilLeftIsN);
+                    }
+                }
+            }
+            
+            let steps = 3000;
+            let connected = [];
+            forceLineX = [];
+            forceLineY = [];
+            
+            for (let c = 0; c < poleX.length; c++) {
+                forceLineX[c] = [];
+                forceLineY[c] = [];
+                connected[c] = 0;
+            }
+            
+            for (let c = 0; c < poleX.length; c++) {
+                if (connected[c] === 0) {
+                    forceLineX[c][0] = poleX[c] + poleVx[c];
+                    forceLineY[c][0] = poleY[c] + poleVy[c];
+                    
+                    for (let i = 1; i < steps; i++) {
+                        let vecX = 0;
+                        let vecY = 0;
+                        
+                        for (let j = 0; j < poleX.length; j++) {
+                            if (forceLineX[c][i-1] !== poleX[j] || forceLineY[c][i-1] !== poleY[j]) {
+                                let len = pow(forceLineX[c][i-1] - poleX[j], 2) + pow(forceLineY[c][i-1] - poleY[j], 2);
+                                vecX += (poleIsN[c] ? 1 : -1) * (poleIsN[j] ? 1 : -1) / len * 
+                                        ((forceLineX[c][i-1] - poleX[j]) / sqrt(len)) * 500;
+                                vecY += (poleIsN[c] ? 1 : -1) * (poleIsN[j] ? 1 : -1) / len * 
+                                        ((forceLineY[c][i-1] - poleY[j]) / sqrt(len)) * 500;
+                            }
+                        }
+                        
+                        let vecXY = dist(0, 0, vecX, vecY);
+                        if (vecXY > 0) {
+                            vecX = 1 * vecX / vecXY;
+                            vecY = 1 * vecY / vecXY;
+                        }
+                        forceLineX[c][i] = forceLineX[c][i-1] + vecX;
+                        forceLineY[c][i] = forceLineY[c][i-1] + vecY;
+                        
+                        let escape = false;
+                        for (let d = 0; d < poleX.length; d++) {
+                            if (c !== d) {
+                                if (dist(forceLineX[c][i], forceLineY[c][i], poleX[d], poleY[d]) < 0.5) {
+                                    if (connected[d] < 2) {
+                                        let dx = poleX[d] - forceLineX[c][i];
+                                        let dy = poleY[d] - forceLineY[c][i];
+                                        for (let ii = 0; ii < forceLineX[c].length; ii++) {
+                                            forceLineX[c][ii] += dx * ii / forceLineX[c].length;
+                                            forceLineY[c][ii] += dy * ii / forceLineY[c].length;
+                                        }
+                                        connected[c]++;
+                                        connected[d]++;
+                                        forceLineX[d] = [];
+                                        forceLineY[d] = [];
+                                    }
+                                    escape = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (escape) break;
+                        if (forceLineX[c][i] < 0 || forceLineX[c][i] > 1000 || 
+                            forceLineY[c][i] < 0 || forceLineY[c][i] > 500) break;
+                    }
+                }
+            }
+        }
+        
+        function drawProton(x, y, t) {
+            let cx = 8 * cos(t);
+            let cy = 8 * sin(t);
+            noStroke();
+            fill(255, 0, 0, constrain(abs(200 * accel), 0, 191));
+            
+            // 왼쪽나사 방향(pathIndex === 1)에서만 화살표 그림 반대로
+            if (pathIndex === 1) {
+                draw2DArrow2(x - cx, y - cy, 2 * cx, 2 * cy, 3);
+            } else {
+                draw2DArrow2(x + cx, y + cy, -2 * cx, -2 * cy, 3);
+            }
+        }
+        
+        function draw2DArrow2(x, y, dx, dy, size) {
+            push();
+            translate(x, y);
+            let angle = atan2(dy, dx);
+            rotate(angle);
+            let len = dist(0, 0, dx, dy);
+            
+            // 화살표 몸체
+            rect(0, -1, len, 2);
+            
+            // 화살표 머리
+            triangle(len, 0, len - size * 2, -size, len - size * 2, size);
+            pop();
+        }
+    </script>
+</body>
+</html>
