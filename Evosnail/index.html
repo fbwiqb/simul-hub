@@ -18,6 +18,7 @@
     padding: 10px;
     margin: 0;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
 }
@@ -364,7 +365,8 @@
             grid-template-columns: 3fr 1.5fr;
             gap: 15px;
             margin-bottom: 15px;
-            height: 400px;
+            min-height: 300px;
+            max-height: 600px;
         }
         
         #gameCanvas {
@@ -383,7 +385,6 @@
         
         .stats-panel, .graph-panel {
             height: 100%;
-            max-height: 400px;
         }
         
         .stats-panel {
@@ -665,17 +666,272 @@
             font-weight: bold;
             color: #3d4e9f;
         }   
-        .footer {
+        .keyboard-hints {
+            text-align: center;
+            padding: 6px 12px;
+            margin-top: 10px;
+            color: #8a8faa;
+            font-size: 12px;
+            background: rgba(61, 78, 159, 0.04);
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                display: block;
+            }
+
+            .control-section {
+                margin-bottom: 10px;
+            }
+
+            .main-area {
+                grid-template-columns: 1fr;
+                max-height: none;
+            }
+
+            .sim-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .scenario-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .genetics-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .sim-title {
+                font-size: 1.4em;
+            }
+
+            .keyboard-hints {
+                display: none;
+            }
+        }
+
+        .genetics-section {
+            max-width: 1000px;
+            margin: 50px auto 0;
+            text-align: left;
+        }
+
+        .genetics-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, rgba(61, 78, 159, 0.06) 0%, rgba(88, 101, 181, 0.1) 100%);
+            border: 2px solid rgba(61, 78, 159, 0.15);
+            border-radius: 14px;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .genetics-toggle:hover {
+            background: linear-gradient(135deg, rgba(61, 78, 159, 0.1) 0%, rgba(88, 101, 181, 0.15) 100%);
+            border-color: rgba(61, 78, 159, 0.3);
+        }
+
+        .genetics-toggle h2 {
+            color: #3d4e9f;
+            font-size: 1.4em;
+            margin: 0;
+        }
+
+        .genetics-toggle .toggle-arrow {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+            color: #3d4e9f;
+        }
+
+        .genetics-toggle .toggle-arrow.open {
+            transform: rotate(180deg);
+        }
+
+        .genetics-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, margin 0.4s ease;
+            margin-top: 0;
+        }
+
+        .genetics-cards.open {
+            max-height: 1200px;
+            opacity: 1;
+            margin-top: 24px;
+        }
+
+        .genetics-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(61, 78, 159, 0.12);
+            border-radius: 16px;
+            padding: 28px 24px;
+            transition: all 0.3s ease;
+        }
+
+        .genetics-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(61, 78, 159, 0.15);
+            border-color: rgba(61, 78, 159, 0.25);
+        }
+
+        .genetics-card .card-icon {
+            font-size: 2.4em;
+            margin-bottom: 14px;
+        }
+
+        .genetics-card h3 {
+            color: #3d4e9f;
+            font-size: 1.1em;
+            line-height: 1.5;
+            margin-bottom: 14px;
+        }
+
+        .genetics-card .card-teaser {
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .genetics-card .card-hint {
+            color: #7a85c0;
+            font-size: 0.85em;
+            font-style: italic;
+            line-height: 1.6;
+            padding-top: 12px;
+            border-top: 1px solid rgba(61, 78, 159, 0.08);
+        }
+
+        .genetics-card .card-footer {
+            color: #9aa2cc;
+            font-size: 0.8em;
+            margin-top: 12px;
+            text-align: right;
+        }
+
+        .btn-record {
+            background: white;
+            color: #3d4e9f;
+            border: 2px solid #3d4e9f;
+        }
+
+        .btn-record.active {
+            background: linear-gradient(135deg, #dc3545 0%, #e85563 100%);
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .recording-badge {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #dc3545;
+        }
+
+        .recording-badge.visible {
+            display: flex;
+        }
+
+        .recording-dot {
+            width: 8px;
+            height: 8px;
+            background: #dc3545;
+            border-radius: 50%;
+            animation: pulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .name-modal-body {
+            padding: 20px 10px;
+        }
+
+        .name-modal-body p {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 1em;
+        }
+
+        .name-modal-body input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 1.1em;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .name-modal-body input[type="text"]:focus {
+            border-color: #3d4e9f;
+        }
+
+        .toast-container {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: rgba(61, 78, 159, 0.95);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1), toastOut 0.4s ease-in forwards;
+            animation-delay: 0s, var(--toast-duration, 2.5s);
+            max-width: 360px;
+        }
+
+        @keyframes toastIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        .footer {
+            position: relative;
             background: #3d4e9f;
             color: white;
             text-align: center;
             padding: 10px 20px;
             font-size: 14px;
-            z-index: 999;
+            margin-top: 30px;
+            border-radius: 10px;
+            max-width: 1200px;
+            width: 90%;
         }
         
         .footer a {
@@ -689,6 +945,8 @@
     </style>
 </head>
 <body>
+    <div class="toast-container" id="toastContainer"></div>
+
     <!-- 초기 선택 화면 -->
     <div class="selection-screen" id="selectionScreen">
         <h1>🐌 달팽이 진화 시뮬레이션</h1>
@@ -719,8 +977,52 @@
                 <p>개체의 크기가 포식 위험에 미치는 영향을 관찰합니다. 작은 개체가 더 안전할까요?</p>
             </div>
         </div>
+
+        <div class="genetics-section">
+            <div class="genetics-toggle" onclick="toggleGenetics()">
+                <h2>🔬 알고 보면 놀라운, 달팽이의 유전</h2>
+                <span class="toggle-arrow" id="geneticsArrow">▼</span>
+            </div>
+            <div class="genetics-cards" id="geneticsCards">
+                <div class="genetics-card">
+                    <div class="card-icon">🧬</div>
+                    <h3>달팽이는 암수한몸인데, 왜 혼자 번식하지 않을까?</h3>
+                    <div class="card-teaser">
+                        달팽이는 정자와 난자를 모두 만든다. 이론상 혼자서도 번식이 가능하지만... 거의 하지 않는다. 왜일까?
+                    </div>
+                    <div class="card-hint">
+                        💡 "유전적 다양성"이라는 키워드로 조사해보면...
+                    </div>
+                    <div class="card-footer">조사해보면 재미있을지도...?</div>
+                </div>
+
+                <div class="genetics-card">
+                    <div class="card-icon">🐚</div>
+                    <h3>껍질이 왼쪽으로 감기면, 짝짓기를 못 한다?</h3>
+                    <div class="card-teaser">
+                        대부분의 달팽이 껍질은 오른쪽으로 감긴다. 왼쪽으로 감기는 달팽이는 4만 마리 중 1마리. 그런데 이 달팽이는 짝짓기가 물리적으로 불가능하다. 생식기 위치가 반대라서.
+                    </div>
+                    <div class="card-hint">
+                        💡 더 놀라운 건, 껍질 방향을 결정하는 건 본인의 유전자가 아니라 <strong>어머니의 유전자</strong>라는 것. "모성유전"으로 검색해보면...
+                    </div>
+                    <div class="card-footer">조사해보면 재미있을지도...?</div>
+                </div>
+
+                <div class="genetics-card">
+                    <div class="card-icon">💘</div>
+                    <h3>달팽이는 짝짓기 전에 상대방에게 '화살'을 쏜다</h3>
+                    <div class="card-teaser">
+                        많은 육상 달팽이는 탄산칼슘으로 만든 뾰족한 화살을 가지고 있다. 짝짓기 전에 상대방 몸에 이걸 찔러 넣는다. 사랑 고백? 아니다. 훨씬 더 이기적인 이유가 있다.
+                    </div>
+                    <div class="card-hint">
+                        💡 "love dart snail"로 검색해보면...
+                    </div>
+                    <div class="card-footer">조사해보면 재미있을지도...?</div>
+                </div>
+            </div>
+        </div>
     </div>
-    
+
     <!-- 튜토리얼 모달 -->
     <div class="modal" id="tutorialModal">
         <div class="modal-content">
@@ -876,6 +1178,24 @@
         </div>
     </div>
     
+    <!-- 이름 입력 모달 -->
+    <div class="modal" id="nameModal">
+        <div class="modal-content" style="max-width:420px;">
+            <div class="modal-header">
+                <h3>📋 기록모드</h3>
+                <button class="modal-close" onclick="cancelRecording()">×</button>
+            </div>
+            <div class="name-modal-body">
+                <p>이름 또는 번호를 입력하세요</p>
+                <input type="text" id="studentNameInput" placeholder="예: 홍길동, 1반 3번" maxlength="20">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="cancelRecording()">취소</button>
+                <button class="btn-start" onclick="startRecording()">기록 시작</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 시뮬레이션 화면 -->
     <div class="simulation-screen" id="simulationScreen">
         <div class="sim-header">
@@ -885,9 +1205,16 @@
                     <button class="btn-success" id="startBtn" onclick="toggleSimulation()">▶️ 시작</button>
                     <button class="btn-warning" id="reproduceBtn" onclick="reproduce()">🔄 번식</button>
                     <button class="btn-primary" id="toggleViewBtn" onclick="toggleView()">📊 그래프</button>
+                    <button class="btn-record" id="recordBtn" onclick="toggleRecording()">📋 기록모드</button>
                 </div>
             </div>
-            <button class="btn-back" onclick="backToSelection()">◀ 처음으로</button>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div class="recording-badge" id="recordingBadge">
+                    <span class="recording-dot"></span>
+                    기록 중
+                </div>
+                <button class="btn-back" onclick="backToSelection()">◀ 처음으로</button>
+            </div>
         </div>
         
         <div class="controls">
@@ -947,6 +1274,8 @@
             </div>
         </div>
         
+        <div class="keyboard-hints">⌨️ Space(시작/정지) R(번식) G(그래프) D(기록) Esc(처음으로)</div>
+
         <div class="main-area">
             <canvas id="gameCanvas" width="600" height="400"></canvas>
             
@@ -986,6 +1315,23 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
+        function toggleGenetics() {
+            const cards = document.getElementById('geneticsCards');
+            const arrow = document.getElementById('geneticsArrow');
+            cards.classList.toggle('open');
+            arrow.classList.toggle('open');
+        }
+
+        function showToast(msg, duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.setProperty('--toast-duration', (duration / 1000) + 's');
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), duration + 500);
+        }
+
         // 전역 변수
         let currentScenario = '';
         let currentMode = 'manual';
@@ -1003,6 +1349,11 @@
         let sideChart = null;
         let showingGraph = false;
         
+        let isRecording = false;
+        let recordingData = [];
+        let studentName = '';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbz5Is9wmd4UIsr5WWEs9KiVdkpScfKiYKurT0rUyJxzUEPFz9cO3Qe2H7eDVS96NoiweA/exec';
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
@@ -1332,12 +1683,133 @@ function closeDevLog() {
     document.getElementById('devLogModal').style.display = 'none';
 }
 
+function captureSnapshot() {
+    const aliveSnails = snails.filter(s => s.alive);
+    const counts = [0, 0, 0, 0, 0];
+    aliveSnails.forEach(s => { counts[s.level - 1]++; });
+    const total = aliveSnails.length;
+
+    let avg = 0;
+    if (total > 0) {
+        if (currentScenario === 'speed') {
+            avg = aliveSnails.reduce((sum, s) => sum + s.speed, 0) / total;
+        } else if (currentScenario === 'color') {
+            avg = aliveSnails.reduce((sum, s) => sum + s.level, 0) / total;
+        } else if (currentScenario === 'size') {
+            avg = aliveSnails.reduce((sum, s) => sum + s.size, 0) / total;
+        }
+    }
+
+    return {
+        gen: generation,
+        lv1: counts[0], lv2: counts[1], lv3: counts[2], lv4: counts[3], lv5: counts[4],
+        total: total,
+        avg: Math.round(avg * 100) / 100,
+        mutations: mutationCount
+    };
+}
+
+function toggleRecording() {
+    if (!isRecording) {
+        document.getElementById('nameModal').style.display = 'block';
+        document.getElementById('studentNameInput').value = '';
+        setTimeout(() => document.getElementById('studentNameInput').focus(), 100);
+    } else {
+        stopRecording();
+    }
+}
+
+function startRecording() {
+    const nameInput = document.getElementById('studentNameInput').value.trim();
+    if (!nameInput) {
+        showToast('이름을 입력해주세요!');
+        return;
+    }
+    studentName = nameInput;
+    isRecording = true;
+    recordingData = [];
+
+    document.getElementById('nameModal').style.display = 'none';
+    document.getElementById('recordBtn').classList.add('active');
+    document.getElementById('recordBtn').textContent = '⏹ 기록중지';
+    document.getElementById('recordingBadge').classList.add('visible');
+
+    recordingData.push(captureSnapshot());
+    showToast('기록모드 시작! 세대별 데이터가 기록됩니다.', 3000);
+}
+
+function cancelRecording() {
+    document.getElementById('nameModal').style.display = 'none';
+}
+
+function stopRecording() {
+    isRecording = false;
+    document.getElementById('recordBtn').classList.remove('active');
+    document.getElementById('recordBtn').textContent = '📋 기록모드';
+    document.getElementById('recordingBadge').classList.remove('visible');
+
+    if (recordingData.length <= 1) {
+        showToast('기록할 데이터가 없습니다. (번식을 1회 이상 진행해주세요)', 3000);
+        recordingData = [];
+        return;
+    }
+
+    sendRecordingData();
+}
+
+function sendRecordingData() {
+    showToast('전송 중...', 5000);
+
+    const payload = {
+        studentName: studentName,
+        scenario: currentScenario,
+        data: recordingData
+    };
+
+    fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'text/plain' }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(result) {
+        if (result.success) {
+            showToast('기록 완료! 스프레드시트에 저장되었습니다.', 4000);
+        } else {
+            showToast('오류: ' + (result.error || '알 수 없는 오류'), 4000);
+        }
+        recordingData = [];
+    })
+    .catch(function(err) {
+        showToast('네트워크 오류! CSV로 다운로드합니다.', 4000);
+        downloadCSV();
+        recordingData = [];
+    });
+}
+
+function downloadCSV() {
+    const headers = '세대,Lv1,Lv2,Lv3,Lv4,Lv5,총 개체수,평균값,돌연변이\n';
+    const rows = recordingData.map(function(d) {
+        return [d.gen, d.lv1, d.lv2, d.lv3, d.lv4, d.lv5, d.total, d.avg, d.mutations].join(',');
+    }).join('\n');
+
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + headers + rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = studentName + '_' + currentScenario + '_기록.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
 // 모달 외부 클릭 시 닫기
 window.onclick = function(event) {
     const tutorialModal = document.getElementById('tutorialModal');
     const devLogModal = document.getElementById('devLogModal');
     const setupModal = document.getElementById('setupModal');
-    
+    const nameModal = document.getElementById('nameModal');
+
     if (event.target === tutorialModal) {
         tutorialModal.style.display = 'none';
     }
@@ -1346,6 +1818,9 @@ window.onclick = function(event) {
     }
     if (event.target === setupModal) {
         setupModal.style.display = 'none';
+    }
+    if (event.target === nameModal) {
+        nameModal.style.display = 'none';
     }
 }
         // 모달 열기
@@ -1378,7 +1853,7 @@ window.onclick = function(event) {
             initialPopulation = levelCounts.reduce((a, b) => a + b, 0);
             
             if (initialPopulation === 0) {
-                alert('최소 1마리 이상의 달팽이를 설정해주세요!');
+                showToast('최소 1마리 이상의 달팽이를 설정해주세요!');
                 return;
             }
             
@@ -1414,12 +1889,16 @@ window.onclick = function(event) {
             updateStats();
             initChart();
             updateChart();
-            createBackgroundImage();
-            drawBackground();
+            requestAnimationFrame(() => {
+                resizeCanvas();
+            });
         }
         
         // 처음으로 돌아가기
         function backToSelection() {
+            if (isRecording) {
+                stopRecording();
+            }
             if (isRunning) {
                 toggleSimulation();
             }
@@ -1648,7 +2127,7 @@ window.onclick = function(event) {
                     cancelAnimationFrame(animationId);
                 }
                 
-                alert(`자동 모드: 개체수가 절반(${halfPopulation}마리) 이하가 되었습니다.\n번식 버튼을 눌러 다음 세대를 만드세요!`);
+                showToast(`개체수가 절반(${halfPopulation}마리) 이하! 번식 버튼을 눌러주세요.`, 4000);
             }
             // 수동 모드에서는 정지하지 않음
         }
@@ -1658,7 +2137,7 @@ window.onclick = function(event) {
             const aliveSnails = snails.filter(s => s.alive);
             
             if (aliveSnails.length === 0) {
-                alert('살아있는 개체가 없습니다!');
+                showToast('살아있는 개체가 없습니다!');
                 return;
             }
             
@@ -1717,7 +2196,7 @@ window.onclick = function(event) {
                 newSnails.push(child);
             });
             
-            snails = newSnails;
+            snails = newSnails.filter(s => s.alive);
             generation++;
             caughtCount = 0;
             mutationCount += mutationOccurred; // 누적 돌연변이 수 업데이트
@@ -1730,7 +2209,11 @@ window.onclick = function(event) {
             
             updateStats();
             updateChart();
-            
+
+            if (isRecording) {
+                recordingData.push(captureSnapshot());
+            }
+
             if (!isRunning) {
                 drawBackground();
                 snails.forEach(snail => {
@@ -1921,14 +2404,76 @@ window.onclick = function(event) {
             document.getElementById('simSpeedValue').textContent = simulationSpeed + 'x';
         });
         
-        // 창 크기 조정 시 반응형 처리
+        let resizeTimer;
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const containerWidth = container.clientWidth;
+            const oldWidth = canvas.width;
+            const oldHeight = canvas.height;
+            const newWidth = containerWidth;
+            const newHeight = Math.round(containerWidth * 2 / 3);
+
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+
+            const scaleX = newWidth / oldWidth;
+            const scaleY = newHeight / oldHeight;
+            snails.forEach(s => {
+                s.x *= scaleX;
+                s.y *= scaleY;
+            });
+            eagles.forEach(e => {
+                e.x *= scaleX;
+                e.y *= scaleY;
+            });
+
+            backgroundImage = null;
+            drawBackground();
+            snails.forEach(s => { if (s.alive) s.draw(); });
+            eagles.forEach(e => e.draw());
+        }
+
         window.addEventListener('resize', () => {
-            if (snails.length > 0) {
-                drawBackground();
-                snails.forEach(s => {
-                    if (s.alive) s.draw();
-                });
-                eagles.forEach(e => e.draw());
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (document.getElementById('simulationScreen').classList.contains('active')) {
+                    resizeCanvas();
+                }
+            }, 150);
+        });
+
+        document.getElementById('studentNameInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                startRecording();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT') return;
+            if (!document.getElementById('simulationScreen').classList.contains('active')) return;
+
+            switch (e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    toggleSimulation();
+                    showToast(isRunning ? '▶ 시뮬레이션 시작' : '⏸ 일시정지', 1500);
+                    break;
+                case 'KeyR':
+                    if (!document.getElementById('reproduceBtn').disabled) {
+                        reproduce();
+                        showToast(`🔄 ${generation}세대 번식 완료`, 1500);
+                    }
+                    break;
+                case 'KeyG':
+                    toggleView();
+                    break;
+                case 'KeyD':
+                    toggleRecording();
+                    break;
+                case 'Escape':
+                    backToSelection();
+                    break;
             }
         });
     </script>
