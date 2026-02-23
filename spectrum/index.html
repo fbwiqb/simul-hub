@@ -94,7 +94,7 @@
             position: relative;
         }
         .ref-spectrum-bar {
-            height: 14px;
+            height: 32px;
             border-radius: var(--radius-sm);
             overflow: hidden;
             position: relative;
@@ -103,9 +103,9 @@
         .ref-spectrum-labels {
             display: flex;
             justify-content: space-between;
-            font-size: 9px;
+            font-size: 11px;
             color: var(--text-dim);
-            margin-top: 1px;
+            margin-top: 3px;
             padding: 0 2px;
         }
         .main-content {
@@ -684,11 +684,11 @@
         function buildRefSpectrum() {
             var bar = document.getElementById('refSpectrum');
             bar.innerHTML = '';
-            for (var wl = 380; wl <= 750; wl++) {
-                var px = document.createElement('div');
-                px.style.cssText = 'position:absolute;top:0;bottom:0;width:1px;left:' + wlToPercent(wl) + '%;background:' + wavelengthToRgb(wl);
-                bar.appendChild(px);
+            var stops = [];
+            for (var wl = 380; wl <= 750; wl += 5) {
+                stops.push(wavelengthToRgb(wl) + ' ' + wlToPercent(wl) + '%');
             }
+            bar.style.background = 'linear-gradient(to right, ' + stops.join(', ') + ')';
         }
 
         function createSpectralLine(wl, cls) {
