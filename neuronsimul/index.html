@@ -18,6 +18,7 @@
             min-height: 100vh;
             padding: 10px;
             padding-bottom: 60px;
+            transition: background 0.3s ease;
         }
 
         .container {
@@ -52,6 +53,7 @@
             font-size: 22px;
             margin-bottom: 10px;
             color: #2c3e50;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.08);
         }
 
         .control-panel {
@@ -59,7 +61,12 @@
             padding: 10px;
             border-radius: 8px;
             margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .control-panel:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
         }
 
         .control-row {
@@ -90,6 +97,13 @@
             border-radius: 6px;
             font-size: 15px;
             width: 80px;
+            transition: all 0.2s ease;
+        }
+
+        input[type="number"]:focus {
+            border-color: #3d4e9f;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(61,78,159,0.1);
         }
 
         select {
@@ -100,6 +114,17 @@
             background: white;
             cursor: pointer;
             font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        select:hover {
+            border-color: #3d4e9f;
+        }
+
+        select:focus {
+            border-color: #3d4e9f;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(61,78,159,0.1);
         }
 
         input[type="range"] {
@@ -132,6 +157,14 @@
             background: #3d4e9f;
             border-radius: 50%;
             cursor: pointer;
+            box-shadow: 0 2px 6px rgba(61,78,159,0.3);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #2c3a7a;
+            box-shadow: 0 3px 10px rgba(61,78,159,0.5);
+            transform: scale(1.15);
         }
 
         input[type="range"]::-moz-range-thumb {
@@ -141,6 +174,14 @@
             border-radius: 50%;
             cursor: pointer;
             border: none;
+            box-shadow: 0 2px 6px rgba(61,78,159,0.3);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            background: #2c3a7a;
+            box-shadow: 0 3px 10px rgba(61,78,159,0.5);
+            transform: scale(1.15);
         }
 
         .time-display {
@@ -158,30 +199,48 @@
             border: none;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         }
 
         .btn-help {
-            background: #3d4e9f;
+            background: linear-gradient(135deg, #3d4e9f 0%, #5068c4 100%);
             color: white;
+        }
+
+        .btn-help:hover {
+            background: linear-gradient(135deg, #2c3a7a 0%, #3d4e9f 100%);
         }
 
         .btn-reset {
-            background: #dc3545;
+            background: linear-gradient(135deg, #dc3545 0%, #e85d6a 100%);
             color: white;
         }
 
+        .btn-reset:hover {
+            background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+        }
+
         .btn-capture {
-            background: #28a745;
+            background: linear-gradient(135deg, #28a745 0%, #48c774 100%);
             color: white;
             padding: 8px 20px;
             font-size: 14px;
             margin-left: 10px;
         }
 
+        .btn-capture:hover {
+            background: linear-gradient(135deg, #218838 0%, #28a745 100%);
+        }
+
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         }
 
         /* 모달 스타일 */
@@ -206,7 +265,19 @@
             max-width: 700px;
             max-height: 85vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .modal-header {
@@ -244,7 +315,11 @@
 
         .modal-close:hover {
             background: rgba(255, 255, 255, 0.2);
-            transform: rotate(90deg);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .modal-close:active {
+            transform: rotate(90deg) scale(0.95);
         }
 
         .modal-body {
@@ -259,6 +334,12 @@
             background: #f8f9fa;
             border-radius: 10px;
             border-left: 4px solid #3d4e9f;
+            transition: all 0.2s ease;
+        }
+
+        .help-section:hover {
+            background: #f1f3f5;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         .help-section h3 {
@@ -289,8 +370,13 @@
             background-color: white;
             padding: 8px;
             border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             margin-bottom: 8px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .voltage-table-container:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
         }
 
         .voltage-table-container h4 {
@@ -358,27 +444,39 @@
         }
 
         .delete-btn {
-            background: #dc3545;
+            background: linear-gradient(135deg, #dc3545 0%, #e85d6a 100%);
             color: white;
             border: none;
             padding: 2px 6px;
             border-radius: 3px;
             cursor: pointer;
             font-size: 11px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(220,53,69,0.3);
         }
 
         .delete-btn:hover {
-            background: #c82333;
-            transform: none;
-            box-shadow: none;
+            background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+            transform: scale(1.05);
+            box-shadow: 0 2px 6px rgba(220,53,69,0.4);
+        }
+
+        .delete-btn:active {
+            transform: scale(0.95);
         }
 
         .neuron-container {
-            background: #e7f3ff;
+            background: linear-gradient(135deg, #e7f3ff 0%, #d4ebff 100%);
             border: 2px solid #0066cc;
             border-radius: 8px;
             padding: 8px;
             margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(0,102,204,0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .neuron-container:hover {
+            box-shadow: 0 4px 12px rgba(0,102,204,0.15);
         }
 
         #neuronSvg {
@@ -413,10 +511,15 @@
             background: white;
             border-radius: 8px;
             padding: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
             width: 100%;
             min-width: 0;
+        }
+
+        .graph-box:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
         }
 
         .graph-box canvas {

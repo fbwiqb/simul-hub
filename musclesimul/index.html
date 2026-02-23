@@ -16,6 +16,7 @@
             background: linear-gradient(135deg, #0066cc 0%, #004999 100%);
             min-height: 100vh;
             padding: 20px;
+            transition: background 0.3s ease;
         }
         
         .container {
@@ -24,7 +25,19 @@
             padding: 32px;
             background: white;
             border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .header {
@@ -37,6 +50,7 @@
             font-weight: bold;
             margin-bottom: 12px;
             color: #0066cc;
+            text-shadow: 0 2px 4px rgba(0,102,204,0.1);
         }
         
         .button-group {
@@ -50,26 +64,38 @@
             padding: 10px 20px;
             border: none;
             border-radius: 8px;
-            background: #0066cc;
+            background: linear-gradient(135deg, #0066cc 0%, #0077ed 100%);
             color: white;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,102,204,0.25);
         }
-        
+
         .btn:hover {
-            background: #0052a3;
+            background: linear-gradient(135deg, #0052a3 0%, #0066cc 100%);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,102,204,0.3);
+            box-shadow: 0 6px 16px rgba(0,102,204,0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0,102,204,0.25);
         }
         
         .control-panel {
-            background: #f0f7ff;
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 24px;
             border: 2px solid #0066cc;
+            box-shadow: 0 2px 8px rgba(0,102,204,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .control-panel:hover {
+            box-shadow: 0 4px 12px rgba(0,102,204,0.15);
         }
         
         .control-label {
@@ -107,20 +133,34 @@
             appearance: none;
             width: 24px;
             height: 24px;
-            background: #0066cc;
+            background: linear-gradient(135deg, #0066cc 0%, #0077ed 100%);
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,102,204,0.5);
+            box-shadow: 0 2px 8px rgba(0,102,204,0.4);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: linear-gradient(135deg, #0052a3 0%, #0066cc 100%);
+            box-shadow: 0 3px 12px rgba(0,102,204,0.6);
+            transform: scale(1.15);
         }
         
         input[type="range"]::-moz-range-thumb {
             width: 24px;
             height: 24px;
-            background: #0066cc;
+            background: linear-gradient(135deg, #0066cc 0%, #0077ed 100%);
             border-radius: 50%;
             cursor: pointer;
             border: none;
-            box-shadow: 0 2px 8px rgba(0,102,204,0.5);
+            box-shadow: 0 2px 8px rgba(0,102,204,0.4);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            background: linear-gradient(135deg, #0052a3 0%, #0066cc 100%);
+            box-shadow: 0 3px 12px rgba(0,102,204,0.6);
+            transform: scale(1.15);
         }
         
         .range-labels {
@@ -132,12 +172,18 @@
         }
         
         .svg-container {
-            background: white;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
             border: 2px solid #0066cc;
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 24px;
             overflow-x: auto;
+            box-shadow: 0 2px 8px rgba(0,102,204,0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .svg-container:hover {
+            box-shadow: 0 4px 12px rgba(0,102,204,0.15);
         }
         
         svg {
@@ -153,10 +199,17 @@
         }
         
         .info-card {
-            background: #f0f7ff;
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
             padding: 20px;
             border-radius: 8px;
             border: 2px solid #0066cc;
+            box-shadow: 0 2px 6px rgba(0,102,204,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            box-shadow: 0 4px 12px rgba(0,102,204,0.15);
+            transform: translateY(-2px);
         }
         
         .info-card h4 {
@@ -184,11 +237,17 @@
         }
         
         .calculator {
-            background: #f0f7ff;
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
             padding: 20px;
             border-radius: 8px;
             border: 2px solid #0066cc;
             margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,102,204,0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .calculator:hover {
+            box-shadow: 0 4px 12px rgba(0,102,204,0.15);
         }
         
         .calculator h4 {
@@ -210,7 +269,7 @@
         }
         
         th {
-            background: #0066cc;
+            background: linear-gradient(135deg, #0066cc 0%, #0077ed 100%);
             color: white;
             font-weight: 600;
         }
@@ -219,6 +278,14 @@
             text-align: center;
             font-weight: bold;
         }
+
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(0,102,204,0.05);
+        }
         
         select {
             width: 100%;
@@ -226,6 +293,19 @@
             border-radius: 4px;
             border: 2px solid #0066cc;
             font-size: 14px;
+            transition: all 0.2s ease;
+            background: white;
+            cursor: pointer;
+        }
+
+        select:hover {
+            border-color: #0052a3;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #0052a3;
+            box-shadow: 0 0 0 3px rgba(0,102,204,0.15);
         }
         
         .operator-select {
@@ -242,10 +322,11 @@
         footer {
             margin-top: 40px;
             padding: 20px;
-            background: #f0f7ff;
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
             border-radius: 8px;
             border: 2px solid #0066cc;
             text-align: center;
+            box-shadow: 0 2px 6px rgba(0,102,204,0.08);
         }
         
         .footer-content {
@@ -278,7 +359,19 @@
             border-radius: 12px;
             width: 90%;
             max-width: 600px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .modal-header {
@@ -301,11 +394,19 @@
             font-weight: bold;
             cursor: pointer;
             line-height: 1;
-            transition: color 0.3s;
+            transition: all 0.3s ease;
+            padding: 5px;
+            border-radius: 50%;
         }
-        
+
         .close:hover {
             color: #0066cc;
+            background: rgba(0,102,204,0.1);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .close:active {
+            transform: rotate(90deg) scale(0.95);
         }
         
         .modal-body {
