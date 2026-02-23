@@ -228,31 +228,23 @@
         WX_P.interactiveStates.Boot.prototype = {
             init: function() {
                 WX_P.configure(this);
-                // Set crossOrigin for images
-                this.load.crossOrigin = 'anonymous';
             },
             preload: function() {
                 this.stage.backgroundColor = '#000000';
                 
-                // Enable CORS for images
-                this.load.crossOrigin = 'anonymous';
-                
-                // Load all images from GitHub Pages
-                var baseURL = 'https://fbwiqb.github.io/enso-simulation/images/';
-                
+                var baseURL = './';
+
                 this.load.image('arrow_head', baseURL + 'arrow_head.png');
                 this.load.image('arrow_head_y', baseURL + 'arrow_head_y.png');
                 this.load.image('text_overlay', baseURL + 'text_overlay.png');
                 this.load.image('ocean', baseURL + 'ocean.png');
                 this.load.image('land', baseURL + 'land.png');
-                this.load.image('thermocline', baseURL + 'thermo.png');  // Using thermo.png
+                this.load.image('thermocline', baseURL + 'thermo.png');
                 this.load.image('warm_water', baseURL + 'warm_water.png');
                 this.load.image('warm_water_2', baseURL + 'warm_water_2.png');
                 this.load.image('arrow', baseURL + 'arrow.png');
                 this.load.image('warm_water_label', baseURL + 'warm_water_label.png');
-                // Removed westerly_winds_label loading
-                
-                // Spritesheets
+
                 this.load.spritesheet('clouds', baseURL + 'clouds.png', 240, 224, 5);
                 this.load.spritesheet('precipitation', baseURL + 'precipitation.png', 20, 20, 4);
                 
