@@ -1,215 +1,412 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-        <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>패러데이의 전자기 유도 법칙</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
     <style>
-        body {
-            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+        :root {
+            --bg: #e8eaf6;
+            --container-bg: #fff;
+            --text: #333;
+            --text-dim: #666;
+            --primary: #3949ab;
+            --primary-light: #5c6bc0;
+            --accent: #43a047;
+            --accent-dark: #388e3c;
+            --danger: #e53935;
+            --info-bg: #e3f2fd;
+            --info-title: #1565c0;
+            --border: #ddd;
+            --control-bg: #f5f5f5;
+            --card-bg: white;
+            --hover-bg: rgba(57,73,171,0.08);
+            --shadow: 0 8px 24px rgba(0,0,0,0.12);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --data-positive: #1565c0;
+            --data-negative: #c62828;
         }
-        
+        body.dark-mode {
+            --bg: #0d1117;
+            --container-bg: #161b22;
+            --text: #e0e0e0;
+            --text-dim: #999;
+            --primary: #7986cb;
+            --primary-light: #9fa8da;
+            --accent: #66bb6a;
+            --accent-dark: #4caf50;
+            --danger: #ef5350;
+            --info-bg: #1a237e;
+            --info-title: #90caf9;
+            --border: #30363d;
+            --control-bg: #21262d;
+            --card-bg: #1a1f29;
+            --hover-bg: rgba(121,134,203,0.12);
+            --shadow: 0 8px 24px rgba(0,0,0,0.4);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+            --data-positive: #64b5f6;
+            --data-negative: #ef9a9a;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: var(--bg);
+            padding: 15px;
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+            color: var(--text);
+        }
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background-color: white;
+            background: var(--container-bg);
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: background 0.3s;
         }
-        
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
         }
-        
+        .header h1 {
+            color: var(--primary);
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dark-toggle {
+            background: none;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .dark-toggle:hover { transform: scale(1.1); }
+        .kbd-hint {
+            font-size: 11px;
+            color: var(--text-dim);
+            background: var(--control-bg);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
         #canvasContainer {
             text-align: center;
-            margin-bottom: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            background: var(--card-bg);
+            padding: 6px;
         }
-        
+        #canvasContainer canvas {
+            max-width: 100%;
+            height: auto !important;
+            display: block;
+            margin: 0 auto;
+        }
+        .data-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .data-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .data-item:hover { box-shadow: var(--shadow-sm); }
+        .data-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .data-value {
+            font-size: 20px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            transition: color 0.2s;
+        }
+        .data-unit {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-left: 2px;
+        }
         .controls {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            align-items: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            margin-bottom: 12px;
+            padding: 14px;
+            background: var(--control-bg);
+            border-radius: var(--radius-sm);
+            align-items: flex-start;
+            box-shadow: var(--shadow-sm);
+            transition: background 0.3s;
         }
-        
         .control-item {
             display: flex;
             flex-direction: column;
-            min-width: 180px;
+            min-width: 150px;
         }
-        
         .control-item label {
             margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dim);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        
         .control-item input[type="range"] {
             width: 100%;
             cursor: pointer;
+            accent-color: var(--primary);
         }
-
-        .control-item input[type="range"]::-webkit-slider-thumb {
-            transition: all 0.2s ease;
+        .range-label {
+            font-size: 12px;
+            color: var(--text);
+            text-align: center;
+            margin-top: 2px;
+            font-weight: 600;
         }
-
-        .control-item input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.1);
-        }
-        
-        .radio-group {
+        .radio-group, .checkbox-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
         }
-        
-        .radio-group label {
+        .radio-group label, .checkbox-group label {
             cursor: pointer;
             font-weight: normal;
-            transition: all 0.2s ease;
-            padding: 2px 4px;
-            border-radius: 3px;
+            font-size: 13px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            color: var(--text);
         }
-
-        .radio-group label:hover {
-            background-color: rgba(76, 175, 80, 0.1);
+        .radio-group label:hover, .checkbox-group label:hover {
+            background: var(--hover-bg);
         }
-        
-        .checkbox-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .checkbox-group label {
-            cursor: pointer;
-            font-weight: normal;
-            transition: all 0.2s ease;
-            padding: 2px 4px;
-            border-radius: 3px;
-        }
-
-        .checkbox-group label:hover {
-            background-color: rgba(76, 175, 80, 0.1);
-        }
-        
-        button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            height: fit-content;
-            align-self: center;
-            margin: 2px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
-        }
-
-        button:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
-            box-shadow: 0 1px 2px rgba(76, 175, 80, 0.3);
-        }
-
-        button.active {
-            background-color: #2196F3;
-            box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
-        }
-
-        button.active:hover {
-            background-color: #0b7dda;
-            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
-        }
-        
         .button-group {
             display: flex;
             gap: 5px;
             flex-wrap: wrap;
         }
-        
+        button {
+            padding: 8px 14px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            height: fit-content;
+            align-self: center;
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            filter: brightness(1.1);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        button.active {
+            background: var(--primary);
+        }
+        button.active:hover {
+            background: var(--primary-light);
+        }
+        button.danger {
+            background: var(--danger);
+        }
+        .section-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 8px 12px;
+            background: var(--control-bg);
+            border-radius: var(--radius-sm);
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .section-toggle:hover { background: var(--hover-bg); }
+        .section-toggle .arrow {
+            transition: transform 0.3s;
+            font-size: 12px;
+        }
+        .section-toggle .arrow.open { transform: rotate(90deg); }
+        .section-toggle span {
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text);
+        }
+        .collapsible {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .collapsible.open {
+            max-height: 600px;
+        }
+        .graph-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        .graph-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .graph-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .graph-legend {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+        .legend-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 3px;
+            vertical-align: middle;
+        }
+        #emfGraph {
+            width: 100%;
+            height: 120px;
+            border-radius: 4px;
+            display: block;
+        }
         .info-section {
-            margin-top: 30px;
-            padding: 20px;
-            background-color: #e3f2fd;
-            border-radius: 5px;
-            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+            padding: 16px;
+            background: var(--info-bg);
+            border-radius: var(--radius-sm);
+            transition: background 0.3s;
         }
-        
         .info-section h2 {
-            color: #1976d2;
-            margin-top: 0;
-            text-shadow: 0 1px 2px rgba(25, 118, 210, 0.1);
+            color: var(--info-title);
+            margin-bottom: 8px;
+            font-size: 1.1em;
         }
-        
         .info-section p {
             line-height: 1.6;
-            color: #333;
+            color: var(--text);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .info-section p:last-child { margin-bottom: 0; }
+        .footer {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+        @media (max-width: 768px) {
+            .data-bar { grid-template-columns: repeat(2, 1fr); }
+            .controls { gap: 8px; }
+            .control-item { min-width: 120px; }
+            .header h1 { font-size: 1.2em; }
+        }
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            .container { padding: 12px; }
+            .data-bar { grid-template-columns: 1fr 1fr; gap: 6px; }
+            .data-value { font-size: 16px; }
+            .controls { padding: 10px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>패러데이의 전자기 유도 법칙</h1>
-        
+        <div class="header">
+            <h1>패러데이의 전자기 유도 법칙</h1>
+            <div class="header-right">
+                <span class="kbd-hint">Space:정지 F:극반전 R:리셋</span>
+                <button class="dark-toggle" id="darkToggle" title="다크 모드">☀️</button>
+            </div>
+        </div>
+
         <div id="canvasContainer"></div>
-        
+
+        <div class="data-bar">
+            <div class="data-item">
+                <div class="data-label">자기장 세기 B</div>
+                <div class="data-value" id="dataB">0.00<span class="data-unit">T</span></div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">유도 기전력 ε</div>
+                <div class="data-value" id="dataEMF">0.00<span class="data-unit">V</span></div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">유도 전류 I</div>
+                <div class="data-value" id="dataCurrent">0.00<span class="data-unit">A</span></div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">자석 속도 v</div>
+                <div class="data-value" id="dataVelocity">0.0<span class="data-unit">m/s</span></div>
+            </div>
+        </div>
+
         <div class="controls">
             <div class="control-item">
                 <label>모드 선택</label>
                 <div class="button-group">
-                    <button id="btnAutoMode" class="active">자동 모드</button>
-                    <button id="btnDragMode">드래그 모드</button>
+                    <button id="btnAutoMode" class="active">자동</button>
+                    <button id="btnDragMode">드래그</button>
                 </div>
             </div>
-            
             <div class="control-item" id="autoControls">
-                <label for="rangeA">자석의 왕복 운동</label>
+                <label for="rangeA">자석 속도</label>
                 <input type="range" id="rangeA" min="0" max="20" value="0">
+                <div class="range-label" id="speedLabel">0</div>
             </div>
-            
             <div class="control-item">
-                <label>자석 조작</label>
+                <label>조작</label>
                 <div class="button-group">
-                    <button id="btnFlipMagnet">자석 극 바꾸기</button>
+                    <button id="btnFlipMagnet">극 반전</button>
                     <button id="btnPause">정지</button>
+                    <button id="btnReset" class="danger">리셋</button>
                 </div>
             </div>
-            
-            <div class="control-item">
-                <label>코일 방향</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="coilDir" value="0" checked> 오른나사 방향</label>
-                    <label><input type="radio" name="coilDir" value="1"> 왼쪽나사 방향</label>
-                </div>
-            </div>
-            
             <div class="control-item">
                 <label>표시 옵션</label>
                 <div class="checkbox-group">
@@ -218,267 +415,442 @@
                     <label><input type="checkbox" id="checkElectromagnet" checked> 전자석 극</label>
                 </div>
             </div>
-            
-            <button id="btnReset">리셋</button>
         </div>
-        
-        <div class="info-section">
-            <h2>전자기 유도</h2>
-            <p>
-                코일 주위에서 자석을 움직이면 코일 내부의 자기장이 변하게 되며, 이에 따라 코일에 전류가 흐르게 됩니다. 
-                이러한 현상을 <strong>전자기 유도</strong>라고 하고, 이때 코일에 흐르는 전류를 <strong>유도 전류</strong>라고 합니다.
-            </p>
-            <p>
-                유도 전류는 자석이 움직여 자기장이 변할 때 흐르고, 자석이 멈추면 자기장이 변하지 않으므로 흐르지 않습니다. 
-                그리고 자석이 빠르게 움직일수록, 자석의 세기가 강할수록 유도 전류의 세기가 커집니다.
-            </p>
-            
-            <h2>렌츠의 법칙</h2>
-            <p>
-                유도 전류에 의한 자기장은 자속의 변화를 방해하는 방향으로 형성됩니다.
-                막대자석이 코일로 접근하면 코일은 반발하는 자기장을, 멀어지면 끌어당기는 자기장을 만듭니다.
-            </p>
-            
-            <h2>사용 방법</h2>
-            <p>
-                <strong>자동 모드:</strong> 슬라이더로 자석의 속도를 조절합니다.<br>
-                <strong>드래그 모드:</strong> 마우스로 자석을 직접 드래그합니다.<br>
-                <strong>정지 버튼:</strong> 현재 상태를 캡처하여 유도 전류를 계속 표시합니다.
-            </p>
+
+        <div class="section-toggle" id="advancedToggle">
+            <span class="arrow" id="advancedArrow">▶</span>
+            <span>고급 설정</span>
         </div>
+        <div class="collapsible" id="advancedSection">
+            <div class="controls">
+                <div class="control-item">
+                    <label for="rangeMagStrength">자석 세기</label>
+                    <input type="range" id="rangeMagStrength" min="1" max="5" value="2" step="0.5">
+                    <div class="range-label" id="magStrengthLabel">2.0x</div>
+                </div>
+                <div class="control-item">
+                    <label for="rangeCoilTurns">코일 감은 횟수 N</label>
+                    <input type="range" id="rangeCoilTurns" min="1" max="10" value="1">
+                    <div class="range-label" id="coilTurnsLabel">1회</div>
+                </div>
+                <div class="control-item">
+                    <label>코일 방향</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="coilDir" value="0" checked> 오른나사 방향</label>
+                        <label><input type="radio" name="coilDir" value="1"> 왼쪽나사 방향</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="graph-container">
+            <div class="graph-header">
+                <span class="graph-title">시간-유도 기전력 그래프</span>
+                <div class="graph-legend">
+                    <span><span class="legend-dot" style="background:#1565c0"></span>양(+)</span>
+                    <span><span class="legend-dot" style="background:#c62828"></span>음(-)</span>
+                </div>
+            </div>
+            <canvas id="emfGraph"></canvas>
+        </div>
+
+        <div class="section-toggle" id="infoToggle">
+            <span class="arrow" id="infoArrow">▶</span>
+            <span>개념 설명</span>
+        </div>
+        <div class="collapsible" id="infoSection">
+            <div class="info-section">
+                <h2>전자기 유도</h2>
+                <p>코일 주위에서 자석을 움직이면 코일 내부의 자기장이 변하며, 코일에 전류가 흐릅니다. 이를 <strong>전자기 유도</strong>라 하고, 이때 흐르는 전류를 <strong>유도 전류</strong>라 합니다.</p>
+                <p>유도 전류는 자석이 움직여 자기장이 변할 때만 흐르며, 빠르게 움직일수록 세기가 커집니다.</p>
+                <h2>패러데이 법칙</h2>
+                <p><strong>ε = -N × dΦ/dt</strong> — 유도 기전력은 코일 감은 횟수(N)와 자기 선속의 시간 변화율(dΦ/dt)에 비례합니다.</p>
+                <h2>렌츠의 법칙</h2>
+                <p>유도 전류에 의한 자기장은 자속의 변화를 방해하는 방향으로 형성됩니다. 자석이 다가오면 반발하는 극을, 멀어지면 끌어당기는 극을 만듭니다.</p>
+            </div>
+        </div>
+
+        <div class="footer">ⓒ 2026 충남삼성고등학교</div>
     </div>
 
     <script>
-        // GitHub Raw URL
-        const baseURL = 'https://raw.githubusercontent.com/fbwiqb/magnet/main/';
-        
-        let imgMagnetNS;
-        let imgMagnetSN; // 반대 극 이미지
-        let imgCircuit = [];
-        let imgGlow;
-        
-        let magnetX = 350;
-        let magnetW = 240;
-        let coilX = 750;
-        let centerY = 250;
-        let accel = 0;
-        let theta1 = 0;
-        let magneticField1;
-        let magneticField2;
-        
-        let isDragMode = false;
-        let isDragging = false;
-        let isPaused = false;
-        let pausedAccel = 0;
-        let pausedMagnetX = 0;
-        let magnetFlipped = false;
-        
-        let poleX = [];
-        let poleY = [];
-        let poleVx = [];
-        let poleVy = [];
-        let poleIsN = [];
-        let forceLineX = [];
-        let forceLineY = [];
-        
-        let pathIndex = 0;
-        let pathNode = [[], []];
-        let pathNodeLength = [];
-        let pathNodes = [30, 30];
-        
-        let pathX1 = [
-            [750,750,840,820+10,820+3,820-3,780+10,780+3,780-3,740+10,740+3,740-3,700+10,700+3,700-3,660+10,660+3,660,660],
-            [750,750,840,840,840-3,800+10,800+3,800-3,760+10,760+3,760-3,720+10,720+3,720-3,680+10,680+3,680-3,660,660]
+        var imgMagnetNS, imgMagnetSN, imgCircuit = [], imgGlow;
+
+        var CW = 1000, CH = 450;
+        var magnetX = 350, magnetW = 240, coilX = 750, centerY = 250;
+        var accel = 0, theta1 = 0;
+        var magneticField1, magneticField2;
+
+        var isDragMode = false, isDragging = false;
+        var isPaused = false, pausedAccel = 0, pausedMagnetX = 0;
+        var magnetFlipped = false;
+
+        var magnetStrength = 2.0;
+        var coilTurns = 1;
+
+        var poleX = [], poleY = [], poleVx = [], poleVy = [], poleIsN = [];
+        var forceLineX = [], forceLineY = [];
+
+        var pathIndex = 0;
+        var pathNode = [[], []];
+        var pathNodeLength = [];
+        var pathNodes = [30, 30];
+
+        var pathX1 = [
+            [750,750,840,830,823,817,790,783,777,750,743,737,710,703,697,670,663,660,660],
+            [750,750,840,840,837,810,803,797,770,763,757,730,723,717,690,683,677,660,660]
         ];
-        
-        let pathY1 = [
+        var pathY1 = [
             [150,165,165,290,280,220,290,280,220,290,280,220,290,280,220,290,280,250,145],
             [150,165,165,250,280,210,220,280,210,220,280,210,220,280,210,220,280,215,145]
         ];
-        
-        let pathX2 = [
-            [750,840,840,820+3,820-3,820-10,780+3,780-3,780-10,740+3,740-3,740-10,700+3,700-3,700-10,660+3,660,660,725],
-            [750,840,840,840-3,840-10,800+3,800-3,800-10,760+3,760-3,760-10,720+3,720-3,720-10,680+3,680-3,680-10,660,725]
+        var pathX2 = [
+            [750,840,840,823,817,810,783,777,770,743,737,730,703,697,690,663,660,660,725],
+            [750,840,840,837,830,803,797,790,763,757,750,723,717,710,683,677,670,660,725]
         ];
-        
-        let pathY2 = [
+        var pathY2 = [
             [165,165,215,280,220,210,280,220,210,280,220,210,280,220,210,280,250,145,145],
             [165,165,250,280,290,220,280,290,220,280,290,220,280,290,220,280,290,145,145]
         ];
-        
-        let path1 = [[], []];
-        let path2 = [[], []];
-        
-        let prevMagnetX = 350;
-        
+
+        var path1 = [[], []], path2 = [[], []];
+        var prevMagnetX = 350;
+        var lastCalcX = -999;
+
+        var emfHistory = [];
+        var MAX_HISTORY = 300;
+        var graphCanvas, graphCtx;
+
         function preload() {
-            imgMagnetNS = loadImage(baseURL + 'faradays_law_mag_ns.png');
-            imgMagnetSN = loadImage(baseURL + 'faradays_law_mag_sn.png');
-            imgCircuit[0] = loadImage(baseURL + 'faradays_law_circuit_0.png');
-            imgCircuit[1] = loadImage(baseURL + 'faradays_law_circuit_1.png');
-            imgGlow = loadImage(baseURL + 'faradays_law_glow.png');
+            imgMagnetNS = loadImage('./faradays_law_mag_ns.png');
+            imgMagnetSN = loadImage('./faradays_law_mag_sn.png');
+            imgCircuit[0] = loadImage('./faradays_law_circuit_0.png');
+            imgCircuit[1] = loadImage('./faradays_law_circuit_1.png');
+            imgGlow = loadImage('./faradays_law_glow.png');
         }
-        
+
         function setup() {
-            let canvas = createCanvas(1000, 450);
+            var canvas = createCanvas(CW, CH);
             canvas.parent('canvasContainer');
-            
-            frameRate(20);
-            
-            // 경로 초기화
-            for (let i = 0; i < pathNodes.length; i++) {
-                for (let j = 0; j < pathX1[i].length; j++) {
+            frameRate(30);
+
+            for (var i = 0; i < pathNodes.length; i++) {
+                for (var j = 0; j < pathX1[i].length; j++) {
                     path1[i][j] = (j === 0) ? 0 : path2[i][j-1];
                     path2[i][j] = path1[i][j] + dist(pathX1[i][j], pathY1[i][j], pathX2[i][j], pathY2[i][j]);
                 }
                 pathNodeLength[i] = path2[i][pathX1[i].length - 1];
                 pathNodes[i] = round(pathNodeLength[i] / 36);
-                
-                for (let j = 0; j < pathNodes[i]; j++) {
+                for (var j = 0; j < pathNodes[i]; j++) {
                     pathNode[i][j] = map(j, 0, pathNodes[i], 0, pathNodeLength[i]);
                 }
             }
-            
+
             updatePathIndex();
             magneticField1 = calculateMagneticField();
-            
-            // 버튼 이벤트
-            document.getElementById('btnReset').addEventListener('click', () => {
-                theta1 = 0;
-                magnetX = 350;
-                document.getElementById('rangeA').value = 0;
-                isPaused = false;
-                document.getElementById('btnPause').textContent = '정지';
-                document.getElementById('btnPause').classList.remove('active');
-            });
-            
-            document.getElementById('btnFlipMagnet').addEventListener('click', () => {
-                magnetFlipped = !magnetFlipped;
-            });
-            
-            document.getElementById('btnPause').addEventListener('click', () => {
-                isPaused = !isPaused;
-                if (isPaused) {
-                    pausedAccel = accel;
-                    pausedMagnetX = magnetX;
-                    document.getElementById('btnPause').textContent = '재생';
-                    document.getElementById('btnPause').classList.add('active');
-                } else {
-                    document.getElementById('btnPause').textContent = '정지';
-                    document.getElementById('btnPause').classList.remove('active');
-                }
-            });
-            
-            document.getElementById('btnAutoMode').addEventListener('click', () => {
+
+            initGraph();
+            bindEvents();
+            loadDarkMode();
+            updateSliderLabels();
+        }
+
+        function initGraph() {
+            graphCanvas = document.getElementById('emfGraph');
+            graphCanvas.width = graphCanvas.offsetWidth * 2;
+            graphCanvas.height = 240;
+            graphCanvas.style.height = '120px';
+            graphCtx = graphCanvas.getContext('2d');
+        }
+
+        function drawGraph() {
+            var w = graphCanvas.width, h = graphCanvas.height;
+            var isDark = document.body.classList.contains('dark-mode');
+
+            graphCtx.fillStyle = isDark ? '#0d1117' : '#fafafa';
+            graphCtx.fillRect(0, 0, w, h);
+
+            graphCtx.strokeStyle = isDark ? '#30363d' : '#e0e0e0';
+            graphCtx.lineWidth = 1;
+            graphCtx.setLineDash([4, 4]);
+            graphCtx.beginPath();
+            graphCtx.moveTo(0, h / 2);
+            graphCtx.lineTo(w, h / 2);
+            graphCtx.stroke();
+            for (var i = 1; i < 4; i++) {
+                var yy = h / 2 - i * (h / 8);
+                graphCtx.beginPath(); graphCtx.moveTo(0, yy); graphCtx.lineTo(w, yy); graphCtx.stroke();
+                yy = h / 2 + i * (h / 8);
+                graphCtx.beginPath(); graphCtx.moveTo(0, yy); graphCtx.lineTo(w, yy); graphCtx.stroke();
+            }
+            graphCtx.setLineDash([]);
+
+            graphCtx.strokeStyle = isDark ? '#555' : '#bbb';
+            graphCtx.beginPath();
+            graphCtx.moveTo(0, h / 2);
+            graphCtx.lineTo(w, h / 2);
+            graphCtx.stroke();
+
+            graphCtx.font = '18px sans-serif';
+            graphCtx.fillStyle = isDark ? '#666' : '#aaa';
+            graphCtx.textAlign = 'left';
+            graphCtx.fillText('ε', 4, h / 2 - 6);
+            graphCtx.fillText('0', 4, h / 2 + 16);
+
+            if (emfHistory.length < 2) return;
+
+            var maxVal = 1;
+            for (var i = 0; i < emfHistory.length; i++) {
+                if (Math.abs(emfHistory[i]) > maxVal) maxVal = Math.abs(emfHistory[i]);
+            }
+            maxVal *= 1.2;
+
+            graphCtx.lineWidth = 2;
+            graphCtx.lineJoin = 'round';
+
+            graphCtx.beginPath();
+            for (var i = 0; i < emfHistory.length; i++) {
+                var x = (i / MAX_HISTORY) * w;
+                var y = h / 2 - (emfHistory[i] / maxVal) * (h / 2 - 10);
+                if (i === 0) graphCtx.moveTo(x, y);
+                else graphCtx.lineTo(x, y);
+            }
+
+            var gradient = graphCtx.createLinearGradient(0, 0, 0, h);
+            gradient.addColorStop(0, isDark ? '#64b5f6' : '#1565c0');
+            gradient.addColorStop(0.5, isDark ? '#aaa' : '#666');
+            gradient.addColorStop(1, isDark ? '#ef9a9a' : '#c62828');
+            graphCtx.strokeStyle = gradient;
+            graphCtx.stroke();
+        }
+
+        function bindEvents() {
+            document.getElementById('btnReset').addEventListener('click', doReset);
+            document.getElementById('btnFlipMagnet').addEventListener('click', doFlip);
+            document.getElementById('btnPause').addEventListener('click', doPause);
+
+            document.getElementById('btnAutoMode').addEventListener('click', function() {
                 isDragMode = false;
-                document.getElementById('btnAutoMode').classList.add('active');
+                this.classList.add('active');
                 document.getElementById('btnDragMode').classList.remove('active');
                 document.getElementById('autoControls').style.display = 'flex';
             });
-            
-            document.getElementById('btnDragMode').addEventListener('click', () => {
+            document.getElementById('btnDragMode').addEventListener('click', function() {
                 isDragMode = true;
-                document.getElementById('btnDragMode').classList.add('active');
+                this.classList.add('active');
                 document.getElementById('btnAutoMode').classList.remove('active');
                 document.getElementById('autoControls').style.display = 'none';
                 document.getElementById('rangeA').value = 0;
+                updateSliderLabels();
+            });
+
+            document.getElementById('rangeA').addEventListener('input', updateSliderLabels);
+            document.getElementById('rangeMagStrength').addEventListener('input', function() {
+                magnetStrength = parseFloat(this.value);
+                updateSliderLabels();
+            });
+            document.getElementById('rangeCoilTurns').addEventListener('input', function() {
+                coilTurns = parseInt(this.value);
+                updateSliderLabels();
+            });
+
+            document.getElementById('darkToggle').addEventListener('click', toggleDarkMode);
+
+            document.getElementById('advancedToggle').addEventListener('click', function() {
+                var sec = document.getElementById('advancedSection');
+                var arr = document.getElementById('advancedArrow');
+                sec.classList.toggle('open');
+                arr.classList.toggle('open');
+            });
+            document.getElementById('infoToggle').addEventListener('click', function() {
+                var sec = document.getElementById('infoSection');
+                var arr = document.getElementById('infoArrow');
+                sec.classList.toggle('open');
+                arr.classList.toggle('open');
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.target.tagName === 'INPUT') return;
+                switch(e.key.toLowerCase()) {
+                    case ' ': e.preventDefault(); doPause(); break;
+                    case 'f': doFlip(); break;
+                    case 'r': doReset(); break;
+                    case 'd': toggleDarkMode(); break;
+                }
             });
         }
-        
-        function updatePathIndex() {
-            let coilDir = parseInt(document.querySelector('input[name="coilDir"]:checked').value);
-            pathIndex = coilDir; // 0 또는 1만 사용
+
+        function doReset() {
+            theta1 = 0;
+            magnetX = 350;
+            prevMagnetX = 350;
+            accel = 0;
+            document.getElementById('rangeA').value = 0;
+            isPaused = false;
+            document.getElementById('btnPause').textContent = '정지';
+            document.getElementById('btnPause').classList.remove('active');
+            emfHistory = [];
+            updateSliderLabels();
         }
-        
+
+        function doFlip() {
+            magnetFlipped = !magnetFlipped;
+        }
+
+        function doPause() {
+            isPaused = !isPaused;
+            if (isPaused) {
+                pausedAccel = accel;
+                pausedMagnetX = magnetX;
+                document.getElementById('btnPause').textContent = '재생';
+                document.getElementById('btnPause').classList.add('active');
+            } else {
+                document.getElementById('btnPause').textContent = '정지';
+                document.getElementById('btnPause').classList.remove('active');
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            var isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('darkToggle').textContent = isDark ? '🌙' : '☀️';
+            localStorage.setItem('magnet-dark', isDark ? '1' : '0');
+        }
+
+        function loadDarkMode() {
+            if (localStorage.getItem('magnet-dark') === '1') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkToggle').textContent = '🌙';
+            }
+        }
+
+        function updateSliderLabels() {
+            document.getElementById('speedLabel').textContent = document.getElementById('rangeA').value;
+            document.getElementById('magStrengthLabel').textContent = parseFloat(document.getElementById('rangeMagStrength').value).toFixed(1) + 'x';
+            document.getElementById('coilTurnsLabel').textContent = document.getElementById('rangeCoilTurns').value + '회';
+        }
+
+        function updatePathIndex() {
+            var el = document.querySelector('input[name="coilDir"]:checked');
+            if (el) pathIndex = parseInt(el.value);
+        }
+
         function mousePressed() {
             if (isDragMode && dist(mouseX, mouseY, magnetX, centerY) < magnetW / 2) {
                 isDragging = true;
+                document.body.style.cursor = 'grabbing';
             }
         }
-        
         function mouseReleased() {
             isDragging = false;
+            document.body.style.cursor = '';
         }
-        
+        function mouseMoved() {
+            if (isDragMode && dist(mouseX, mouseY, magnetX, centerY) < magnetW / 2) {
+                if (!isDragging) document.getElementById('canvasContainer').style.cursor = 'grab';
+            } else {
+                document.getElementById('canvasContainer').style.cursor = '';
+            }
+        }
+
+        function updateDataDisplay(rawAccel, emfVal) {
+            var bField = magneticField2 ? magneticField2.mag() * magnetStrength * 1e6 : 0;
+            var emf = Math.abs(emfVal * coilTurns);
+            var current = emf * 0.5;
+            var velocity = Math.abs(magnetX - prevMagnetX) * 30;
+
+            var elB = document.getElementById('dataB');
+            elB.innerHTML = bField.toFixed(2) + '<span class="data-unit">μT</span>';
+
+            var elEMF = document.getElementById('dataEMF');
+            var emfDisplay = (emfVal * coilTurns).toFixed(2);
+            elEMF.innerHTML = emfDisplay + '<span class="data-unit">mV</span>';
+            elEMF.style.color = emfVal > 0.01 ? 'var(--data-positive)' : emfVal < -0.01 ? 'var(--data-negative)' : 'var(--text)';
+
+            var elI = document.getElementById('dataCurrent');
+            var curDisplay = (emfVal * coilTurns * 0.5).toFixed(2);
+            elI.innerHTML = curDisplay + '<span class="data-unit">mA</span>';
+            elI.style.color = emfVal > 0.01 ? 'var(--data-positive)' : emfVal < -0.01 ? 'var(--data-negative)' : 'var(--text)';
+
+            var elV = document.getElementById('dataVelocity');
+            elV.innerHTML = velocity.toFixed(1) + '<span class="data-unit">cm/s</span>';
+        }
+
         function draw() {
-            background(255);
-            
+            var isDark = document.body.classList.contains('dark-mode');
+            background(isDark ? 22 : 255);
+
             updatePathIndex();
-            
+
             if (!isPaused) {
                 if (isDragMode && isDragging) {
-                    // 드래그 모드 - 왕복 운동과 동일한 범위 (250~450)
                     magnetX = constrain(mouseX, 250, 450);
                 } else if (!isDragMode) {
-                    // 자동 모드
-                    let rangeA = parseInt(document.getElementById('rangeA').value);
+                    var rangeA = parseInt(document.getElementById('rangeA').value);
                     theta1 += 0.01 * rangeA;
                     magnetX = 350 + 100 * cos(theta1);
                 }
-                
+
                 magneticField2 = calculateMagneticField();
                 accel = magneticField2.mag() - magneticField1.mag();
-                accel *= 1500000;
-                
+                accel *= 1500000 * magnetStrength;
+
                 prevMagnetX = magnetX;
             } else {
-                // 정지 상태에서는 저장된 값 사용
                 accel = pausedAccel;
                 magnetX = pausedMagnetX;
             }
-            
-            // 전구 빛 효과 (밝기 3배 증가)
+
+            var emfVal = accel * coilTurns;
+
+            if (!isPaused) {
+                emfHistory.push(emfVal);
+                if (emfHistory.length > MAX_HISTORY) emfHistory.shift();
+            }
+
             if (abs(accel) > 0.001) {
                 imageMode(CENTER);
-                tint(255, abs(150 * accel));
-                image(imgGlow, 750, 100, 360, 360);
-                tint(255, abs(120 * accel));
-                image(imgGlow, 750, 100, 280, 280);
-                tint(255, abs(100 * accel));
-                image(imgGlow, 750, 100, 200, 200);
+                var glow = abs(150 * accel * coilTurns);
+                tint(255, min(glow, 255));
+                image(imgGlow, coilX, 100, 360, 360);
+                tint(255, min(glow * 0.8, 200));
+                image(imgGlow, coilX, 100, 280, 280);
+                tint(255, min(glow * 0.6, 180));
+                image(imgGlow, coilX, 100, 200, 200);
                 noTint();
             }
-            
-            // 자기장 표시
+
             noFill();
             stroke(0, 128, 0, 64);
             strokeWeight(1.5);
-            
-            // 정지 중이 아닐 때만 자기력선 재계산
-            if (!isPaused) {
+
+            if (!isPaused && abs(magnetX - lastCalcX) > 2) {
                 calcMagneticField();
+                lastCalcX = magnetX;
             }
-            
+
             if (document.getElementById('checkField').checked) {
-                // 자기력선 그리기
-                for (let c = 0; c < poleX.length; c++) {
-                    if (forceLineX[c].length > 1) {
+                for (var c = 0; c < poleX.length; c++) {
+                    if (forceLineX[c] && forceLineX[c].length > 1) {
                         beginShape();
-                        for (let i = 0; i < forceLineX[c].length; i++) {
+                        for (var i = 0; i < forceLineX[c].length; i++) {
                             vertex(forceLineX[c][i], forceLineY[c][i]);
                         }
                         endShape();
                     }
                 }
-                
-                // 화살표 추가 (모든 자기력선, 넓은 간격)
+
                 noStroke();
                 fill(0, 128, 0, 150);
-                for (let c = 0; c < poleX.length; c++) { // 모든 자기력선
-                    if (forceLineX[c].length > 30) {
-                        // 자기력선 중간 부분에만 화살표 추가
-                        let startIdx = Math.floor(forceLineX[c].length * 0.3);
-                        let endIdx = Math.floor(forceLineX[c].length * 0.7);
-                        
-                        for (let i = startIdx; i < endIdx; i += 120) { // 120 포인트마다 (3배)
+                for (var c = 0; c < poleX.length; c++) {
+                    if (forceLineX[c] && forceLineX[c].length > 30) {
+                        var startIdx = Math.floor(forceLineX[c].length * 0.3);
+                        var endIdx = Math.floor(forceLineX[c].length * 0.7);
+                        for (var i = startIdx; i < endIdx; i += 120) {
                             if (i + 5 < forceLineX[c].length) {
-                                let x1 = forceLineX[c][i];
-                                let y1 = forceLineY[c][i];
-                                let x2 = forceLineX[c][i + 5];
-                                let y2 = forceLineY[c][i + 5];
-                                
-                                let angle = atan2(y2 - y1, x2 - x1);
-                                
+                                var x1 = forceLineX[c][i], y1 = forceLineY[c][i];
+                                var x2 = forceLineX[c][i + 5], y2 = forceLineY[c][i + 5];
+                                var angle = atan2(y2 - y1, x2 - x1);
                                 push();
                                 translate(x1, y1);
                                 rotate(angle);
@@ -490,313 +862,265 @@
                 }
             }
             strokeWeight(1);
-            
-            // 회로 이미지
+
             imageMode(CORNER);
-            image(imgCircuit[pathIndex], 0, 0, 1000, 1000 * imgCircuit[pathIndex].height / imgCircuit[pathIndex].width);
-            
-            // 전자석의 극 표시 (렌츠 법칙 - 코일 방향 무관)
-            if (document.getElementById('checkElectromagnet').checked && abs(accel) > 0.01) {
-                // 1. 자석의 어떤 극이 코일 쪽에 있는가?
-                let magnetCoilSidePole = magnetFlipped ? 'S' : 'N';
-                
-                // 2. 자석이 다가오는가 멀어지는가?
-                let isApproaching = accel > 0;
-                
-                // 3. 렌츠 법칙: 전자석 극은 자석 움직임만으로 결정 (코일 방향 무관!)
-                let coilLeftPole, coilRightPole;
-                if (isApproaching) {
-                    // 다가오면 같은 극으로 밀어냄 (수정됨!)
-                    coilLeftPole = magnetCoilSidePole;
-                    coilRightPole = (coilLeftPole === 'N') ? 'S' : 'N';
-                } else {
-                    // 멀어지면 반대 극으로 끌어당김 (수정됨!)
-                    coilLeftPole = (magnetCoilSidePole === 'N') ? 'S' : 'N';
-                    coilRightPole = magnetCoilSidePole;
-                }
-                
-                // 극 표시 (반대로 수정)
-                let leftPole = coilRightPole;
-                let rightPole = coilLeftPole;
-                
-                // 전자석 극 표시
+            image(imgCircuit[pathIndex], 0, 0, CW, CW * imgCircuit[pathIndex].height / imgCircuit[pathIndex].width);
+
+            if (coilTurns > 1) {
+                noFill();
+                stroke(isDark ? 180 : 80);
+                strokeWeight(1);
                 textAlign(CENTER, CENTER);
-                textSize(32);
-                
-                // 왼쪽 극 (배경)
-                fill(leftPole === 'N' ? 255 : 100, 100, leftPole === 'S' ? 255 : 100, 200);
+                textSize(14);
+                fill(isDark ? 220 : 40);
                 noStroke();
-                ellipse(660, centerY, 60, 60);
-                
-                // 왼쪽 극 (텍스트)
-                fill(255);
-                stroke(0);
-                strokeWeight(2);
-                text(leftPole, 660, centerY);
-                
-                // 오른쪽 극 (배경)
-                noStroke();
-                fill(rightPole === 'N' ? 255 : 100, 100, rightPole === 'S' ? 255 : 100, 200);
-                ellipse(840, centerY, 60, 60);
-                
-                // 오른쪽 극 (텍스트)
-                fill(255);
-                stroke(0);
-                strokeWeight(2);
-                text(rightPole, 840, centerY);
-                
-                noStroke();
+                text('N = ' + coilTurns, coilX, CH - 20);
             }
-            
-            // 유도 전류 표시
-            if (document.getElementById('checkCurrent').checked) {
-                if (!isPaused) {
-                    for (let j = 0; j < pathNodes[pathIndex]; j++) {
-                        // 극 바꾸기 모드에서는 이동 방향 반대
-                        let direction = (pathIndex % 2 === 0) ? -2 : 2;
-                        if (magnetFlipped) {
-                            direction = -direction;
-                        }
-                        pathNode[pathIndex][j] += accel * direction;
-                        
-                        if (pathNode[pathIndex][j] > pathNodeLength[pathIndex]) {
-                            pathNode[pathIndex][j] -= pathNodeLength[pathIndex];
-                        }
-                        if (pathNode[pathIndex][j] < 0) {
-                            pathNode[pathIndex][j] += pathNodeLength[pathIndex];
-                        }
-                    }
-                }
-                
-                rectMode(CENTER);
-                noStroke();
-                for (let j = 0; j < pathNodes[pathIndex]; j++) {
-                    for (let k = 0; k < pathX1[pathIndex].length; k++) {
-                        if (path1[pathIndex][k] <= pathNode[pathIndex][j] && 
-                            pathNode[pathIndex][j] <= path2[pathIndex][k]) {
-                            let x = map(pathNode[pathIndex][j], path1[pathIndex][k], path2[pathIndex][k], 
-                                       pathX1[pathIndex][k], pathX2[pathIndex][k]);
-                            let y = map(pathNode[pathIndex][j], path1[pathIndex][k], path2[pathIndex][k], 
-                                       pathY1[pathIndex][k], pathY2[pathIndex][k]);
-                            let t = atan2(pathY2[pathIndex][k] - pathY1[pathIndex][k], 
-                                         pathX2[pathIndex][k] - pathX1[pathIndex][k]);
-                            
-                            // 전자석 극 결정 (렌츠 법칙 - 수정됨!)
-                            let magnetCoilSidePole = magnetFlipped ? 'S' : 'N';
-                            let isApproaching = accel > 0;
-                            
-                            let coilLeftIsN;
-                            if (isApproaching) {
-                                // 다가오면 같은 극으로 밀어냄
-                                coilLeftIsN = (magnetCoilSidePole === 'N');
-                            } else {
-                                // 멀어지면 반대 극으로 끌어당김
-                                coilLeftIsN = (magnetCoilSidePole === 'S');
-                            }
-                            
-                            // 코일 방향에 따라 전류 방향 결정
-                            // pathIndex 0: 오른나사 기본 방향
-                            // pathIndex 1: 왼쪽나사 반대 방향
-                            
-                            // 왼쪽이 N극이면 전류 방향 설정
-                            if (coilLeftIsN) {
-                                // 왼쪽 N극 → 오른쪽 S극
-                                // pathIndex 0(오른나사): 기본 방향
-                                // pathIndex 1(왼쪽나사): 이미 반대로 설정됨
-                            } else {
-                                // 왼쪽 S극 → 오른쪽 N극: 반대 방향
-                                t += PI;
-                            }
-                            
-                            drawProton(x, y, t);
-                        }
-                    }
-                }
-            }
-            
-            // 자석 그리기
+
+            drawElectromagnetPoles();
+            drawInducedCurrent();
+
             imageMode(CENTER);
             push();
             translate(magnetX, centerY);
-            // 극이 바뀌면 다른 이미지 사용
-            let currentMagnetImg = magnetFlipped ? imgMagnetSN : imgMagnetNS;
+            var currentMagnetImg = magnetFlipped ? imgMagnetSN : imgMagnetNS;
             image(currentMagnetImg, 0, 0, magnetW, magnetW * currentMagnetImg.height / currentMagnetImg.width);
             pop();
-            
+
+            if (isDragMode && !isDragging) {
+                noFill();
+                stroke(isDark ? 100 : 200, isDark ? 100 : 200, 255, 80);
+                strokeWeight(2);
+                drawingContext.setLineDash([6, 4]);
+                rect(245, centerY - 40, 210, 80, 8);
+                drawingContext.setLineDash([]);
+            }
+
             if (!isPaused) {
                 magneticField1 = magneticField2;
             }
+
+            updateDataDisplay(accel, emfVal);
+            drawGraph();
         }
-        
+
+        function getCoilSidePole() {
+            var magnetCoilSidePole = magnetFlipped ? 'N' : 'S';
+            var isApproaching = accel > 0;
+            var coilLeftPole, coilRightPole;
+            if (isApproaching) {
+                coilLeftPole = magnetCoilSidePole;
+                coilRightPole = (coilLeftPole === 'N') ? 'S' : 'N';
+            } else {
+                coilLeftPole = (magnetCoilSidePole === 'N') ? 'S' : 'N';
+                coilRightPole = magnetCoilSidePole;
+            }
+            return { left: coilLeftPole, right: coilRightPole };
+        }
+
+        function drawElectromagnetPoles() {
+            if (!document.getElementById('checkElectromagnet').checked || abs(accel) <= 0.01) return;
+            var poles = getCoilSidePole();
+
+            textAlign(CENTER, CENTER);
+            textSize(28);
+
+            var alpha = constrain(abs(accel) * 200, 60, 220);
+
+            noStroke();
+            fill(poles.left === 'N' ? color(200, 50, 50, alpha) : color(50, 50, 200, alpha));
+            ellipse(660, centerY, 54, 54);
+            fill(255);
+            stroke(0);
+            strokeWeight(2);
+            text(poles.left, 660, centerY);
+
+            noStroke();
+            fill(poles.right === 'N' ? color(200, 50, 50, alpha) : color(50, 50, 200, alpha));
+            ellipse(840, centerY, 54, 54);
+            fill(255);
+            stroke(0);
+            strokeWeight(2);
+            text(poles.right, 840, centerY);
+            noStroke();
+        }
+
+        function drawInducedCurrent() {
+            if (!document.getElementById('checkCurrent').checked) return;
+
+            if (!isPaused) {
+                for (var j = 0; j < pathNodes[pathIndex]; j++) {
+                    var direction = (pathIndex % 2 === 0) ? -2 : 2;
+                    if (magnetFlipped) direction = -direction;
+                    pathNode[pathIndex][j] += accel * direction;
+
+                    if (pathNode[pathIndex][j] > pathNodeLength[pathIndex])
+                        pathNode[pathIndex][j] -= pathNodeLength[pathIndex];
+                    if (pathNode[pathIndex][j] < 0)
+                        pathNode[pathIndex][j] += pathNodeLength[pathIndex];
+                }
+            }
+
+            rectMode(CENTER);
+            noStroke();
+            for (var j = 0; j < pathNodes[pathIndex]; j++) {
+                for (var k = 0; k < pathX1[pathIndex].length; k++) {
+                    if (path1[pathIndex][k] <= pathNode[pathIndex][j] &&
+                        pathNode[pathIndex][j] <= path2[pathIndex][k]) {
+                        var x = map(pathNode[pathIndex][j], path1[pathIndex][k], path2[pathIndex][k],
+                                   pathX1[pathIndex][k], pathX2[pathIndex][k]);
+                        var y = map(pathNode[pathIndex][j], path1[pathIndex][k], path2[pathIndex][k],
+                                   pathY1[pathIndex][k], pathY2[pathIndex][k]);
+                        var t = atan2(pathY2[pathIndex][k] - pathY1[pathIndex][k],
+                                     pathX2[pathIndex][k] - pathX1[pathIndex][k]);
+
+                        var poles = getCoilSidePole();
+                        var coilLeftIsN = (poles.left === 'N');
+                        if (!coilLeftIsN) t += PI;
+
+                        drawProton(x, y, t);
+                    }
+                }
+            }
+        }
+
         function calculateMagneticField() {
-            let nPoleX = magnetFlipped ? magnetX + 0.45 * magnetW : magnetX - 0.45 * magnetW;
-            let sPoleX = magnetFlipped ? magnetX - 0.45 * magnetW : magnetX + 0.45 * magnetW;
-            
-            let lenN = dist(nPoleX, 0, coilX, 0);
-            let lenS = dist(sPoleX, 0, coilX, 0);
-            
-            let vecX = 1 / (lenN * lenN) * ((coilX - nPoleX) / lenN);
-            vecX -= 1 / (lenS * lenS) * ((coilX - sPoleX) / lenS);
-            
+            var nPoleX = magnetFlipped ? magnetX + 0.45 * magnetW : magnetX - 0.45 * magnetW;
+            var sPoleX = magnetFlipped ? magnetX - 0.45 * magnetW : magnetX + 0.45 * magnetW;
+
+            var lenN = dist(nPoleX, 0, coilX, 0);
+            var lenS = dist(sPoleX, 0, coilX, 0);
+
+            var vecX = magnetStrength / (lenN * lenN) * ((coilX - nPoleX) / lenN);
+            vecX -= magnetStrength / (lenS * lenS) * ((coilX - sPoleX) / lenS);
+
             return createVector(vecX, 0);
         }
-        
+
         function calcMagneticField() {
-            poleX = [];
-            poleY = [];
-            poleVx = [];
-            poleVy = [];
-            poleIsN = [];
-            
-            // 막대자석의 극
-            for (let i = 0; i < 2; i++) {
-                for (let j = 0; j < 8; j++) {
-                    let t2 = map(j, 0, 7, HALF_PI, 3 * HALF_PI) + i * PI;
-                    let x2 = cos(t2);
-                    let y2 = sin(t2);
-                    
-                    let polePos = (magnetFlipped ? (i === 1) : (i === 0));
-                    
+            poleX = []; poleY = []; poleVx = []; poleVy = []; poleIsN = [];
+
+            for (var i = 0; i < 2; i++) {
+                for (var j = 0; j < 8; j++) {
+                    var t2 = map(j, 0, 7, HALF_PI, 3 * HALF_PI) + i * PI;
+                    var x2 = cos(t2), y2 = sin(t2);
+                    var polePos = magnetFlipped ? (i === 1) : (i === 0);
+
                     poleX.push(magnetX + (10 * x2 + 110 * (polePos ? -1 : 1)));
                     poleY.push(centerY + 16 * y2);
                     poleVx.push(x2);
                     poleVy.push(y2);
-                    poleIsN.push(polePos ? true : false);
+                    poleIsN.push(polePos);
                 }
             }
-            
-            // 코일 부근의 전자석 극 (렌츠 법칙 - 수정됨!)
-            let branch = round(abs(accel * 1.5)) * 2;
-            for (let i = 0; i < 2; i++) {
-                for (let j = 0; j < branch; j++) {
-                    let t2 = map(j, -2, branch + 1, HALF_PI, 3 * HALF_PI) + i * PI;
-                    let x2 = cos(t2);
-                    let y2 = sin(t2);
-                    
+
+            var branch = round(abs(accel * 1.5)) * 2;
+            for (var i = 0; i < 2; i++) {
+                for (var j = 0; j < branch; j++) {
+                    var t2 = map(j, -2, branch + 1, HALF_PI, 3 * HALF_PI) + i * PI;
+                    var x2 = cos(t2), y2 = sin(t2);
+
                     poleX.push(coilX + 10 * x2 + 100 * ((i === 0) ? -1 : 1));
                     poleY.push(centerY + 30 * y2);
                     poleVx.push(x2);
                     poleVy.push(y2);
-                    
-                    // 자석의 어떤 극이 코일 쪽인가?
-                    let magnetCoilSidePole = magnetFlipped ? 'S' : 'N';
-                    let isApproaching = (magneticField2.x - magneticField1.x) > 0;
-                    
-                    // 코일 왼쪽(i=0)에 생기는 극 (렌츠 법칙 수정!)
-                    let coilLeftIsN;
+
+                    var magnetCoilSidePole = magnetFlipped ? 'N' : 'S';
+                    var isApproaching = magneticField2 && magneticField1 ?
+                        (magneticField2.x - magneticField1.x) > 0 : false;
+
+                    var coilLeftIsN;
                     if (isApproaching) {
-                        // 다가오면 같은 극으로 밀어냄
                         coilLeftIsN = (magnetCoilSidePole === 'N');
                     } else {
-                        // 멀어지면 반대 극으로 끌어당김
                         coilLeftIsN = (magnetCoilSidePole === 'S');
                     }
-                    
-                    // i=0이 왼쪽, i=1이 오른쪽
-                    if (i === 0) {
-                        poleIsN.push(coilLeftIsN);
-                    } else {
-                        poleIsN.push(!coilLeftIsN);
-                    }
+
+                    poleIsN.push(i === 0 ? coilLeftIsN : !coilLeftIsN);
                 }
             }
-            
-            let steps = 3000;
-            let connected = [];
-            forceLineX = [];
-            forceLineY = [];
-            
-            for (let c = 0; c < poleX.length; c++) {
-                forceLineX[c] = [];
-                forceLineY[c] = [];
-                connected[c] = 0;
+
+            var steps = 3000;
+            var connected = [];
+            forceLineX = []; forceLineY = [];
+
+            for (var c = 0; c < poleX.length; c++) {
+                forceLineX[c] = []; forceLineY[c] = []; connected[c] = 0;
             }
-            
-            for (let c = 0; c < poleX.length; c++) {
-                if (connected[c] === 0) {
-                    forceLineX[c][0] = poleX[c] + poleVx[c];
-                    forceLineY[c][0] = poleY[c] + poleVy[c];
-                    
-                    for (let i = 1; i < steps; i++) {
-                        let vecX = 0;
-                        let vecY = 0;
-                        
-                        for (let j = 0; j < poleX.length; j++) {
-                            if (forceLineX[c][i-1] !== poleX[j] || forceLineY[c][i-1] !== poleY[j]) {
-                                let len = pow(forceLineX[c][i-1] - poleX[j], 2) + pow(forceLineY[c][i-1] - poleY[j], 2);
-                                vecX += (poleIsN[c] ? 1 : -1) * (poleIsN[j] ? 1 : -1) / len * 
-                                        ((forceLineX[c][i-1] - poleX[j]) / sqrt(len)) * 500;
-                                vecY += (poleIsN[c] ? 1 : -1) * (poleIsN[j] ? 1 : -1) / len * 
-                                        ((forceLineY[c][i-1] - poleY[j]) / sqrt(len)) * 500;
-                            }
+
+            for (var c = 0; c < poleX.length; c++) {
+                if (connected[c] !== 0) continue;
+                forceLineX[c][0] = poleX[c] + poleVx[c];
+                forceLineY[c][0] = poleY[c] + poleVy[c];
+
+                for (var i = 1; i < steps; i++) {
+                    var vx = 0, vy = 0;
+                    for (var j = 0; j < poleX.length; j++) {
+                        if (forceLineX[c][i-1] !== poleX[j] || forceLineY[c][i-1] !== poleY[j]) {
+                            var len = pow(forceLineX[c][i-1] - poleX[j], 2) + pow(forceLineY[c][i-1] - poleY[j], 2);
+                            var sign = (poleIsN[c] ? 1 : -1) * (poleIsN[j] ? 1 : -1);
+                            vx += sign / len * ((forceLineX[c][i-1] - poleX[j]) / sqrt(len)) * 500;
+                            vy += sign / len * ((forceLineY[c][i-1] - poleY[j]) / sqrt(len)) * 500;
                         }
-                        
-                        let vecXY = dist(0, 0, vecX, vecY);
-                        if (vecXY > 0) {
-                            vecX = 1 * vecX / vecXY;
-                            vecY = 1 * vecY / vecXY;
-                        }
-                        forceLineX[c][i] = forceLineX[c][i-1] + vecX;
-                        forceLineY[c][i] = forceLineY[c][i-1] + vecY;
-                        
-                        let escape = false;
-                        for (let d = 0; d < poleX.length; d++) {
-                            if (c !== d) {
-                                if (dist(forceLineX[c][i], forceLineY[c][i], poleX[d], poleY[d]) < 0.5) {
-                                    if (connected[d] < 2) {
-                                        let dx = poleX[d] - forceLineX[c][i];
-                                        let dy = poleY[d] - forceLineY[c][i];
-                                        for (let ii = 0; ii < forceLineX[c].length; ii++) {
-                                            forceLineX[c][ii] += dx * ii / forceLineX[c].length;
-                                            forceLineY[c][ii] += dy * ii / forceLineY[c].length;
-                                        }
-                                        connected[c]++;
-                                        connected[d]++;
-                                        forceLineX[d] = [];
-                                        forceLineY[d] = [];
-                                    }
-                                    escape = true;
-                                    break;
+                    }
+
+                    var mag = dist(0, 0, vx, vy);
+                    if (mag > 0) { vx /= mag; vy /= mag; }
+                    forceLineX[c][i] = forceLineX[c][i-1] + vx;
+                    forceLineY[c][i] = forceLineY[c][i-1] + vy;
+
+                    var escape = false;
+                    for (var d = 0; d < poleX.length; d++) {
+                        if (c !== d && dist(forceLineX[c][i], forceLineY[c][i], poleX[d], poleY[d]) < 0.5) {
+                            if (connected[d] < 2) {
+                                var dx = poleX[d] - forceLineX[c][i];
+                                var dy = poleY[d] - forceLineY[c][i];
+                                for (var ii = 0; ii < forceLineX[c].length; ii++) {
+                                    forceLineX[c][ii] += dx * ii / forceLineX[c].length;
+                                    forceLineY[c][ii] += dy * ii / forceLineY[c].length;
                                 }
+                                connected[c]++;
+                                connected[d]++;
+                                forceLineX[d] = [];
+                                forceLineY[d] = [];
                             }
+                            escape = true;
+                            break;
                         }
-                        
-                        if (escape) break;
-                        if (forceLineX[c][i] < 0 || forceLineX[c][i] > 1000 || 
-                            forceLineY[c][i] < 0 || forceLineY[c][i] > 500) break;
                     }
+                    if (escape) break;
+                    if (forceLineX[c][i] < 0 || forceLineX[c][i] > CW ||
+                        forceLineY[c][i] < 0 || forceLineY[c][i] > CH) break;
                 }
             }
         }
-        
+
         function drawProton(x, y, t) {
-            let cx = 8 * cos(t);
-            let cy = 8 * sin(t);
+            var cx = 8 * cos(t), cy = 8 * sin(t);
             noStroke();
-            fill(255, 0, 0, constrain(abs(200 * accel), 0, 191));
-            
-            // 왼쪽나사 방향(pathIndex === 1)에서만 화살표 그림 반대로
+            fill(255, 0, 0, constrain(abs(200 * accel * coilTurns), 0, 200));
             if (pathIndex === 1) {
-                draw2DArrow2(x - cx, y - cy, 2 * cx, 2 * cy, 3);
+                draw2DArrow(x - cx, y - cy, 2 * cx, 2 * cy, 3);
             } else {
-                draw2DArrow2(x + cx, y + cy, -2 * cx, -2 * cy, 3);
+                draw2DArrow(x + cx, y + cy, -2 * cx, -2 * cy, 3);
             }
         }
-        
-        function draw2DArrow2(x, y, dx, dy, size) {
+
+        function draw2DArrow(x, y, dx, dy, s) {
             push();
             translate(x, y);
-            let angle = atan2(dy, dx);
-            rotate(angle);
-            let len = dist(0, 0, dx, dy);
-            
-            // 화살표 몸체
+            rotate(atan2(dy, dx));
+            var len = dist(0, 0, dx, dy);
             rect(0, -1, len, 2);
-            
-            // 화살표 머리
-            triangle(len, 0, len - size * 2, -size, len - size * 2, size);
+            triangle(len, 0, len - s * 2, -s, len - s * 2, s);
             pop();
         }
+
+        window.addEventListener('resize', function() {
+            if (graphCanvas) {
+                graphCanvas.width = graphCanvas.offsetWidth * 2;
+            }
+        });
     </script>
 </body>
 </html>
