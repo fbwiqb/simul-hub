@@ -3,914 +3,953 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>근육 수축 슬라이딩 필라멘트 시뮬레이터</title>
+    <title>근육 수축 시뮬레이터</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #3d4e9f;
+            --primary-dark: #2c3a7a;
+            --primary-light: #5068c4;
+            --primary-gradient: linear-gradient(135deg, #3d4e9f 0%, #5068c4 100%);
+            --primary-gradient-hover: linear-gradient(135deg, #2c3a7a 0%, #3d4e9f 100%);
+            --accent-green: #28a745;
+            --accent-green-light: #48c774;
+            --accent-green-dark: #218838;
+            --accent-red: #dc3545;
+            --accent-red-light: #e85d6a;
+            --accent-red-dark: #c82333;
+            --accent-orange: #fd7e14;
+            --accent-orange-light: #fdab6c;
+            --accent-orange-dark: #e8590c;
+            --text-primary: #2c3e50;
+            --text-secondary: #6c757d;
+            --text-body: #333;
+            --bg-body: linear-gradient(135deg, #f8f9ff 0%, #eef0f8 100%);
+            --bg-card: #fff;
+            --bg-light: #f8f9fa;
+            --bg-input: #f1f3f5;
+            --border: #dee2e6;
+            --border-blue: #0066cc;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-md: 0 2px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+            --shadow-modal: 0 20px 60px rgba(0,0,0,0.4);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 20px;
         }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
-            background: linear-gradient(135deg, #0066cc 0%, #004999 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+            background: var(--bg-body);
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
             transition: background 0.3s ease;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 32px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-            animation: fadeInUp 0.5s ease;
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 10px; width: 100%; }
+        header { text-align: center; margin-bottom: 10px; }
+        header h1 {
+            font-size: 22px; color: var(--text-primary);
+            display: inline-flex; align-items: center; gap: 8px;
         }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .version-badge {
+            display: inline-block; background: var(--primary-gradient);
+            color: white; font-size: 11px; font-weight: 700;
+            padding: 2px 8px; border-radius: 10px; vertical-align: middle;
         }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        
-        h2 {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: #0066cc;
-            text-shadow: 0 2px 4px rgba(0,102,204,0.1);
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #0066cc 0%, #0077ed 100%);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            box-shadow: 0 2px 8px rgba(0,102,204,0.25);
-        }
-
-        .btn:hover {
-            background: linear-gradient(135deg, #0052a3 0%, #0066cc 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,102,204,0.4);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 8px rgba(0,102,204,0.25);
-        }
-        
         .control-panel {
-            background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            border: 2px solid #0066cc;
-            box-shadow: 0 2px 8px rgba(0,102,204,0.1);
-            transition: all 0.3s ease;
+            background: var(--bg-card); padding: 10px;
+            border-radius: var(--radius-md); margin-bottom: 10px;
+            box-shadow: var(--shadow-md); transition: box-shadow 0.3s ease;
         }
-
-        .control-panel:hover {
-            box-shadow: 0 4px 12px rgba(0,102,204,0.15);
+        .control-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px; flex-wrap: wrap; gap: 8px;
         }
-        
-        .control-label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 18px;
-            color: #0066cc;
-        }
-        
-        .length-value {
-            color: #0066cc;
-            font-size: 22px;
-            font-weight: bold;
-        }
-        
-        .delta-display {
-            color: #666;
-            font-size: 16px;
-            margin-left: 8px;
-        }
-        
-        input[type="range"] {
-            width: 100%;
-            height: 8px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: #cce5ff;
-            border-radius: 4px;
-            outline: none;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, #0066cc 0%, #0077ed 100%);
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,102,204,0.4);
-            transition: all 0.2s ease;
-        }
-
-        input[type="range"]::-webkit-slider-thumb:hover {
-            background: linear-gradient(135deg, #0052a3 0%, #0066cc 100%);
-            box-shadow: 0 3px 12px rgba(0,102,204,0.6);
-            transform: scale(1.15);
-        }
-        
-        input[type="range"]::-moz-range-thumb {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, #0066cc 0%, #0077ed 100%);
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 2px 8px rgba(0,102,204,0.4);
-            transition: all 0.2s ease;
-        }
-
-        input[type="range"]::-moz-range-thumb:hover {
-            background: linear-gradient(135deg, #0052a3 0%, #0066cc 100%);
-            box-shadow: 0 3px 12px rgba(0,102,204,0.6);
-            transform: scale(1.15);
-        }
-        
-        .range-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .svg-container {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
-            border: 2px solid #0066cc;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 24px;
-            overflow-x: auto;
-            box-shadow: 0 2px 8px rgba(0,102,204,0.1);
-            transition: box-shadow 0.3s ease;
-        }
-
-        .svg-container:hover {
-            box-shadow: 0 4px 12px rgba(0,102,204,0.15);
-        }
-        
-        svg {
-            display: block;
-            margin: 0 auto;
-        }
-        
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 32px;
-            margin-bottom: 32px;
-        }
-        
-        .info-card {
-            background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
-            padding: 20px;
-            border-radius: 8px;
-            border: 2px solid #0066cc;
-            box-shadow: 0 2px 6px rgba(0,102,204,0.08);
-            transition: all 0.3s ease;
-        }
-
-        .info-card:hover {
-            box-shadow: 0 4px 12px rgba(0,102,204,0.15);
-            transform: translateY(-2px);
-        }
-        
-        .info-card h4 {
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: #0066cc;
-        }
-        
-        .info-card ul {
-            list-style: disc;
-            margin-left: 20px;
-            line-height: 1.8;
-        }
-        
-        .delta-positive {
-            color: #28a745;
-        }
-        
-        .delta-negative {
-            color: #dc3545;
-        }
-        
-        .delta-info {
-            color: #0066cc;
-        }
-        
-        .calculator {
-            background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
-            padding: 20px;
-            border-radius: 8px;
-            border: 2px solid #0066cc;
-            margin-bottom: 32px;
-            box-shadow: 0 2px 8px rgba(0,102,204,0.1);
-            transition: box-shadow 0.3s ease;
-        }
-
-        .calculator:hover {
-            box-shadow: 0 4px 12px rgba(0,102,204,0.15);
-        }
-        
-        .calculator h4 {
-            font-weight: bold;
-            margin-bottom: 16px;
-            color: #0066cc;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-        
-        th, td {
-            border: 1px solid #0066cc;
-            padding: 12px;
-            text-align: left;
-        }
-        
-        th {
-            background: linear-gradient(135deg, #0066cc 0%, #0077ed 100%);
-            color: white;
-            font-weight: 600;
-        }
-        
-        td:nth-child(4) {
-            text-align: center;
-            font-weight: bold;
-        }
-
-        tbody tr {
-            transition: background-color 0.2s ease;
-        }
-
-        tbody tr:hover {
-            background-color: rgba(0,102,204,0.05);
-        }
-        
+        .control-row:last-child { margin-bottom: 0; }
+        .control-group { display: flex; align-items: center; gap: 10px; }
+        label { font-weight: 600; font-size: 16px; }
+        .length-value { color: var(--primary); font-size: 20px; font-weight: bold; min-width: 100px; }
+        .delta-display { color: var(--text-secondary); font-size: 15px; }
         select {
-            width: 100%;
-            padding: 6px;
-            border-radius: 4px;
-            border: 2px solid #0066cc;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            background: white;
-            cursor: pointer;
+            padding: 8px 12px; border: 2px solid var(--border);
+            border-radius: var(--radius-sm); font-size: 15px;
+            background: white; cursor: pointer; font-weight: 600; transition: all 0.2s ease;
         }
-
-        select:hover {
-            border-color: #0052a3;
+        select:hover { border-color: var(--primary); }
+        select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(61,78,159,0.1); }
+        input[type="range"] {
+            flex: 1; min-width: 200px; height: 8px;
+            -webkit-appearance: none; appearance: none;
+            background: var(--border); border-radius: 5px; outline: none;
         }
-
-        select:focus {
-            outline: none;
-            border-color: #0052a3;
-            box-shadow: 0 0 0 3px rgba(0,102,204,0.15);
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 32px; height: 32px; background: var(--primary);
+            border-radius: 50%; cursor: pointer;
+            box-shadow: 0 2px 6px rgba(61,78,159,0.3); transition: all 0.2s ease;
         }
-        
-        .operator-select {
-            width: 100%;
-            padding: 6px;
-            border-radius: 4px;
-            border: 2px solid #0066cc;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            background: #f0f7ff;
+        input[type="range"]::-moz-range-thumb {
+            width: 32px; height: 32px; background: var(--primary);
+            border-radius: 50%; cursor: pointer; border: none;
+            box-shadow: 0 2px 6px rgba(61,78,159,0.3); transition: all 0.2s ease;
         }
-        
-        footer {
-            margin-top: 40px;
-            padding: 20px;
-            background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
-            border-radius: 8px;
-            border: 2px solid #0066cc;
-            text-align: center;
-            box-shadow: 0 2px 6px rgba(0,102,204,0.08);
+        @media (hover: hover) {
+            input[type="range"]::-webkit-slider-thumb:hover {
+                background: var(--primary-dark);
+                box-shadow: 0 3px 10px rgba(61,78,159,0.5); transform: scale(1.15);
+            }
+            input[type="range"]::-moz-range-thumb:hover {
+                background: var(--primary-dark);
+                box-shadow: 0 3px 10px rgba(61,78,159,0.5); transform: scale(1.15);
+            }
         }
-        
-        .footer-content {
-            margin-bottom: 10px;
-            color: #333;
+        .slider-value { font-size: 18px; font-weight: bold; color: var(--primary); min-width: 80px; text-align: center; }
+        button {
+            padding: 10px 25px; font-size: 16px; border-radius: var(--radius-md);
+            border: none; cursor: pointer; font-weight: 600;
+            transition: all 0.3s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         }
-        
-        .developer-log {
-            font-size: 12px;
-            color: #666;
-            margin-top: 8px;
+        @media (hover: hover) {
+            button:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
         }
-        
+        button:active { transform: translateY(0); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+        .btn-primary { background: var(--primary-gradient); color: white; }
+        .btn-reset { background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red-light) 100%); color: white; }
+        .btn-play { background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-light) 100%); color: white; min-width: 120px; }
+        .btn-play.playing { background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-orange-light) 100%); }
+        .btn-capture { background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-light) 100%); color: white; padding: 8px 20px; font-size: 14px; }
+        .btn-screenshot { background: var(--primary-gradient); color: white; padding: 8px 20px; font-size: 14px; }
+        @media (hover: hover) {
+            .btn-primary:hover { background: var(--primary-gradient-hover); }
+            .btn-reset:hover { background: linear-gradient(135deg, var(--accent-red-dark) 0%, var(--accent-red) 100%); }
+            .btn-play:hover { background: linear-gradient(135deg, var(--accent-green-dark) 0%, var(--accent-green) 100%); }
+            .btn-play.playing:hover { background: linear-gradient(135deg, var(--accent-orange-dark) 0%, var(--accent-orange) 100%); }
+            .btn-capture:hover { background: linear-gradient(135deg, var(--accent-green-dark) 0%, var(--accent-green) 100%); }
+            .btn-screenshot:hover { background: var(--primary-gradient-hover); }
+        }
+        .checkbox-group { display: flex; gap: 15px; align-items: center; }
+        .checkbox-group label { cursor: pointer; font-size: 15px; display: flex; align-items: center; gap: 5px; }
+        .svg-container {
+            background: linear-gradient(135deg, #e7f3ff 0%, #d4ebff 100%);
+            border: 2px solid var(--border-blue); border-radius: var(--radius-md);
+            padding: 8px; margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,102,204,0.1); transition: box-shadow 0.3s ease;
+        }
+        #muscleSvg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+        .graph-section { margin-bottom: 10px; }
+        .graph-box {
+            background: var(--bg-card); border-radius: var(--radius-md);
+            padding: 8px; box-shadow: var(--shadow-sm); transition: all 0.3s ease;
+        }
+        .graph-box.graph-hidden { display: none; }
+        .graph-box h3 { text-align: center; margin-bottom: 4px; font-size: 14px; padding-bottom: 4px; border-bottom: 3px solid var(--primary); }
+        .graph-box canvas { width: 100% !important; height: auto !important; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+        .info-card {
+            background: var(--bg-card); padding: 12px;
+            border-radius: var(--radius-md); box-shadow: var(--shadow-sm); transition: all 0.3s ease;
+        }
+        .info-card h4 { font-size: 14px; margin-bottom: 8px; color: var(--text-primary); border-bottom: 2px solid var(--primary); padding-bottom: 6px; }
+        .info-card ul { list-style: none; padding: 0; }
+        .info-card li { padding: 4px 0; font-size: 13px; border-bottom: 1px solid #f0f0f0; }
+        .info-card li:last-child { border-bottom: none; }
+        .delta-positive { color: var(--accent-green); }
+        .delta-negative { color: var(--accent-red); }
+        .delta-info { color: var(--primary); }
+        .data-table-container {
+            border: 2px solid var(--border); background-color: var(--bg-card);
+            padding: 8px; border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm); margin-bottom: 10px; transition: box-shadow 0.3s ease;
+        }
+        .data-table-container h4 {
+            margin-top: 0; text-align: center; font-size: 13px; margin-bottom: 6px;
+            color: var(--text-primary); display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { border: 2px solid var(--border); padding: 5px 8px; text-align: center; }
+        .data-table th { background-color: #e9ecef; font-weight: 600; font-size: 12px; }
+        .data-table th span { font-size: 9px; font-weight: 400; color: var(--text-secondary); }
+        .data-table td { font-size: 13px; font-weight: 500; }
+        .data-table td.label-cell { font-weight: bold; background-color: var(--bg-light); font-size: 12px; }
+        .data-table td.value-cell { background-color: white; color: #212529; }
+        .live-row td.value-cell { font-weight: bold; }
+        .delete-btn {
+            background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red-light) 100%);
+            color: white; border: none; padding: 2px 6px; border-radius: 3px;
+            cursor: pointer; font-size: 11px; transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(220,53,69,0.3);
+        }
+        .calculator-section {
+            background: var(--bg-card); padding: 12px; border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm); margin-bottom: 10px; transition: box-shadow 0.3s ease;
+        }
+        .calculator-section h4 { font-size: 14px; margin-bottom: 8px; color: var(--text-primary); border-bottom: 2px solid var(--primary); padding-bottom: 6px; }
+        .calc-table { width: 100%; border-collapse: collapse; background: white; }
+        .calc-table th, .calc-table td { border: 2px solid var(--border); padding: 6px 8px; text-align: center; }
+        .calc-table th { background-color: #e9ecef; font-weight: 600; font-size: 12px; }
+        .calc-table td { font-size: 13px; }
+        .calc-table select { width: 100%; padding: 6px; border: 2px solid var(--border); border-radius: 4px; font-size: 13px; }
+        .calc-table .operator-select { font-size: 16px; font-weight: bold; text-align: center; background: var(--bg-light); }
+        .calc-table td:nth-child(4) { font-weight: bold; }
+        .footer {
+            background: var(--primary); color: white; text-align: center;
+            padding: 10px 20px; font-size: 14px; margin-top: 20px;
+        }
+        .footer a { color: white; text-decoration: none; }
+        @media (hover: hover) { .footer a:hover { text-decoration: underline; } }
         .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            display: none; position: fixed; z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7); overflow-y: auto;
         }
-        
         .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 30px;
-            border: 2px solid #0066cc;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
-            animation: modalSlideIn 0.3s ease;
+            background-color: white; margin: 5% auto; padding: 30px;
+            border-radius: var(--radius-lg); width: 90%; max-width: 700px;
+            max-height: 85vh; overflow-y: auto;
+            box-shadow: var(--shadow-modal); animation: modalSlideIn 0.3s ease;
         }
-
         @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
         .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #0066cc;
+            background: linear-gradient(135deg, #3d4e9f 0%, #667eea 100%);
+            color: white; padding: 20px; margin: -30px -30px 20px -30px;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        
-        .modal-header h3 {
-            color: #0066cc;
-            font-size: 22px;
+        .modal-header h2 { color: white; margin: 0; font-size: 24px; }
+        .modal-close {
+            background: none; color: white; border: none; font-size: 30px;
+            cursor: pointer; padding: 0; width: 35px; height: 35px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; transition: all 0.3s; box-shadow: none;
         }
-        
-        .close {
-            color: #666;
-            font-size: 32px;
-            font-weight: bold;
-            cursor: pointer;
-            line-height: 1;
-            transition: all 0.3s ease;
-            padding: 5px;
-            border-radius: 50%;
+        @media (hover: hover) { .modal-close:hover { background: rgba(255,255,255,0.2); transform: rotate(90deg) scale(1.1); } }
+        .modal-body { padding: 10px; color: var(--text-body); line-height: 1.8; }
+        .help-section {
+            margin-bottom: 25px; padding: 20px; background: var(--bg-light);
+            border-radius: 10px; border-left: 4px solid var(--primary); transition: all 0.2s ease;
         }
-
-        .close:hover {
-            color: #0066cc;
-            background: rgba(0,102,204,0.1);
-            transform: rotate(90deg) scale(1.1);
-        }
-
-        .close:active {
-            transform: rotate(90deg) scale(0.95);
-        }
-        
-        .modal-body {
-            line-height: 1.8;
-            color: #333;
-        }
-        
-        .modal-body h4 {
-            color: #0066cc;
-            margin: 20px 0 10px 0;
-            font-size: 18px;
-        }
-        
-        .modal-body ul {
-            margin-left: 20px;
-            margin-bottom: 15px;
-        }
-        
-        .modal-body li {
-            margin-bottom: 8px;
-        }
-        
-        .modal-body strong {
-            color: #0066cc;
-        }
-        
+        .help-section h3 { color: var(--primary); margin-bottom: 10px; font-size: 18px; }
+        .help-section p, .help-section ul { margin: 10px 0; }
+        .help-section ul { padding-left: 25px; }
+        .help-section li { margin: 8px 0; }
+        .help-section strong { color: var(--primary); }
+        .log-date { color: var(--primary); font-weight: bold; font-size: 1.1em; margin-bottom: 10px; }
         @media (max-width: 768px) {
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .modal-content {
-                width: 95%;
-                margin: 10% auto;
-                padding: 20px;
-            }
+            .container { padding: 10px; }
+            header h1 { font-size: 18px; }
+            .control-row { flex-direction: column; gap: 10px; align-items: stretch; }
+            .control-group { flex-wrap: wrap; justify-content: center; }
+            .info-grid { grid-template-columns: 1fr; }
+            .modal-content { width: 95%; margin: 10% auto; padding: 20px; }
+            .modal-header { margin: -20px -20px 15px -20px; padding: 15px; }
+            .modal-header h2 { font-size: 18px; }
+            button { padding: 8px 16px; font-size: 14px; }
+            .data-table th, .data-table td { padding: 4px 4px; font-size: 11px; }
+        }
+        @media (max-width: 480px) {
+            .control-group { gap: 6px; }
+            button { padding: 8px 12px; font-size: 13px; }
+            .checkbox-group { flex-wrap: wrap; gap: 8px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h2>🔬 근육 수축 슬라이딩 필라멘트 시뮬레이터</h2>
-        </div>
+        <header>
+            <h1>🔬 근육 수축 시뮬레이터 <span class="version-badge">v2.0</span></h1>
+        </header>
+        <main>
+            <section class="control-panel" aria-label="시뮬레이터 컨트롤">
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>근절 길이: <span id="lengthDisplay" class="length-value">2.40 μm</span> <span id="deltaDisplay" class="delta-display">(기준값)</span></label>
+                    </div>
+                    <div class="control-group">
+                        <button class="btn-reset" id="resetBtn">🔄 초기화</button>
+                        <button class="btn-primary" id="theoryBtn">📖 이론 설명</button>
+                        <button class="btn-primary" id="devLogBtn">📝 개발자 로그</button>
+                        <button class="btn-primary" id="helpBtn">❓ 사용법</button>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-group" style="flex: 1;">
+                        <label>⏱️ 수축 조절:</label>
+                        <button class="btn-play" id="playBtn">▶ 재생</button>
+                        <select id="speedSelect">
+                            <option value="slow">느림</option>
+                            <option value="normal" selected>보통</option>
+                            <option value="fast">빠름</option>
+                        </select>
+                        <input type="range" id="sarcomereSlider" min="0" max="16" value="4" step="1" aria-label="근절 길이 슬라이더">
+                        <span class="slider-value" id="sliderValue">2.40 μm</span>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="checkbox-group">
+                        <span style="font-weight: 600;">📊 표시 옵션:</span>
+                        <label><input type="checkbox" id="graphToggle" checked> 장력 그래프</label>
+                    </div>
+                </div>
+            </section>
 
-        <div class="button-group">
-            <button class="btn" onclick="openModal('theory')">📖 이론 설명</button>
-            <button class="btn" onclick="openModal('usage')">❓ 사용 방법</button>
-        </div>
+            <section class="svg-container" aria-label="근절 구조 시각화">
+                <svg id="muscleSvg" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet" aria-label="근육 수축 시뮬레이션 다이어그램"></svg>
+            </section>
 
-        <div class="control-panel">
-            <label class="control-label">
-                근절(Sarcomere) 길이: 
-                <span id="lengthDisplay" class="length-value">4.50 μm</span>
-                <span id="deltaDisplay" class="delta-display">(기준값)</span>
-            </label>
-            <input type="range" id="sarcomereSlider" min="0" max="18" value="9" step="1">
-            <div class="range-labels">
-                <span>3.6 μm (최대 수축)</span>
-                <span style="color: #0066cc; font-weight: bold;">4.5 μm (기준값)</span>
-                <span>5.4 μm (이완)</span>
-            </div>
-        </div>
+            <section class="graph-section" aria-label="장력-길이 그래프">
+                <div class="graph-box" id="forceGraph">
+                    <h3>💪 장력-길이 관계 그래프</h3>
+                    <canvas id="forceChart"></canvas>
+                </div>
+            </section>
 
-        <div class="svg-container">
-            <svg id="muscleSvg" width="800" height="300"></svg>
-        </div>
+            <section class="info-grid" aria-label="길이 정보">
+                <div class="info-card">
+                    <h4>📏 현재 길이 정보</h4>
+                    <ul id="lengthList"></ul>
+                </div>
+                <div class="info-card">
+                    <h4>📊 길이 변화 (기준값 대비)</h4>
+                    <ul id="changesList"></ul>
+                </div>
+            </section>
 
-        <div class="info-grid">
-            <div class="info-card">
-                <h4>📏 현재 길이 정보</h4>
-                <ul id="lengthList"></ul>
-            </div>
-            <div class="info-card">
-                <h4>📊 길이 변화 (기준값 대비)</h4>
-                <ul id="changesList"></ul>
-            </div>
-        </div>
+            <section class="data-table-container" aria-label="길이 데이터 기록">
+                <h4>📋 길이 데이터 기록
+                    <button class="btn-capture" id="captureBtn">📸 캡처</button>
+                    <button class="btn-screenshot" id="screenshotBtn">📷 스크린샷</button>
+                </h4>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>근절 <span>(μm)</span></th>
+                            <th>A대 <span>(μm)</span></th>
+                            <th>I대 <span>(μm)</span></th>
+                            <th>H대 <span>(μm)</span></th>
+                            <th>겹치는 구간 <span>(μm)</span></th>
+                            <th>상대 장력 <span>(%)</span></th>
+                            <th>삭제</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody"></tbody>
+                </table>
+            </section>
 
-        <div class="calculator">
-            <h4>🧮 길이 계산기</h4>
-            <table>
-                <thead>
-                    <tr>
-                        <th>선택 1</th>
-                        <th>연산자</th>
-                        <th>선택 2</th>
-                        <th>결과</th>
-                    </tr>
-                </thead>
-                <tbody id="calculatorTable"></tbody>
-            </table>
-        </div>
-
-        <footer>
-            <div class="footer-content">
-                <strong>충남삼성고등학교 과학교사 신도경</strong><br>
-                교육용 시뮬레이터 | 2025
-            </div>
-            <div class="developer-log">
-                버전 1.1 | 수정: 기준값 4.5μm 설정, M선 동적 위치 조정
-            </div>
-        </footer>
+            <section class="calculator-section" aria-label="길이 계산기">
+                <h4>🧮 길이 계산기</h4>
+                <table class="calc-table">
+                    <thead>
+                        <tr><th>선택 1</th><th>연산자</th><th>선택 2</th><th>결과</th></tr>
+                    </thead>
+                    <tbody id="calculatorTable"></tbody>
+                </table>
+            </section>
+        </main>
     </div>
 
-    <!-- 이론 설명 모달 -->
-    <div id="theoryModal" class="modal">
+    <footer class="footer">
+        ⓒ 2025-2026 충남삼성고등학교 신도경T<br>
+        <a href="mailto:pantarei01@cnsa.hs.kr">pantarei01@cnsa.hs.kr</a>
+    </footer>
+
+    <div class="modal" id="theoryModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>📖 슬라이딩 필라멘트 이론</h3>
-                <span class="close" onclick="closeModal('theory')">&times;</span>
+                <h2>📖 슬라이딩 필라멘트 이론</h2>
+                <button class="modal-close" id="theoryClose" aria-label="닫기">&times;</button>
             </div>
             <div class="modal-body">
-                <h4>기본 원리</h4>
-                <p>근육 수축 시 <strong>액틴(가는 필라멘트)</strong>이 <strong>마이오신(굵은 필라멘트)</strong> 사이로 미끄러져 들어가면서 근절(sarcomere)의 길이가 짧아집니다.</p>
-                
-                <h4>주요 구조</h4>
-                <ul>
-                    <li><strong>Z선</strong>: 근절의 양 끝 경계</li>
-                    <li><strong>M선</strong>: 근절의 정중앙, 마이오신의 중심</li>
-                    <li><strong>A대</strong>: 마이오신 필라멘트가 있는 영역 (1.8 μm, 일정)</li>
-                    <li><strong>I대</strong>: 액틴만 있는 영역 (수축 시 감소)</li>
-                    <li><strong>H대</strong>: 마이오신만 있는 영역 (수축 시 감소)</li>
-                </ul>
-                
-                <h4>수축 시 변화</h4>
-                <ul>
-                    <li>근절 길이 ↓ (Z선 간 거리 감소)</li>
-                    <li>I대 길이 ↓</li>
-                    <li>H대 길이 ↓</li>
-                    <li>A대 길이 = 일정</li>
-                    <li>액틴-마이오신 겹치는 구간 ↑</li>
-                </ul>
+                <div class="help-section">
+                    <h3>🔬 기본 원리</h3>
+                    <p>근육 수축 시 <strong>액틴(가는 필라멘트)</strong>이 <strong>마이오신(굵은 필라멘트)</strong> 사이로 미끄러져 들어가면서 근절(sarcomere)의 길이가 짧아집니다.</p>
+                </div>
+                <div class="help-section">
+                    <h3>🏗️ 주요 구조</h3>
+                    <ul>
+                        <li><strong>Z선</strong>: 근절의 양 끝 경계</li>
+                        <li><strong>M선</strong>: 근절의 정중앙, 마이오신의 중심</li>
+                        <li><strong>A대</strong>: 마이오신 필라멘트가 있는 영역 (1.6 μm, 일정)</li>
+                        <li><strong>I대</strong>: 액틴만 있는 영역 (수축 시 감소)</li>
+                        <li><strong>H대</strong>: 마이오신만 있는 영역 (수축 시 감소)</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>📐 수치 정보</h3>
+                    <ul>
+                        <li><strong>마이오신 길이</strong>: 1.6 μm (일정)</li>
+                        <li><strong>액틴 길이</strong>: 1.0 μm (일정)</li>
+                        <li><strong>A대</strong> = 마이오신 길이 = 1.6 μm (일정)</li>
+                        <li><strong>I대</strong> = 근절 - A대 = 근절 - 1.6 μm</li>
+                        <li><strong>H대</strong> = 근절 - 2 × 액틴 (= A대 - 겹치는 구간)</li>
+                        <li><strong>½ I대 + ½ 겹치는 구간</strong> = 액틴 길이 (항상 1.0)</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>💪 장력-길이 관계</h3>
+                    <ul>
+                        <li><strong>2.0~2.2 μm</strong>: 최대 장력 (100%) - 최적 겹침</li>
+                        <li><strong>2.2~3.6 μm</strong>: 장력 감소 - 겹침 구간 감소</li>
+                        <li><strong>3.6 μm 이상</strong>: 장력 0% - 겹침 없음</li>
+                        <li><strong>2.0 μm 미만</strong>: 장력 감소 - 과도한 겹침으로 간섭</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>📊 수축 시 변화 요약</h3>
+                    <ul>
+                        <li>근절 길이 ↓ (Z선 간 거리 감소)</li>
+                        <li>I대 길이 ↓</li>
+                        <li>H대 길이 ↓</li>
+                        <li>A대 길이 = 일정</li>
+                        <li>액틴-마이오신 겹치는 구간 ↑</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 사용 방법 모달 -->
-    <div id="usageModal" class="modal">
+    <div class="modal" id="helpModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>❓ 사용 방법</h3>
-                <span class="close" onclick="closeModal('usage')">&times;</span>
+                <h2>❓ 사용법</h2>
+                <button class="modal-close" id="helpClose" aria-label="닫기">&times;</button>
             </div>
             <div class="modal-body">
-                <h4>1. 슬라이더 조작</h4>
-                <p>슬라이더를 좌우로 움직여 근절의 길이를 변화시킵니다.</p>
-                <ul>
-                    <li>왼쪽: 최대 수축 상태 (3.6 μm)</li>
-                    <li>중앙: 기준 상태 (4.5 μm)</li>
-                    <li>오른쪽: 이완 상태 (5.4 μm)</li>
-                </ul>
-                
-                <h4>2. 시각화 관찰</h4>
-                <p>각 구조의 변화를 실시간으로 확인합니다.</p>
-                <ul>
-                    <li>파란색 선: 액틴 필라멘트</li>
-                    <li>빨간색 선: 마이오신 필라멘트</li>
-                    <li>파란색 굵은 선: Z선</li>
-                    <li>주황색 점선: M선</li>
-                </ul>
-                
-                <h4>3. 길이 정보 확인</h4>
-                <p>"현재 길이 정보"에서 각 구조의 길이를 확인하고, "길이 변화"에서 기준값(4.5 μm) 대비 변화량을 확인합니다.</p>
-                
-                <h4>4. 계산기 활용</h4>
-                <p>드롭다운 메뉴에서 두 값을 선택하고 연산자를 선택하여 관계식을 검증할 수 있습니다.</p>
+                <div class="help-section">
+                    <h3>🎮 기본 사용법</h3>
+                    <p><strong>1. 슬라이더 조작</strong></p>
+                    <ul>
+                        <li>슬라이더를 좌우로 움직여 근절의 길이를 조절합니다 (2.0~3.6 μm)</li>
+                        <li>좌측: 최대 수축 (2.0 μm) / 우측: 이완 (3.6 μm)</li>
+                    </ul>
+                    <p><strong>2. 재생 기능</strong></p>
+                    <ul>
+                        <li><strong>▶ 재생</strong>: 자동으로 수축/이완 애니메이션</li>
+                        <li>속도 선택: 느림, 보통, 빠름</li>
+                    </ul>
+                    <p><strong>3. 데이터 캡처</strong></p>
+                    <ul>
+                        <li>📸 캡처: 현재 길이 데이터를 표에 기록</li>
+                        <li>📷 스크린샷: 현재 화면을 이미지로 저장</li>
+                    </ul>
+                    <p><strong>4. 계산기</strong></p>
+                    <ul>
+                        <li>드롭다운에서 두 값을 선택하고 연산자를 적용하여 관계식 검증</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="devLogModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📝 개발자 로그</h2>
+                <button class="modal-close" id="devLogClose" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <div class="log-date">2026. 2. 24. (월)</div>
+                    <strong>v2.0 전면 업데이트</strong><br>
+                    - 📐 수치 보정: 마이오신 1.6 μm, 액틴 1.0 μm, 근절 2.0~3.6 μm<br>
+                    - 💪 장력-길이 관계 그래프 추가 (Chart.js)<br>
+                    - ▶️ 재생/일시정지 애니메이션 + 속도 조절<br>
+                    - 📸 데이터 캡처 + 📷 스크린샷 저장 기능<br>
+                    - 🎨 UI 전면 개편: 신경세포 시뮬레이터와 디자인 통일<br>
+                    - 📱 반응형 디자인 + 접근성 개선<br>
+                </div>
+                <div class="help-section">
+                    <div class="log-date">2025. 11. (v1.1)</div>
+                    <strong>v1.1 패치</strong><br>
+                    - 기준값 설정, M선 동적 위치 조정, 길이 계산기 추가<br>
+                </div>
+                <div class="help-section">
+                    <div class="log-date">2025. 10. (v1.0)</div>
+                    <strong>v1.0 출시</strong><br>
+                    근육 수축 슬라이딩 필라멘트 시뮬레이터 최초 공개.
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // 상수 정의
-        const umToPx = (um) => um / (5.0 / 700);
-        const aBandUm = 1.8;
-        const actinUm = 1.8;
-        const actinLength = umToPx(actinUm);
-        const myosinLengthPx = umToPx(aBandUm);
-        const centerX = (750 + 50) / 2;
-        const baselineSarcomere = 4.5; // 기준값
+    const A_BAND = 1.6;
+    const ACTIN = 1.0;
+    const BASELINE = 2.4;
+    const FACTOR = 700 / 3.6;
+    const CENTER_X = 400;
+    const SPEED_MAP = { slow: 0.3, normal: 1, fast: 2.5 };
 
-        // 근절 길이 테이블 (왼쪽: 수축, 오른쪽: 이완)
-        const sarcomereLengthTable = Array.from({ length: 19 }, (_, i) => 3.6 + i * 0.1);
+    const sarcomereLengthTable = Array.from({ length: 17 }, (_, i) => +(2.0 + i * 0.1).toFixed(1));
 
-        // 선택 가능한 길이 옵션
-        const lengthOptions = [
-            "A대 길이", "마이오신", "액틴", "H대 길이", 
-            "I대 길이", "겹치는 구간", "½ I대 길이", "½ 겹치는 구간"
-        ];
+    const lengthOptions = ["A대 길이", "마이오신", "액틴", "H대 길이", "I대 길이", "겹치는 구간", "½ I대 길이", "½ 겹치는 구간"];
 
-        // 기준값 (4.5 μm 기준)
-        const referenceValues = {
-            "H대 길이": 0.9,        // 4.5 - 1.8 - 1.8 = 0.9
-            "I대 길이": 2.7,        // 4.5 - 1.8 = 2.7
-            "½ I대 길이": 1.35,     // 2.7 / 2 = 1.35
-            "겹치는 구간": 0.9,     // 5.4 - 4.5 = 0.9
-            "½ 겹치는 구간": 0.45   // 0.9 / 2 = 0.45
+    const referenceValues = {
+        "A대 길이": A_BAND,
+        "마이오신": A_BAND,
+        "액틴": ACTIN,
+        "H대 길이": +(BASELINE - 2 * ACTIN).toFixed(2),
+        "I대 길이": +(BASELINE - A_BAND).toFixed(2),
+        "½ I대 길이": +((BASELINE - A_BAND) / 2).toFixed(2),
+        "겹치는 구간": +(2 * Math.max(0, ACTIN - (BASELINE - A_BAND) / 2)).toFixed(2),
+        "½ 겹치는 구간": +(Math.max(0, ACTIN - (BASELINE - A_BAND) / 2)).toFixed(2)
+    };
+
+    let calculatorRows = [
+        ["H대 길이", "+", "겹치는 구간"],
+        ["½ I대 길이", "+", "½ 겹치는 구간"],
+        ["A대 길이", "+", "I대 길이"],
+        ["", "+", ""],
+        ["", "+", ""],
+        ["", "+", ""]
+    ];
+
+    let snapshots = [];
+    let forceChart = null;
+    let anim = { playing: false, direction: 1, speed: 1, rafId: null, lastTime: 0 };
+
+    function getForcePercent(s) {
+        if (s >= 3.6) return 0;
+        if (s >= 2.2) return ((3.6 - s) / (3.6 - 2.2)) * 100;
+        if (s >= 2.0) return 100;
+        if (s <= 1.6) return 50;
+        return 100 - ((2.0 - s) / (2.0 - 1.6)) * 50;
+    }
+
+    function calculateLengths(sarcomereUm) {
+        const hBand = Math.max(0, sarcomereUm - 2 * ACTIN);
+        const iBand = Math.max(0, sarcomereUm - A_BAND);
+        const overlapPerSide = Math.max(0, ACTIN - iBand / 2);
+        const totalOverlap = 2 * overlapPerSide;
+        return {
+            "A대 길이": A_BAND, "마이오신": A_BAND, "액틴": ACTIN,
+            "H대 길이": hBand, "I대 길이": iBand,
+            "겹치는 구간": totalOverlap, "½ I대 길이": iBand / 2,
+            "½ 겹치는 구간": overlapPerSide
         };
+    }
 
-        // 계산기 상태
-        let calculatorRows = Array(6).fill(null).map(() => ["", "+", ""]);
+    function drawMuscle(sarcomereUm) {
+        const svg = document.getElementById('muscleSvg');
+        sarcomereUm = Math.max(sarcomereUm, 2.0);
+        const sarPx = sarcomereUm * FACTOR;
+        const actinPx = ACTIN * FACTOR;
+        const myosinPx = A_BAND * FACTOR;
+        const leftZ = CENTER_X - sarPx / 2;
+        const rightZ = CENTER_X + sarPx / 2;
+        const myosinStart = CENTER_X - myosinPx / 2;
+        const myosinEnd = CENTER_X + myosinPx / 2;
+        const leftActinEnd = leftZ + actinPx;
+        const rightActinStart = rightZ - actinPx;
 
-        // 모달 제어
-        function openModal(type) {
-            document.getElementById(type + 'Modal').style.display = 'block';
-        }
+        const leftOvS = Math.max(myosinStart, leftZ);
+        const leftOvE = Math.min(myosinEnd, leftActinEnd);
+        const rightOvS = Math.max(myosinStart, rightActinStart);
+        const rightOvE = Math.min(myosinEnd, rightZ);
+        const hStart = Math.max(leftActinEnd, myosinStart);
+        const hEnd = Math.min(rightActinStart, myosinEnd);
+        const halfIL = myosinStart - leftZ;
+        const halfIR = rightZ - myosinEnd;
 
-        function closeModal(type) {
-            document.getElementById(type + 'Modal').style.display = 'none';
-        }
+        let s = '';
+        const fTop = 100, fBot = 220;
+        const actY = [108, 138, 168, 198];
+        const myoY = [120, 153, 186];
+        const myoH = 10, actH = 4;
 
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
-        }
+        if (leftOvE > leftOvS) s += `<rect x="${leftOvS}" y="${fTop-5}" width="${leftOvE-leftOvS}" height="${fBot-fTop+10}" fill="#8B45A6" opacity="0.12" rx="2"/>`;
+        if (rightOvE > rightOvS) s += `<rect x="${rightOvS}" y="${fTop-5}" width="${rightOvE-rightOvS}" height="${fBot-fTop+10}" fill="#8B45A6" opacity="0.12" rx="2"/>`;
 
-        // SVG 그리기 함수
-        function drawMuscle(sarcomereUm) {
-            const svg = document.getElementById('muscleSvg');
-            svg.innerHTML = '';
+        actY.forEach(y => {
+            s += `<rect x="${leftZ}" y="${y-actH/2}" width="${actinPx}" height="${actH}" fill="#4169E1" rx="2"/>`;
+            s += `<rect x="${rightZ-actinPx}" y="${y-actH/2}" width="${actinPx}" height="${actH}" fill="#4169E1" rx="2"/>`;
+        });
 
-            const minSarcomereUm = 2 * actinUm;
-            sarcomereUm = Math.max(sarcomereUm, minSarcomereUm);
-
-            const pxToUm = 5.0 / 700;
-            const pxLength = sarcomereUm / pxToUm;
-            const leftZ = centerX - pxLength / 2;
-            const rightZ = centerX + pxLength / 2;
-
-            // 마이오신을 근절 중심에 배치
-            const myosinStart = centerX - myosinLengthPx / 2;
-            const myosinEnd = centerX + myosinLengthPx / 2;
-
-            const hStart = leftZ + actinLength;
-            const hEnd = rightZ - actinLength;
-
-            // Z선
-            svg.innerHTML += `
-                <line x1="${leftZ}" y1="80" x2="${leftZ}" y2="220" stroke="#0066cc" stroke-width="4"/>
-                <line x1="${rightZ}" y1="80" x2="${rightZ}" y2="220" stroke="#0066cc" stroke-width="4"/>
-                <text x="${leftZ}" y="240" font-size="14" text-anchor="middle" fill="#0066cc" font-weight="bold">Z선</text>
-                <text x="${rightZ}" y="240" font-size="14" text-anchor="middle" fill="#0066cc" font-weight="bold">Z선</text>
-            `;
-
-            // 액틴 필라멘트
-            [100, 140, 180, 220].forEach(y => {
-                svg.innerHTML += `
-                    <rect x="${leftZ}" y="${y}" width="${actinLength}" height="6" fill="#4169E1" rx="3"/>
-                    <rect x="${rightZ - actinLength}" y="${y}" width="${actinLength}" height="6" fill="#4169E1" rx="3"/>
-                `;
-            });
-
-            // 마이오신 필라멘트 (중심 기준)
-            [112, 153, 194].forEach(y => {
-                svg.innerHTML += `<rect x="${myosinStart}" y="${y}" width="${myosinLengthPx}" height="18" fill="#DC143C" rx="4"/>`;
-            });
-
-            // M선 (근절 중심)
-            const mLineX = centerX;
-            svg.innerHTML += `
-                <line x1="${mLineX}" y1="80" x2="${mLineX}" y2="220" stroke="#FFA500" stroke-width="3" stroke-dasharray="5 5"/>
-                <text x="${mLineX}" y="70" font-size="14" text-anchor="middle" fill="#FFA500" font-weight="bold">M선</text>
-            `;
-
-            // A대
-            svg.innerHTML += `
-                <rect x="${myosinStart}" y="40" width="${myosinLengthPx}" height="12" stroke="#333" fill="rgba(220,20,60,0.1)" stroke-dasharray="4 2"/>
-                <text x="${mLineX}" y="30" font-size="14" text-anchor="middle" font-weight="bold">A대</text>
-            `;
-
-            // H대
-            if (hEnd > hStart) {
-                svg.innerHTML += `
-                    <rect x="${hStart}" y="250" width="${hEnd - hStart}" height="12" stroke="#4169E1" fill="rgba(65,105,225,0.1)" stroke-dasharray="4 2"/>
-                    <text x="${(hStart + hEnd) / 2}" y="280" font-size="14" text-anchor="middle" fill="#4169E1" font-weight="bold">H대</text>
-                `;
-            }
-
-            // I대
-            if (myosinStart > leftZ) {
-                svg.innerHTML += `
-                    <rect x="${leftZ}" y="270" width="${myosinStart - leftZ}" height="12" stroke="#DC143C" fill="rgba(220,20,60,0.1)" stroke-dasharray="4 2"/>
-                    <text x="${(leftZ + myosinStart) / 2}" y="295" font-size="12" text-anchor="middle" fill="#DC143C">½ I대</text>
-                `;
-            }
-            if (rightZ > myosinEnd) {
-                svg.innerHTML += `
-                    <rect x="${myosinEnd}" y="270" width="${rightZ - myosinEnd}" height="12" stroke="#DC143C" fill="rgba(220,20,60,0.1)" stroke-dasharray="4 2"/>
-                    <text x="${(rightZ + myosinEnd) / 2}" y="295" font-size="12" text-anchor="middle" fill="#DC143C">½ I대</text>
-                `;
-            }
-        }
-
-        // 길이 계산
-        function calculateLengths(sarcomereUm) {
-            const contractionUm = 5.4 - sarcomereUm;
-            const hBandUm = Math.max(0, sarcomereUm - 2 * actinUm);
-            const iBandUmCurrent = Math.max(0, sarcomereUm - aBandUm);
-            const iHalfBandUm = iBandUmCurrent / 2;
-            const overlapUm = contractionUm;
-
-            return {
-                "A대 길이": aBandUm,
-                "마이오신": aBandUm,
-                "액틴": actinUm,
-                "H대 길이": hBandUm,
-                "I대 길이": iBandUmCurrent,
-                "겹치는 구간": overlapUm,
-                "½ I대 길이": iHalfBandUm,
-                "½ 겹치는 구간": overlapUm / 2
-            };
-        }
-
-        // 현재 길이 정보 업데이트
-        function updateLengthInfo(lengths) {
-            const lengthList = document.getElementById('lengthList');
-            const items = [
-                { name: "근절 길이", value: parseFloat(document.getElementById('lengthDisplay').textContent) },
-                { name: "A대 길이", value: lengths["A대 길이"] },
-                { name: "액틴 길이", value: lengths["액틴"] },
-                { name: "H대 길이", value: lengths["H대 길이"] },
-                { name: "I대 길이", value: lengths["I대 길이"] },
-                { name: "겹치는 구간", value: lengths["겹치는 구간"] }
-            ];
-
-            lengthList.innerHTML = items.map(item => 
-                `<li>${item.name}: <strong>${item.value.toFixed(2)} μm</strong></li>`
-            ).join('');
-        }
-
-        // 변화 정보 업데이트
-        function updateChanges(lengths) {
-            const changesList = document.getElementById('changesList');
-            const items = [
-                { name: "H대 길이", value: lengths["H대 길이"], ref: referenceValues["H대 길이"] },
-                { name: "I대 길이", value: lengths["I대 길이"], ref: referenceValues["I대 길이"] },
-                { name: "겹치는 구간", value: lengths["겹치는 구간"], ref: referenceValues["겹치는 구간"] },
-                { name: "½ I대 길이", value: lengths["½ I대 길이"], ref: referenceValues["½ I대 길이"] },
-                { name: "½ 겹치는 구간", value: lengths["½ 겹치는 구간"], ref: referenceValues["½ 겹치는 구간"] }
-            ];
-
-            changesList.innerHTML = items.map(item => {
-                const delta = item.value - item.ref;
-                const deltaClass = delta < 0 ? 'delta-negative' : delta > 0 ? 'delta-positive' : 'delta-info';
-                return `<li>${item.name}: <strong>${item.value.toFixed(2)} μm</strong> <span class="${deltaClass}">(Δ ${delta.toFixed(2)} μm)</span></li>`;
-            }).join('');
-        }
-
-        // 계산기 테이블 생성
-        function createCalculatorTable() {
-            const table = document.getElementById('calculatorTable');
-            table.innerHTML = '';
-
-            for (let i = 0; i < 6; i++) {
-                const row = document.createElement('tr');
-                
-                // 선택 1
-                const select1 = document.createElement('select');
-                select1.innerHTML = '<option value="">선택 안 함</option>' + 
-                    lengthOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('');
-                select1.value = calculatorRows[i][0];
-                select1.onchange = () => {
-                    calculatorRows[i][0] = select1.value;
-                    updateCalculator();
-                };
-
-                // 연산자 선택
-                const selectOp = document.createElement('select');
-                selectOp.className = 'operator-select';
-                selectOp.innerHTML = `
-                    <option value="+">+</option>
-                    <option value="-">−</option>
-                    <option value="*">×</option>
-                    <option value="/">÷</option>
-                `;
-                selectOp.value = calculatorRows[i][1];
-                selectOp.onchange = () => {
-                    calculatorRows[i][1] = selectOp.value;
-                    updateCalculator();
-                };
-
-                // 선택 2
-                const select2 = document.createElement('select');
-                select2.innerHTML = '<option value="">선택 안 함</option>' + 
-                    lengthOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('');
-                select2.value = calculatorRows[i][2];
-                select2.onchange = () => {
-                    calculatorRows[i][2] = select2.value;
-                    updateCalculator();
-                };
-
-                const td1 = document.createElement('td');
-                td1.appendChild(select1);
-                const td2 = document.createElement('td');
-                td2.appendChild(selectOp);
-                const td3 = document.createElement('td');
-                td3.appendChild(select2);
-                const td4 = document.createElement('td');
-                td4.id = `calc-result-${i}`;
-
-                row.appendChild(td1);
-                row.appendChild(td2);
-                row.appendChild(td3);
-                row.appendChild(td4);
-                table.appendChild(row);
-            }
-        }
-
-        // 계산기 결과 업데이트
-        function updateCalculator() {
-            const slider = document.getElementById('sarcomereSlider');
-            const sarcomereUm = sarcomereLengthTable[slider.value];
-            const lengths = calculateLengths(sarcomereUm);
-
-            calculatorRows.forEach((row, idx) => {
-                const resultCell = document.getElementById(`calc-result-${idx}`);
-                const [key1, operator, key2] = row;
-                
-                if (!key1 && !key2) {
-                    resultCell.textContent = '-';
-                } else if (!key1 || !key2) {
-                    resultCell.textContent = '값을 선택하세요';
-                    resultCell.style.color = '#999';
-                } else {
-                    const v1 = lengths[key1] || 0;
-                    const v2 = lengths[key2] || 0;
-                    let result;
-                    let operatorSymbol;
-                    
-                    switch(operator) {
-                        case '+':
-                            result = v1 + v2;
-                            operatorSymbol = '+';
-                            break;
-                        case '-':
-                            result = v1 - v2;
-                            operatorSymbol = '−';
-                            break;
-                        case '*':
-                            result = v1 * v2;
-                            operatorSymbol = '×';
-                            break;
-                        case '/':
-                            result = v2 !== 0 ? v1 / v2 : 0;
-                            operatorSymbol = '÷';
-                            if (v2 === 0) {
-                                resultCell.textContent = '0으로 나눌 수 없습니다';
-                                resultCell.style.color = '#dc3545';
-                                return;
-                            }
-                            break;
-                        default:
-                            result = v1 + v2;
-                            operatorSymbol = '+';
-                    }
-                    
-                    // 기준값 계산 (더하기일 때만 Δ 표시)
-                    if (operator === '+') {
-                        const ref1 = referenceValues[key1] || 0;
-                        const ref2 = referenceValues[key2] || 0;
-                        const delta = result - (ref1 + ref2);
-                        const deltaClass = delta < 0 ? 'delta-negative' : delta > 0 ? 'delta-positive' : '';
-                        resultCell.innerHTML = `${result.toFixed(2)} μm <span class="${deltaClass}">(Δ ${delta.toFixed(2)} μm)</span>`;
-                    } else {
-                        // 다른 연산은 결과만 표시
-                        resultCell.innerHTML = `<strong>${result.toFixed(2)}</strong> ${operator === '/' ? '' : 'μm'}`;
-                    }
-                    resultCell.style.color = '#333';
+        myoY.forEach(y => {
+            s += `<rect x="${myosinStart}" y="${y-myoH/2}" width="${myosinPx}" height="${myoH}" fill="#DC143C" rx="3"/>`;
+            const sp = myosinPx / 8;
+            for (let i = 1; i <= 3; i++) {
+                const xL = myosinStart + sp * i, xR = myosinEnd - sp * i;
+                const above = actY.filter(a => a < y);
+                const below = actY.filter(a => a > y);
+                const na = above.length > 0 ? above[above.length-1] : null;
+                const nb = below.length > 0 ? below[0] : null;
+                if (na !== null) {
+                    s += `<line x1="${xL}" y1="${y-myoH/2}" x2="${xL-4}" y2="${na+actH/2+1}" stroke="#DC143C" stroke-width="1.5" opacity="0.7"/>`;
+                    s += `<line x1="${xR}" y1="${y-myoH/2}" x2="${xR+4}" y2="${na+actH/2+1}" stroke="#DC143C" stroke-width="1.5" opacity="0.7"/>`;
                 }
-            });
-        }
-
-        // 메인 업데이트 함수
-        function update() {
-            const slider = document.getElementById('sarcomereSlider');
-            const sarcomereUm = sarcomereLengthTable[slider.value];
-            const delta = sarcomereUm - baselineSarcomere;
-            
-            document.getElementById('lengthDisplay').textContent = `${sarcomereUm.toFixed(2)} μm`;
-            
-            // 기준값과의 차이 표시
-            const deltaDisplay = document.getElementById('deltaDisplay');
-            if (Math.abs(delta) < 0.01) {
-                deltaDisplay.textContent = '(기준값)';
-                deltaDisplay.style.color = '#666';
-            } else {
-                const sign = delta > 0 ? '+' : '';
-                deltaDisplay.textContent = `(${sign}${delta.toFixed(2)} μm)`;
-                deltaDisplay.style.color = delta > 0 ? '#28a745' : '#dc3545';
+                if (nb !== null) {
+                    s += `<line x1="${xL}" y1="${y+myoH/2}" x2="${xL-4}" y2="${nb-actH/2-1}" stroke="#DC143C" stroke-width="1.5" opacity="0.7"/>`;
+                    s += `<line x1="${xR}" y1="${y+myoH/2}" x2="${xR+4}" y2="${nb-actH/2-1}" stroke="#DC143C" stroke-width="1.5" opacity="0.7"/>`;
+                }
             }
-            
-            drawMuscle(sarcomereUm);
-            
-            const lengths = calculateLengths(sarcomereUm);
-            updateLengthInfo(lengths);
-            updateChanges(lengths);
-            updateCalculator();
+        });
+
+        s += `<line x1="${leftZ}" y1="${fTop-15}" x2="${leftZ}" y2="${fBot+15}" stroke="#1a5276" stroke-width="5"/>`;
+        s += `<line x1="${rightZ}" y1="${fTop-15}" x2="${rightZ}" y2="${fBot+15}" stroke="#1a5276" stroke-width="5"/>`;
+        s += `<text x="${leftZ}" y="${fTop-22}" font-size="13" text-anchor="middle" fill="#1a5276" font-weight="bold">Z</text>`;
+        s += `<text x="${rightZ}" y="${fTop-22}" font-size="13" text-anchor="middle" fill="#1a5276" font-weight="bold">Z</text>`;
+        s += `<line x1="${CENTER_X}" y1="${fTop-10}" x2="${CENTER_X}" y2="${fBot+10}" stroke="#FFA500" stroke-width="2.5" stroke-dasharray="6 4"/>`;
+        s += `<text x="${CENTER_X}" y="${fTop-22}" font-size="13" text-anchor="middle" fill="#FFA500" font-weight="bold">M</text>`;
+
+        const bY = fBot + 30, aH = 8;
+        s += `<line x1="${myosinStart}" y1="${bY}" x2="${myosinEnd}" y2="${bY}" stroke="#DC143C" stroke-width="2"/>`;
+        s += `<line x1="${myosinStart}" y1="${bY-aH}" x2="${myosinStart}" y2="${bY+aH}" stroke="#DC143C" stroke-width="1.5"/>`;
+        s += `<line x1="${myosinEnd}" y1="${bY-aH}" x2="${myosinEnd}" y2="${bY+aH}" stroke="#DC143C" stroke-width="1.5"/>`;
+        s += `<text x="${CENTER_X}" y="${bY-10}" font-size="12" text-anchor="middle" fill="#DC143C" font-weight="bold">A대 (${A_BAND}μm)</text>`;
+
+        if (hEnd > hStart + 2) {
+            const hY = bY + 25;
+            s += `<line x1="${hStart}" y1="${hY}" x2="${hEnd}" y2="${hY}" stroke="#4169E1" stroke-width="2"/>`;
+            s += `<line x1="${hStart}" y1="${hY-aH}" x2="${hStart}" y2="${hY+aH}" stroke="#4169E1" stroke-width="1.5"/>`;
+            s += `<line x1="${hEnd}" y1="${hY-aH}" x2="${hEnd}" y2="${hY+aH}" stroke="#4169E1" stroke-width="1.5"/>`;
+            s += `<text x="${(hStart+hEnd)/2}" y="${hY-10}" font-size="11" text-anchor="middle" fill="#4169E1" font-weight="bold">H대 (${Math.max(0,sarcomereUm-2*ACTIN).toFixed(2)}μm)</text>`;
         }
 
-        // 초기화
-        document.getElementById('sarcomereSlider').addEventListener('input', update);
-        createCalculatorTable();
+        if (halfIL > 2) {
+            const iY = bY + 50;
+            s += `<line x1="${leftZ}" y1="${iY}" x2="${myosinStart}" y2="${iY}" stroke="#228B22" stroke-width="2"/>`;
+            s += `<line x1="${leftZ}" y1="${iY-aH}" x2="${leftZ}" y2="${iY+aH}" stroke="#228B22" stroke-width="1.5"/>`;
+            s += `<line x1="${myosinStart}" y1="${iY-aH}" x2="${myosinStart}" y2="${iY+aH}" stroke="#228B22" stroke-width="1.5"/>`;
+            s += `<text x="${(leftZ+myosinStart)/2}" y="${iY-10}" font-size="11" text-anchor="middle" fill="#228B22" font-weight="bold">½I대 (${(halfIL/FACTOR).toFixed(2)}μm)</text>`;
+        }
+        if (halfIR > 2) {
+            const iY = bY + 50;
+            s += `<line x1="${myosinEnd}" y1="${iY}" x2="${rightZ}" y2="${iY}" stroke="#228B22" stroke-width="2"/>`;
+            s += `<line x1="${myosinEnd}" y1="${iY-aH}" x2="${myosinEnd}" y2="${iY+aH}" stroke="#228B22" stroke-width="1.5"/>`;
+            s += `<line x1="${rightZ}" y1="${iY-aH}" x2="${rightZ}" y2="${iY+aH}" stroke="#228B22" stroke-width="1.5"/>`;
+            s += `<text x="${(myosinEnd+rightZ)/2}" y="${iY-10}" font-size="11" text-anchor="middle" fill="#228B22" font-weight="bold">½I대 (${(halfIR/FACTOR).toFixed(2)}μm)</text>`;
+        }
+
+        const scPx = 1.0 * FACTOR;
+        s += `<line x1="20" y1="55" x2="${20+scPx}" y2="55" stroke="#333" stroke-width="2"/>`;
+        s += `<line x1="20" y1="50" x2="20" y2="60" stroke="#333" stroke-width="2"/>`;
+        s += `<line x1="${20+scPx}" y1="50" x2="${20+scPx}" y2="60" stroke="#333" stroke-width="2"/>`;
+        s += `<text x="${20+scPx/2}" y="47" font-size="11" text-anchor="middle" fill="#333" font-weight="bold">1.0 μm</text>`;
+
+        s += `<rect x="20" y="15" width="12" height="8" fill="#4169E1" rx="2"/>`;
+        s += `<text x="36" y="23" font-size="10" fill="#333">Actin</text>`;
+        s += `<rect x="85" y="15" width="12" height="8" fill="#DC143C" rx="2"/>`;
+        s += `<text x="101" y="23" font-size="10" fill="#333">Myosin</text>`;
+        s += `<rect x="160" y="15" width="12" height="8" fill="#8B45A6" opacity="0.4" rx="2"/>`;
+        s += `<text x="176" y="23" font-size="10" fill="#333">Overlap</text>`;
+
+        const fp = getForcePercent(sarcomereUm);
+        s += `<text x="780" y="55" font-size="12" text-anchor="end" fill="#333" font-weight="bold">장력: ${fp.toFixed(0)}%</text>`;
+
+        const viewH = Math.max(300, bY + 70);
+        svg.setAttribute('viewBox', `0 0 800 ${viewH}`);
+        svg.innerHTML = s;
+    }
+
+    function updateLengthInfo(lengths, sarcomereUm) {
+        const items = [
+            { name: "근절 길이", value: sarcomereUm },
+            { name: "A대 길이", value: lengths["A대 길이"] },
+            { name: "액틴 길이", value: lengths["액틴"] },
+            { name: "H대 길이", value: lengths["H대 길이"] },
+            { name: "I대 길이", value: lengths["I대 길이"] },
+            { name: "겹치는 구간", value: lengths["겹치는 구간"] }
+        ];
+        document.getElementById('lengthList').innerHTML = items.map(i =>
+            `<li>${i.name}: <strong>${i.value.toFixed(2)} μm</strong></li>`
+        ).join('');
+    }
+
+    function updateChanges(lengths) {
+        const items = [
+            { name: "H대 길이", value: lengths["H대 길이"], ref: referenceValues["H대 길이"] },
+            { name: "I대 길이", value: lengths["I대 길이"], ref: referenceValues["I대 길이"] },
+            { name: "겹치는 구간", value: lengths["겹치는 구간"], ref: referenceValues["겹치는 구간"] },
+            { name: "½ I대 길이", value: lengths["½ I대 길이"], ref: referenceValues["½ I대 길이"] },
+            { name: "½ 겹치는 구간", value: lengths["½ 겹치는 구간"], ref: referenceValues["½ 겹치는 구간"] }
+        ];
+        document.getElementById('changesList').innerHTML = items.map(i => {
+            const d = i.value - i.ref;
+            const cls = d < -0.001 ? 'delta-negative' : d > 0.001 ? 'delta-positive' : 'delta-info';
+            return `<li>${i.name}: <strong>${i.value.toFixed(2)} μm</strong> <span class="${cls}">(Δ ${d >= 0 ? '+' : ''}${d.toFixed(2)})</span></li>`;
+        }).join('');
+    }
+
+    function updateLiveRow(sarcomereUm, lengths) {
+        const force = getForcePercent(sarcomereUm);
+        const tbody = document.getElementById('dataTableBody');
+        let live = tbody.querySelector('.live-row');
+        if (!live) {
+            live = document.createElement('tr');
+            live.className = 'live-row';
+            live.innerHTML = `<td class="label-cell"></td><td class="value-cell"></td><td class="value-cell"></td><td class="value-cell"></td><td class="value-cell"></td><td class="value-cell"></td><td>-</td>`;
+            tbody.insertBefore(live, tbody.firstChild);
+        }
+        const cells = live.querySelectorAll('td');
+        cells[0].textContent = sarcomereUm.toFixed(2);
+        cells[1].textContent = lengths["A대 길이"].toFixed(2);
+        cells[2].textContent = lengths["I대 길이"].toFixed(2);
+        cells[3].textContent = lengths["H대 길이"].toFixed(2);
+        cells[4].textContent = lengths["겹치는 구간"].toFixed(2);
+        cells[5].textContent = force.toFixed(0);
+    }
+
+    function createCalculatorTable() {
+        const table = document.getElementById('calculatorTable');
+        table.innerHTML = '';
+        for (let i = 0; i < 6; i++) {
+            const row = document.createElement('tr');
+            const s1 = document.createElement('select');
+            s1.innerHTML = '<option value="">선택 안 함</option>' + lengthOptions.map(o => `<option value="${o}">${o}</option>`).join('');
+            s1.value = calculatorRows[i][0];
+            s1.onchange = () => { calculatorRows[i][0] = s1.value; updateCalculator(); };
+
+            const sOp = document.createElement('select');
+            sOp.className = 'operator-select';
+            sOp.innerHTML = '<option value="+">+</option><option value="-">−</option><option value="*">×</option><option value="/">÷</option>';
+            sOp.value = calculatorRows[i][1];
+            sOp.onchange = () => { calculatorRows[i][1] = sOp.value; updateCalculator(); };
+
+            const s2 = document.createElement('select');
+            s2.innerHTML = '<option value="">선택 안 함</option>' + lengthOptions.map(o => `<option value="${o}">${o}</option>`).join('');
+            s2.value = calculatorRows[i][2];
+            s2.onchange = () => { calculatorRows[i][2] = s2.value; updateCalculator(); };
+
+            const td1 = document.createElement('td'); td1.appendChild(s1);
+            const td2 = document.createElement('td'); td2.appendChild(sOp);
+            const td3 = document.createElement('td'); td3.appendChild(s2);
+            const td4 = document.createElement('td'); td4.id = `calc-result-${i}`;
+            row.append(td1, td2, td3, td4);
+            table.appendChild(row);
+        }
+    }
+
+    function updateCalculator() {
+        const slider = document.getElementById('sarcomereSlider');
+        const sarcomereUm = sarcomereLengthTable[slider.value];
+        const lengths = calculateLengths(sarcomereUm);
+        calculatorRows.forEach((r, idx) => {
+            const cell = document.getElementById(`calc-result-${idx}`);
+            const [k1, op, k2] = r;
+            if (!k1 && !k2) { cell.textContent = '-'; return; }
+            if (!k1 || !k2) { cell.textContent = '값을 선택하세요'; cell.style.color = '#999'; return; }
+            const v1 = lengths.hasOwnProperty(k1) ? lengths[k1] : 0;
+            const v2 = lengths.hasOwnProperty(k2) ? lengths[k2] : 0;
+            let result;
+            switch (op) {
+                case '+': result = v1 + v2; break;
+                case '-': result = v1 - v2; break;
+                case '*': result = v1 * v2; break;
+                case '/':
+                    if (v2 === 0) { cell.textContent = '0으로 나눌 수 없습니다'; cell.style.color = '#dc3545'; return; }
+                    result = v1 / v2; break;
+                default: result = v1 + v2;
+            }
+            if (op === '+') {
+                const r1 = referenceValues[k1] || 0;
+                const r2 = referenceValues[k2] || 0;
+                const d = result - (r1 + r2);
+                const cls = d < -0.001 ? 'delta-negative' : d > 0.001 ? 'delta-positive' : '';
+                cell.innerHTML = `${result.toFixed(2)} μm <span class="${cls}">(Δ ${d >= 0 ? '+' : ''}${d.toFixed(2)})</span>`;
+            } else {
+                cell.innerHTML = `<strong>${result.toFixed(2)}</strong> ${op === '/' ? '' : 'μm'}`;
+            }
+            cell.style.color = '#333';
+        });
+    }
+
+    function initForceChart() {
+        const ctx = document.getElementById('forceChart').getContext('2d');
+        const curveData = [];
+        for (let s = 1.4; s <= 4.0; s += 0.02) curveData.push({ x: +s.toFixed(2), y: +getForcePercent(s).toFixed(1) });
+
+        const greenZone = {
+            id: 'greenZone',
+            beforeDraw(chart) {
+                const { ctx: c, chartArea, scales } = chart;
+                if (!chartArea) return;
+                const x = scales.x;
+                const zones = [
+                    { x1: 1.4, x2: 1.67, color: 'rgba(220,53,69,0.08)' },
+                    { x1: 1.67, x2: 2.0, color: 'rgba(255,193,7,0.08)' },
+                    { x1: 2.0, x2: 2.2, color: 'rgba(40,167,69,0.12)' },
+                    { x1: 2.2, x2: 3.0, color: 'rgba(255,193,7,0.08)' },
+                    { x1: 3.0, x2: 4.0, color: 'rgba(220,53,69,0.08)' }
+                ];
+                c.save();
+                zones.forEach(z => {
+                    const l = Math.max(x.getPixelForValue(z.x1), chartArea.left);
+                    const r = Math.min(x.getPixelForValue(z.x2), chartArea.right);
+                    if (r > l) { c.fillStyle = z.color; c.fillRect(l, chartArea.top, r - l, chartArea.bottom - chartArea.top); }
+                });
+                c.restore();
+            }
+        };
+        const markerLine = {
+            id: 'markerLine',
+            afterDraw(chart) {
+                const { ctx: c, chartArea, scales } = chart;
+                if (!chartArea || chart._currentS === undefined) return;
+                const px = scales.x.getPixelForValue(chart._currentS);
+                if (px < chartArea.left || px > chartArea.right) return;
+                c.save(); c.beginPath(); c.setLineDash([6, 4]);
+                c.strokeStyle = '#3d4e9f'; c.lineWidth = 2;
+                c.moveTo(px, chartArea.top); c.lineTo(px, chartArea.bottom);
+                c.stroke(); c.restore();
+            }
+        };
+        forceChart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    { label: '장력 곡선', data: curveData, borderColor: '#3d4e9f', backgroundColor: 'rgba(61,78,159,0.05)', borderWidth: 3, pointRadius: 0, showLine: true, tension: 0.1, fill: true },
+                    { label: '현재', data: [{ x: BASELINE, y: getForcePercent(BASELINE) }], borderColor: '#DC143C', backgroundColor: '#DC143C', pointRadius: 8, pointHoverRadius: 10, showLine: false }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true, aspectRatio: 2.5,
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.parsed.x.toFixed(1)} μm, ${c.parsed.y.toFixed(0)}%` } } },
+                scales: {
+                    x: { type: 'linear', min: 1.4, max: 4.0, title: { display: true, text: '근절 길이 (μm)', font: { size: 13, weight: 'bold' } }, ticks: { stepSize: 0.2, font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.06)' } },
+                    y: { min: 0, max: 100, title: { display: true, text: '상대적 장력 (%)', font: { size: 13, weight: 'bold' } }, ticks: { stepSize: 20, font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.06)' } }
+                }
+            },
+            plugins: [greenZone, markerLine]
+        });
+        forceChart._currentS = BASELINE;
+    }
+
+    function updateForceChart(sarcomereUm) {
+        if (!forceChart) return;
+        forceChart.data.datasets[1].data = [{ x: sarcomereUm, y: getForcePercent(sarcomereUm) }];
+        forceChart._currentS = sarcomereUm;
+        forceChart.update('none');
+    }
+
+    function toggleAnimation() {
+        if (anim.playing) {
+            anim.playing = false;
+            if (anim.rafId) cancelAnimationFrame(anim.rafId);
+            anim.rafId = null;
+            document.getElementById('playBtn').textContent = '▶ 재생';
+            document.getElementById('playBtn').classList.remove('playing');
+        } else {
+            anim.playing = true;
+            anim.lastTime = performance.now();
+            document.getElementById('playBtn').textContent = '⏸ 일시정지';
+            document.getElementById('playBtn').classList.add('playing');
+            anim.rafId = requestAnimationFrame(animateStep);
+        }
+    }
+
+    function animateStep(ts) {
+        if (!anim.playing) return;
+        const elapsed = ts - anim.lastTime;
+        const interval = 400 / anim.speed;
+        if (elapsed >= interval) {
+            anim.lastTime = ts;
+            const slider = document.getElementById('sarcomereSlider');
+            let val = parseInt(slider.value) + anim.direction;
+            if (val >= 16) { val = 16; anim.direction = -1; }
+            else if (val <= 0) { val = 0; anim.direction = 1; }
+            slider.value = val;
+            update();
+        }
+        anim.rafId = requestAnimationFrame(animateStep);
+    }
+
+    function captureSnapshot() {
+        const slider = document.getElementById('sarcomereSlider');
+        const s = sarcomereLengthTable[slider.value];
+        const l = calculateLengths(s);
+        snapshots.push({ id: Date.now(), s, a: l["A대 길이"], i: l["I대 길이"], h: l["H대 길이"], o: l["겹치는 구간"], f: getForcePercent(s) });
+        renderSnapshots();
+    }
+
+    function deleteSnapshot(id) {
+        snapshots = snapshots.filter(x => x.id !== id);
+        renderSnapshots();
+    }
+
+    function renderSnapshots() {
+        const tbody = document.getElementById('dataTableBody');
+        const live = tbody.querySelector('.live-row');
+        tbody.innerHTML = '';
+        if (live) tbody.appendChild(live);
+        snapshots.forEach(snap => {
+            const tr = document.createElement('tr');
+            tr.style.backgroundColor = 'var(--bg-light)';
+            tr.innerHTML = `<td>${snap.s.toFixed(2)}</td><td>${snap.a.toFixed(2)}</td><td>${snap.i.toFixed(2)}</td><td>${snap.h.toFixed(2)}</td><td>${snap.o.toFixed(2)}</td><td>${snap.f.toFixed(0)}</td><td><button class="delete-btn" onclick="deleteSnapshot(${snap.id})">삭제</button></td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function captureScreenshot() {
+        const btn = document.getElementById('screenshotBtn');
+        btn.disabled = true; btn.textContent = '캡처 중...';
+        try {
+            const canvas = await html2canvas(document.querySelector('.container'), { backgroundColor: '#ffffff', scale: 2, useCORS: true, logging: false });
+            const link = document.createElement('a');
+            link.download = `근수축_${sarcomereLengthTable[document.getElementById('sarcomereSlider').value].toFixed(1)}um.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        } catch (e) { alert('스크린샷 캡처에 실패했습니다.'); }
+        finally { btn.disabled = false; btn.textContent = '📷 스크린샷'; }
+    }
+
+    function resetAll() {
+        if (anim.playing) toggleAnimation();
+        anim.direction = 1;
+        document.getElementById('sarcomereSlider').value = 4;
+        snapshots = [];
+        renderSnapshots();
         update();
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = 'block'; }
+    function closeModalEl(id) { document.getElementById(id).style.display = 'none'; }
+
+    function update() {
+        const slider = document.getElementById('sarcomereSlider');
+        const sarcomereUm = sarcomereLengthTable[slider.value];
+        const delta = sarcomereUm - BASELINE;
+
+        document.getElementById('lengthDisplay').textContent = `${sarcomereUm.toFixed(2)} μm`;
+        document.getElementById('sliderValue').textContent = `${sarcomereUm.toFixed(2)} μm`;
+
+        const dd = document.getElementById('deltaDisplay');
+        if (Math.abs(delta) < 0.01) { dd.textContent = '(기준값)'; dd.style.color = 'var(--text-secondary)'; }
+        else { dd.textContent = `(${delta > 0 ? '+' : ''}${delta.toFixed(2)} μm)`; dd.style.color = delta > 0 ? 'var(--accent-green)' : 'var(--accent-red)'; }
+
+        drawMuscle(sarcomereUm);
+        updateForceChart(sarcomereUm);
+        const lengths = calculateLengths(sarcomereUm);
+        updateLengthInfo(lengths, sarcomereUm);
+        updateChanges(lengths);
+        updateLiveRow(sarcomereUm, lengths);
+        updateCalculator();
+    }
+
+    document.getElementById('sarcomereSlider').addEventListener('input', update);
+    document.getElementById('playBtn').addEventListener('click', toggleAnimation);
+    document.getElementById('resetBtn').addEventListener('click', resetAll);
+    document.getElementById('captureBtn').addEventListener('click', captureSnapshot);
+    document.getElementById('screenshotBtn').addEventListener('click', captureScreenshot);
+    document.getElementById('theoryBtn').addEventListener('click', () => openModal('theoryModal'));
+    document.getElementById('devLogBtn').addEventListener('click', () => openModal('devLogModal'));
+    document.getElementById('helpBtn').addEventListener('click', () => openModal('helpModal'));
+    document.getElementById('theoryClose').addEventListener('click', () => closeModalEl('theoryModal'));
+    document.getElementById('helpClose').addEventListener('click', () => closeModalEl('helpModal'));
+    document.getElementById('devLogClose').addEventListener('click', () => closeModalEl('devLogModal'));
+    document.getElementById('speedSelect').addEventListener('change', e => { anim.speed = SPEED_MAP[e.target.value] || 1; });
+    document.getElementById('graphToggle').addEventListener('change', e => {
+        document.getElementById('forceGraph').classList.toggle('graph-hidden', !e.target.checked);
+    });
+    window.addEventListener('click', e => { if (e.target.classList.contains('modal')) e.target.style.display = 'none'; });
+
+    createCalculatorTable();
+    initForceChart();
+    update();
     </script>
 </body>
 </html>
