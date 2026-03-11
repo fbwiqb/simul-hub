@@ -844,13 +844,16 @@
                 fill(0, 128, 0, 150);
                 for (var c = 0; c < poleX.length; c++) {
                     if (forceLineX[c] && forceLineX[c].length > 30) {
+                        var isFromN = poleIsN[c];
                         var startIdx = Math.floor(forceLineX[c].length * 0.3);
                         var endIdx = Math.floor(forceLineX[c].length * 0.7);
                         for (var i = startIdx; i < endIdx; i += 120) {
                             if (i + 5 < forceLineX[c].length) {
                                 var x1 = forceLineX[c][i], y1 = forceLineY[c][i];
                                 var x2 = forceLineX[c][i + 5], y2 = forceLineY[c][i + 5];
-                                var angle = atan2(y2 - y1, x2 - x1);
+                                var angle = isFromN ?
+                                    atan2(y2 - y1, x2 - x1) :
+                                    atan2(y1 - y2, x1 - x2);
                                 push();
                                 translate(x1, y1);
                                 rotate(angle);
@@ -1000,13 +1003,14 @@
         function calcMagneticField() {
             poleX = []; poleY = []; poleVx = []; poleVy = []; poleIsN = [];
 
+            var nDir = magnetFlipped ? 1 : -1;
             for (var i = 0; i < 2; i++) {
                 for (var j = 0; j < 8; j++) {
                     var t2 = map(j, 0, 7, HALF_PI, 3 * HALF_PI) + i * PI;
                     var x2 = cos(t2), y2 = sin(t2);
                     var polePos = magnetFlipped ? (i === 1) : (i === 0);
 
-                    poleX.push(magnetX + (10 * x2 + 110 * (polePos ? -1 : 1)));
+                    poleX.push(magnetX + (10 * x2 + 110 * (polePos ? nDir : -nDir)));
                     poleY.push(centerY + 16 * y2);
                     poleVx.push(x2);
                     poleVy.push(y2);
@@ -1014,7 +1018,10 @@
                 }
             }
 
-            var branch = round(abs(accel * 1.5)) * 2;
+            var branch = abs(accel) > 0.01 ? min(round(abs(accel * 1.5)) * 2, 6) : 0;
+            var isApproaching = accel > 0;
+            var magnetCoilSidePole = magnetFlipped ? 'N' : 'S';
+            var coilLeftIsN = isApproaching ? (magnetCoilSidePole === 'N') : (magnetCoilSidePole === 'S');
             for (var i = 0; i < 2; i++) {
                 for (var j = 0; j < branch; j++) {
                     var t2 = map(j, -2, branch + 1, HALF_PI, 3 * HALF_PI) + i * PI;
@@ -1024,23 +1031,11 @@
                     poleY.push(centerY + 30 * y2);
                     poleVx.push(x2);
                     poleVy.push(y2);
-
-                    var magnetCoilSidePole = magnetFlipped ? 'N' : 'S';
-                    var isApproaching = magneticField2 && magneticField1 ?
-                        (magneticField2.x - magneticField1.x) > 0 : false;
-
-                    var coilLeftIsN;
-                    if (isApproaching) {
-                        coilLeftIsN = (magnetCoilSidePole === 'N');
-                    } else {
-                        coilLeftIsN = (magnetCoilSidePole === 'S');
-                    }
-
                     poleIsN.push(i === 0 ? coilLeftIsN : !coilLeftIsN);
                 }
             }
 
-            var steps = 3000;
+            var steps = 2000;
             var connected = [];
             forceLineX = []; forceLineY = [];
 

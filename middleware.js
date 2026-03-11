@@ -1,4 +1,4 @@
-const PASSWORD = 'cnsa2026';
+const PASSWORD = '9544';
 
 export default function middleware(request) {
   const url = new URL(request.url);

@@ -1352,7 +1352,7 @@
         let isRecording = false;
         let recordingData = [];
         let studentName = '';
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbz5Is9wmd4UIsr5WWEs9KiVdkpScfKiYKurT0rUyJxzUEPFz9cO3Qe2H7eDVS96NoiweA/exec';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyAGQ79tmQKZhJznVEWbirjFFydAK9-0__MR7IkVpMAwzttQjVCVBeAOxXU0nmWasfonQ/exec';
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -1763,6 +1763,9 @@ function sendRecordingData() {
     const payload = {
         studentName: studentName,
         scenario: currentScenario,
+        mode: currentMode,
+        background: currentBackground,
+        speed: simulationSpeed,
         data: recordingData
     };
 

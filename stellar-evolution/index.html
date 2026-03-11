@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>별의 진화</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#05050f;font-family:-apple-system,'Pretendard',sans-serif;color:#fff}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%}
+.ov{position:fixed;z-index:10;left:0;right:0;pointer-events:none}
+.ov>*{pointer-events:auto}
+#top{top:0;display:flex;justify-content:space-between;align-items:center;padding:16px 24px}
+#stage{font-size:1.6rem;font-weight:700;letter-spacing:.08em;text-shadow:0 0 30px rgba(255,255,255,.25);transition:opacity .4s}
+.btns{display:flex;gap:8px}
+.btn{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:background .2s}
+.btn:hover{background:rgba(255,255,255,.18)}
+.btn.active{background:rgba(255,200,100,.2);border-color:rgba(255,200,100,.5)}
+#bot{bottom:0;padding:16px 24px 28px;background:linear-gradient(transparent,rgba(5,5,15,.85))}
+#mass{display:flex;gap:12px;justify-content:center;margin-bottom:14px}
+.mo{padding:8px 20px;border-radius:20px;border:1px solid rgba(255,255,255,.2);font-size:.88rem;cursor:pointer;transition:all .3s;user-select:none}
+.mo.on{border-color:rgba(255,200,100,.6);background:rgba(255,200,100,.12);color:#ffe0a0}
+#tl-wrap{position:relative;padding-bottom:20px}
+#tl{-webkit-appearance:none;width:100%;height:3px;background:rgba(255,255,255,.15);outline:none;border-radius:2px;cursor:pointer}
+#tl::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 0 10px rgba(255,255,255,.4)}
+#marks{display:flex;position:absolute;bottom:0;left:0;right:0;font-size:.68rem;color:rgba(255,255,255,.4)}
+#marks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+#info{position:fixed;z-index:10;top:60px;left:24px;font-size:.72rem;color:rgba(255,255,255,.35);pointer-events:none;line-height:1.6}
+#footer{position:fixed;z-index:10;bottom:18px;right:20px;font-size:.78rem;color:rgba(255,255,255,.75);letter-spacing:.04em;padding:6px 16px;border-radius:16px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);backdrop-filter:blur(8px);cursor:default;user-select:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="ov" id="top">
+    <div id="stage">성간운</div>
+    <div class="btns">
+        <button class="btn" id="bp" title="재생/정지">▶</button>
+        <button class="btn" id="br" title="처음으로">↺</button>
+    </div>
+</div>
+<div class="ov" id="bot">
+    <div id="mass">
+        <div class="mo on" data-m="small">태양보다 작은 별</div>
+        <div class="mo" data-m="big">태양보다 큰 별</div>
+    </div>
+    <div id="tl-wrap">
+        <input type="range" id="tl" min="0" max="10000" value="0">
+        <div id="marks"></div>
+    </div>
+</div>
+<div id="info"></div>
+<div id="footer">© 충남삼성고등학교 신도경T</div>
+<script>
+const C = document.getElementById('c');
+const X = C.getContext('2d');
+const $stage = document.getElementById('stage');
+const $tl = document.getElementById('tl');
+const $marks = document.getElementById('marks');
+const $bp = document.getElementById('bp');
+const $info = document.getElementById('info');
+
+let W, H, CX, CY, MR;
+let mass = 'small';
+let progress = 0;
+let playing = false;
+let speed = 0.00018;
+let prevStage = '';
+
+const L5 = (a,b,c,d,e) => [a,b,c,d,e];
+
+const SMALL = [
+    {t:0,    n:"성간운",    r:0,   ly:[], temp:10, ct:10, fc:0},
+    {t:.04,  n:"성간운",    r:0,   ly:[], temp:10, ct:10, fc:0},
+    {t:.10,  n:"원시별",    r:.28, ly:[
+        {fr:0,to:1, c:[210,85,30], lb:"H"}
+    ], temp:3000, ct:1e6, fc:-1},
+    {t:.18,  n:"원시별",    r:.20, ly:[
+        {fr:0,to:.45, c:[240,160,60], lb:""},
+        {fr:.45,to:1, c:[210,85,30], lb:"H"}
+    ], temp:4500, ct:8e6, fc:-.5},
+    {t:.22,  n:"주계열성",  r:.20, ly:[
+        {fr:0,to:.08, c:[255,240,130], lb:"He"},
+        {fr:.08,to:.28, c:[255,200,100], lb:"H→He"},
+        {fr:.28,to:1, c:[255,220,140], lb:"H"}
+    ], temp:5800, ct:1.5e7, fc:0},
+    {t:.34,  n:"주계열성",  r:.20, ly:[
+        {fr:0,to:.22, c:[255,240,130], lb:"He"},
+        {fr:.22,to:.38, c:[255,200,100], lb:"H→He"},
+        {fr:.38,to:1, c:[255,220,140], lb:"H"}
+    ], temp:5800, ct:1.5e7, fc:0},
+    {t:.44,  n:"주계열성",  r:.20, ly:[
+        {fr:0,to:.36, c:[255,240,130], lb:"He"},
+        {fr:.36,to:.48, c:[255,200,100], lb:"H→He"},
+        {fr:.48,to:1, c:[255,220,140], lb:"H"}
+    ], temp:5800, ct:1.5e7, fc:0},
+    {t:.50,  n:"주계열성",  r:.20, ly:[
+        {fr:0,to:.45, c:[255,240,130], lb:"He"},
+        {fr:.45,to:.52, c:[255,200,100], lb:"H→He"},
+        {fr:.52,to:1, c:[255,220,140], lb:"H"}
+    ], temp:5500, ct:1.5e7, fc:0},
+    {t:.54,  n:"수소 고갈", r:.20, ly:[
+        {fr:0,to:.50, c:[255,240,130], lb:"He"},
+        {fr:.50,to:.53, c:[255,200,100], lb:""},
+        {fr:.53,to:1, c:[255,220,140], lb:"H"}
+    ], temp:5200, ct:1.5e7, fc:0},
+    {t:.57,  n:"중심부 수축", r:.17, ly:[
+        {fr:0,to:.58, c:[255,230,110], lb:"He"},
+        {fr:.58,to:.60, c:[255,200,100], lb:""},
+        {fr:.60,to:1, c:[255,210,130], lb:"H"}
+    ], temp:5000, ct:4e7, fc:-.7},
+    {t:.60,  n:"중심부 수축", r:.14, ly:[
+        {fr:0,to:.65, c:[255,220,90], lb:"He"},
+        {fr:.65,to:.67, c:[255,190,80], lb:""},
+        {fr:.67,to:1, c:[255,200,120], lb:"H"}
+    ], temp:4800, ct:8e7, fc:-.9},
+    {t:.62,  n:"He 점화", r:.14, ly:[
+        {fr:0,to:.60, c:[255,200,60], lb:"He→C"},
+        {fr:.60,to:.65, c:[255,180,60], lb:""},
+        {fr:.65,to:1, c:[255,190,110], lb:"H"}
+    ], temp:4500, ct:1e8, sht:1e7, fc:-.2},
+    {t:.65,  n:"팽창",    r:.30, ly:[
+        {fr:0,to:.18, c:[255,200,60], lb:"He→C"},
+        {fr:.18,to:.32, c:[255,180,60], lb:"H→He"},
+        {fr:.32,to:1, c:[240,100,30], lb:"H"}
+    ], temp:3800, ct:1e8, sht:1.5e7, fc:.6},
+    {t:.70,  n:"적색거성", r:.65, ly:[
+        {fr:0,to:.15, c:[255,200,60], lb:"C"},
+        {fr:.15,to:.30, c:[255,180,60], lb:"He"},
+        {fr:.30,to:1, c:[210,50,12], lb:"H"}
+    ], temp:3000, ct:1e8, sht:1.5e7, fc:.4},
+    {t:.76,  n:"적색거성", r:.70, ly:[
+        {fr:0,to:.18, c:[255,200,60], lb:"C"},
+        {fr:.18,to:.28, c:[255,180,60], lb:"He"},
+        {fr:.28,to:1, c:[210,50,12], lb:"H"}
+    ], temp:3000, ct:1.2e8, sht:1.5e7, fc:.2},
+    {t:.82,  n:"적색거성", r:.75, ly:[
+        {fr:0,to:.22, c:[255,200,60], lb:"C+O"},
+        {fr:.22,to:.30, c:[255,160,50], lb:"He"},
+        {fr:.30,to:1, c:[200,45,10], lb:"H"}
+    ], temp:2800, ct:1.5e8, sht:1.2e7, fc:.1},
+    {t:.90,  n:"행성상성운",r:.025, ly:[
+        {fr:0,to:1, c:[200,230,255], lb:""}
+    ], ring:1.0, temp:0, ct:0, fc:0},
+    {t:.96,  n:"행성상성운",r:.012, ly:[
+        {fr:0,to:1, c:[180,210,245], lb:""}
+    ], ring:1.5, temp:0, ct:0, fc:0},
+    {t:1,    n:"",         r:0, ly:[], ring:2.0, temp:0, ct:0, fc:0},
+];
+
+const BIG = [
+    {t:0,    n:"성간운",    r:0,   ly:[], temp:10, ct:10, fc:0},
+    {t:.04,  n:"성간운",    r:0,   ly:[], temp:10, ct:10, fc:0},
+    {t:.10,  n:"원시별",    r:.32, ly:[
+        {fr:0,to:1, c:[185,95,35], lb:"H"}
+    ], temp:3500, ct:2e6, fc:-1},
+    {t:.16,  n:"원시별",    r:.26, ly:[
+        {fr:0,to:.40, c:[225,150,60], lb:""},
+        {fr:.40,to:1, c:[185,95,35], lb:"H"}
+    ], temp:8000, ct:1.2e7, fc:-.5},
+    {t:.20,  n:"주계열성",  r:.26, ly:[
+        {fr:0,to:.08, c:[200,225,255], lb:"He"},
+        {fr:.08,to:.08, c:[160,200,230], lb:""},
+        {fr:.08,to:.24, c:[170,200,255], lb:"H→He"},
+        {fr:.24,to:.24, c:[255,150,50], lb:""},
+        {fr:.24,to:1, c:[140,175,240], lb:"H"}
+    ], temp:20000, ct:3e7, fc:0},
+    {t:.28,  n:"주계열성",  r:.26, ly:[
+        {fr:0,to:.18, c:[200,225,255], lb:"He"},
+        {fr:.18,to:.18, c:[160,200,230], lb:""},
+        {fr:.18,to:.30, c:[170,200,255], lb:"H→He"},
+        {fr:.30,to:.30, c:[255,150,50], lb:""},
+        {fr:.30,to:1, c:[140,175,240], lb:"H"}
+    ], temp:20000, ct:3e7, fc:0},
+    {t:.36,  n:"주계열성",  r:.26, ly:[
+        {fr:0,to:.30, c:[200,225,255], lb:"He"},
+        {fr:.30,to:.30, c:[160,200,230], lb:""},
+        {fr:.30,to:.40, c:[170,200,255], lb:"H→He"},
+        {fr:.40,to:.40, c:[255,150,50], lb:""},
+        {fr:.40,to:1, c:[140,175,240], lb:"H"}
+    ], temp:20000, ct:3e7, fc:0},
+    {t:.42,  n:"주계열성",  r:.26, ly:[
+        {fr:0,to:.40, c:[200,225,255], lb:"He"},
+        {fr:.40,to:.40, c:[160,200,230], lb:""},
+        {fr:.40,to:.46, c:[170,200,255], lb:"H→He"},
+        {fr:.46,to:.46, c:[255,150,50], lb:""},
+        {fr:.46,to:1, c:[140,175,240], lb:"H"}
+    ], temp:18000, ct:3e7, fc:0},
+    {t:.45,  n:"수소 고갈", r:.26, ly:[
+        {fr:0,to:.46, c:[200,225,255], lb:"He"},
+        {fr:.46,to:.46, c:[160,200,230], lb:""},
+        {fr:.46,to:.49, c:[170,200,255], lb:""},
+        {fr:.49,to:.49, c:[255,150,50], lb:""},
+        {fr:.49,to:1, c:[140,175,240], lb:"H"}
+    ], temp:16000, ct:3e7, fc:0},
+    {t:.47,  n:"중심부 수축", r:.22, ly:[
+        {fr:0,to:.55, c:[210,225,255], lb:"He"},
+        {fr:.55,to:.55, c:[160,200,230], lb:""},
+        {fr:.55,to:.58, c:[180,200,255], lb:""},
+        {fr:.58,to:.58, c:[255,150,50], lb:""},
+        {fr:.58,to:1, c:[150,175,230], lb:"H"}
+    ], temp:12000, ct:6e7, fc:-.7},
+    {t:.49,  n:"중심부 수축", r:.18, ly:[
+        {fr:0,to:.62, c:[220,225,255], lb:"He"},
+        {fr:.62,to:.62, c:[160,200,230], lb:""},
+        {fr:.62,to:.65, c:[190,200,255], lb:""},
+        {fr:.65,to:.65, c:[255,150,50], lb:""},
+        {fr:.65,to:1, c:[160,175,220], lb:"H"}
+    ], temp:9000, ct:1e8, fc:-.9},
+    {t:.51,  n:"He 점화",   r:.17, ly:[
+        {fr:0,to:.60, c:[230,225,255], lb:"He→C"},
+        {fr:.60,to:.60, c:[160,200,230], lb:""},
+        {fr:.60,to:.65, c:[200,210,255], lb:""},
+        {fr:.65,to:.65, c:[255,150,50], lb:""},
+        {fr:.65,to:1, c:[170,180,220], lb:"H"}
+    ], temp:7000, ct:2e8, fc:-.3},
+    {t:.54,  n:"C 핵 형성",  r:.42, ly:[
+        {fr:0,to:.14, c:[160,200,230], lb:"C"},
+        {fr:.14,to:.14, c:[130,190,130], lb:""},
+        {fr:.14,to:.30, c:[255,220,90], lb:"He"},
+        {fr:.30,to:.45, c:[255,150,50], lb:"H→He"},
+        {fr:.45,to:1, c:[195,60,15], lb:"H"}
+    ], temp:4200, ct:3e8, fc:.6},
+    {t:.57,  n:"수축",       r:.34, ly:[
+        {fr:0,to:.20, c:[150,195,225], lb:"C"},
+        {fr:.20,to:.20, c:[130,190,130], lb:""},
+        {fr:.20,to:.34, c:[255,220,90], lb:"He"},
+        {fr:.34,to:.48, c:[255,150,50], lb:"H→He"},
+        {fr:.48,to:1, c:[195,50,12], lb:"H"}
+    ], temp:4500, ct:8e8, fc:-.7},
+    {t:.60,  n:"O 핵융합",   r:.55, ly:[
+        {fr:0,to:.10, c:[100,180,200], lb:"O"},
+        {fr:.10,to:.20, c:[160,200,230], lb:"C"},
+        {fr:.20,to:.34, c:[255,220,90], lb:"He"},
+        {fr:.34,to:.48, c:[255,150,50], lb:"H→He"},
+        {fr:.48,to:1, c:[195,42,8], lb:"H"}
+    ], temp:3800, ct:1.5e9, fc:.5},
+    {t:.63,  n:"수축",       r:.46, ly:[
+        {fr:0,to:.10, c:[130,190,130], lb:"Si"},
+        {fr:.10,to:.20, c:[160,200,230], lb:"C"},
+        {fr:.20,to:.34, c:[255,220,90], lb:"He"},
+        {fr:.34,to:.48, c:[255,150,50], lb:"H→He"},
+        {fr:.48,to:1, c:[195,42,8], lb:"H"}
+    ], temp:4200, ct:3e9, fc:-.6},
+    {t:.66,  n:"Fe 핵 형성", r:.75, ly:[
+        {fr:0,to:.08, c:[200,200,210], lb:"Fe"},
+        {fr:.08,to:.18, c:[130,190,130], lb:"Si"},
+        {fr:.18,to:.30, c:[255,220,90], lb:"He"},
+        {fr:.30,to:.48, c:[255,150,50], lb:"H→He"},
+        {fr:.48,to:1, c:[195,42,8], lb:"H"}
+    ], temp:3500, ct:5e9, fc:.3},
+    {t:.70,  n:"초거성",     r:.95, ly:[
+        {fr:0,to:.08, c:[200,200,210], lb:"Fe"},
+        {fr:.08,to:.18, c:[130,190,130], lb:"Si"},
+        {fr:.18,to:.30, c:[255,220,90], lb:"He"},
+        {fr:.30,to:.48, c:[255,150,50], lb:"H→He"},
+        {fr:.48,to:1, c:[195,42,8], lb:"H"}
+    ], temp:3500, ct:5e9, fc:.1},
+    {t:.74,  n:"초거성",     r:.95, ly:[
+        {fr:0,to:.10, c:[200,200,210], lb:"Fe"},
+        {fr:.10,to:.20, c:[130,190,130], lb:"Si"},
+        {fr:.20,to:.32, c:[255,220,90], lb:"He"},
+        {fr:.32,to:.50, c:[255,150,50], lb:"H→He"},
+        {fr:.50,to:1, c:[195,42,8], lb:"H"}
+    ], temp:3500, ct:8e9, fc:0},
+    {t:.78,  n:"Fe 핵 붕괴", r:.90, ly:[
+        {fr:0,to:.12, c:[180,180,190], lb:"Fe↓"},
+        {fr:.12,to:.22, c:[130,190,130], lb:"Si"},
+        {fr:.22,to:.34, c:[255,220,90], lb:"He"},
+        {fr:.34,to:.50, c:[255,150,50], lb:"H→He"},
+        {fr:.50,to:1, c:[195,42,8], lb:"H"}
+    ], temp:3500, ct:1e10, fc:-.4},
+    {t:.81,  n:"Fe 핵 붕괴", r:.70, ly:[
+        {fr:0,to:.18, c:[150,150,160], lb:"Fe 붕괴"},
+        {fr:.18,to:.28, c:[130,190,130], lb:"Si"},
+        {fr:.28,to:.38, c:[255,220,90], lb:"He"},
+        {fr:.38,to:.55, c:[255,150,50], lb:"H→He"},
+        {fr:.55,to:1, c:[195,42,8], lb:"H"}
+    ], temp:4000, ct:5e10, fc:-.8},
+    {t:.84,  n:"반동",       r:.30, ly:[
+        {fr:0,to:.40, c:[255,255,240], lb:""},
+        {fr:.40,to:.50, c:[200,200,210], lb:""},
+        {fr:.50,to:.60, c:[255,220,90], lb:""},
+        {fr:.60,to:.80, c:[255,150,50], lb:""},
+        {fr:.80,to:1, c:[255,200,100], lb:""}
+    ], temp:10000, ct:1e11, fc:1},
+    {t:.86,  n:"초신성",     r:0, ly:[], boom:1, temp:0, ct:0, fc:0},
+    {t:.93,  n:"초신성",     r:0, ly:[], boom:2, temp:0, ct:0, fc:0},
+    {t:1,    n:"",           r:0, ly:[], temp:0, ct:0, fc:0},
+];
+
+const bgStars = Array.from({length:300}, () => ({
+    x: Math.random(), y: Math.random(),
+    s: Math.random()*1.8+.3,
+    b: Math.random()*.6+.4,
+    tw: Math.random()*Math.PI*2
+}));
+
+const nebP = Array.from({length:90}, () => ({
+    a: Math.random()*Math.PI*2,
+    d: Math.random()*.55+.08,
+    s: Math.random()*25+8,
+    sp: (Math.random()-.5)*.0008,
+    h: Math.random()*50+330,
+    o: Math.random()*.25+.08
+}));
+
+const diskP = Array.from({length:140}, () => ({
+    a: Math.random()*Math.PI*2,
+    d: Math.random()*.6+.1,
+    sp: 1.2/(Math.random()*.5+.3),
+    s: Math.random()*3+.8,
+    yOff: (Math.random()-.5),
+    h: Math.random()*40+15,
+    br: Math.random()*.25+.1
+}));
+
+let boomP = [];
+function mkBoom() {
+    boomP = Array.from({length:250}, () => {
+        const a = Math.random()*Math.PI*2;
+        const v = Math.random()*5+1;
+        const type = Math.random();
+        let c, label='';
+        if(type<.15){c=[255,215,0];label='Au';}
+        else if(type<.25){c=[192,192,210];label='Pt';}
+        else if(type<.35){c=[100,200,100];label='U';}
+        else if(type<.5){c=[180,220,255];label='';}
+        else{c=[255,Math.floor(Math.random()*180+75),Math.floor(Math.random()*60)];label='';}
+        return {
+            x:0, y:0, vx:Math.cos(a)*v, vy:Math.sin(a)*v,
+            s: Math.random()*4+1.5, c, label,
+            life: 1, decay: Math.random()*.012+.003
+        };
+    });
+}
+
+let ringP = [];
+function mkRing() {
+    ringP = Array.from({length:120}, () => {
+        const a = Math.random()*Math.PI*2;
+        const v = Math.random()*1.2+.3;
+        return {
+            x:0, y:0, vx:Math.cos(a)*v, vy:Math.sin(a)*v,
+            s: Math.random()*5+2,
+            c: [Math.floor(Math.random()*80+140), Math.floor(Math.random()*100+180), 255],
+            life: 1, decay: Math.random()*.003+.001
+        };
+    });
+}
+
+function lerp(a,b,t){return a+(b-a)*t}
+function lc(a,b,t){return [lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)]}
+function rgb(c,a){return a!==undefined?`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${a})`:`rgb(${c[0]|0},${c[1]|0},${c[2]|0})`}
+function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
+function getPath(){return mass==='small'?SMALL:BIG}
+
+function interpLayers(aL,bL,e) {
+    aL=aL||[]; bL=bL||[];
+    if(!aL.length&&!bL.length) return [];
+    if(!aL.length) return bL.map(l=>({...l,opacity:e}));
+    if(!bL.length) return aL.map(l=>({...l,opacity:1-e}));
+    const mx=Math.max(aL.length,bL.length), res=[];
+    for(let i=0;i<mx;i++){
+        const la=aL[Math.min(i,aL.length-1)], lb=bL[Math.min(i,bL.length-1)];
+        res.push({fr:lerp(la.fr,lb.fr,e),to:lerp(la.to,lb.to,e),c:lc(la.c,lb.c,e),lb:e<.5?la.lb:lb.lb,opacity:1});
+    }
+    return res;
+}
+
+function interp(t) {
+    const P=getPath();
+    if(t<=0) return {...P[0],lt:0,pi:0};
+    if(t>=1) return {...P[P.length-1],lt:1,pi:P.length-2};
+    let i=0;
+    for(let j=1;j<P.length;j++){if(P[j].t>=t){i=j-1;break}}
+    const a=P[i],b=P[i+1],lt=(t-a.t)/(b.t-a.t),e=ease(lt);
+    return {
+        n:lt<.5?a.n:b.n, r:lerp(a.r,b.r,e),
+        ly:interpLayers(a.ly,b.ly,e),
+        ring:lerp(a.ring||0,b.ring||0,e),
+        boom:lerp(a.boom||0,b.boom||0,e),
+        temp:lerp(a.temp||0,b.temp||0,e),
+        ct:lerp(a.ct||0,b.ct||0,e),
+        sht:lerp(a.sht||0,b.sht||0,e),
+        fc:lerp(a.fc||0,b.fc||0,e),
+        lt,pi:i
+    };
+}
+
+function resize(){C.width=W=innerWidth;C.height=H=innerHeight;CX=W/2;CY=H/2;MR=Math.min(W,H)*.42;}
+
+let bgCanvas;
+function drawBgOnce(){
+    bgCanvas=document.createElement('canvas');bgCanvas.width=W;bgCanvas.height=H;
+    const bx=bgCanvas.getContext('2d');bx.fillStyle='#05050f';bx.fillRect(0,0,W,H);
+    const t=performance.now()*.0003;
+    for(const s of bgStars){const tw=Math.sin(t+s.tw)*.3+.7;bx.fillStyle=rgb([255,255,255],s.b*tw);bx.beginPath();bx.arc(s.x*W,s.y*H,s.s,0,Math.PI*2);bx.fill();}
+}
+function drawBg(){if(!bgCanvas||bgCanvas.width!==W)drawBgOnce();X.drawImage(bgCanvas,0,0);}
+
+function drawNebula(opacity){
+    const t=performance.now()*.001;
+    for(const p of nebP){
+        p.a+=p.sp;
+        const x=CX+Math.cos(p.a+t*.1)*p.d*MR,y=CY+Math.sin(p.a+t*.07)*p.d*MR*.85;
+        const g=X.createRadialGradient(x,y,0,x,y,p.s);const h=(p.h+t*3)%360;
+        g.addColorStop(0,`hsla(${h},60%,35%,${p.o*opacity})`);g.addColorStop(1,`hsla(${h},60%,20%,0)`);
+        X.fillStyle=g;X.fillRect(x-p.s,y-p.s,p.s*2,p.s*2);
+    }
+}
+
+function drawDisk(cond,opacity){
+    const t=performance.now()*.001;
+    for(const p of diskP){
+        const rs=p.sp*(.2+cond*1.2);
+        const angle=p.a+t*rs*.12;
+        const dist=p.d*(1-cond*.55)*MR;
+        const flat=1-cond*.82;
+        const x=CX+Math.cos(angle)*dist;
+        const y=CY+Math.sin(angle)*dist*(.2+flat*.8)+p.yOff*MR*.25*flat;
+        const sz=p.s*(1-cond*.3);
+        const br=p.br*(1+cond*(1-p.d)*2)*opacity;
+        X.fillStyle=`hsla(${p.h},45%,55%,${Math.min(br,.55)})`;
+        X.beginPath();X.arc(x,y,Math.max(.5,sz),0,Math.PI*2);X.fill();
+    }
+    if(cond>.3){
+        const gr=MR*.08*cond;
+        const g=X.createRadialGradient(CX,CY,0,CX,CY,gr);
+        g.addColorStop(0,`rgba(255,200,100,${cond*.4*opacity})`);
+        g.addColorStop(1,'rgba(255,150,50,0)');
+        X.fillStyle=g;X.beginPath();X.arc(CX,CY,gr,0,Math.PI*2);X.fill();
+    }
+}
+
+function drawStar(st){
+    const r=st.r*MR;if(r<1)return;
+    const layers=st.ly||[];if(!layers.length)return;
+    const outerC=layers[layers.length-1].c;
+    const gg=X.createRadialGradient(CX,CY,r*.7,CX,CY,r*1.5);
+    gg.addColorStop(0,rgb(outerC,.18));gg.addColorStop(1,'rgba(0,0,0,0)');
+    X.fillStyle=gg;X.beginPath();X.arc(CX,CY,r*1.5,0,Math.PI*2);X.fill();
+
+    for(let i=layers.length-1;i>=0;i--){
+        const L=layers[i],outerR=r*L.to,alpha=L.opacity!==undefined?L.opacity:1;
+        if(outerR<.5)continue;
+        X.fillStyle=rgb(L.c,alpha);X.beginPath();X.arc(CX,CY,outerR,0,Math.PI*2);X.fill();
+        if(i>0&&outerR>4){X.strokeStyle=`rgba(255,255,255,${.4*alpha})`;X.lineWidth=Math.max(1.5,outerR*.012);X.beginPath();X.arc(CX,CY,outerR,0,Math.PI*2);X.stroke();}
+    }
+    X.strokeStyle='rgba(255,255,255,.3)';X.lineWidth=Math.max(1.5,r*.008);
+    X.beginPath();X.arc(CX,CY,r,0,Math.PI*2);X.stroke();
+
+    for(let i=0;i<layers.length;i++){
+        const L=layers[i];if(!L.lb)continue;
+        const midR=r*(L.fr+L.to)/2, px=r*(L.to-L.fr);
+        if(px<14){
+            const fs=Math.max(10,Math.min(14,12));
+            X.font=`600 ${fs}px -apple-system,sans-serif`;X.textAlign='left';X.textBaseline='middle';
+            const lx=CX+midR,ly2=CY-r*.25+i*20,lx2=CX+r+18+i*10;
+            X.strokeStyle='rgba(255,255,255,.25)';X.lineWidth=1;X.beginPath();X.moveTo(lx,CY);X.lineTo(lx2-4,ly2);X.stroke();
+            X.fillStyle='rgba(255,255,255,.85)';X.fillText(L.lb,lx2,ly2);
+        } else {
+            const fs=Math.max(11,Math.min(20,px*.35));
+            X.font=`700 ${fs}px -apple-system,sans-serif`;X.textAlign='center';X.textBaseline='middle';
+            X.fillStyle='rgba(255,255,255,.9)';X.fillText(L.lb,CX,CY-midR);
+        }
+    }
+}
+
+function drawArrow(x1,y1,x2,y2,color,hs){
+    const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);if(len<2)return;
+    const ux=dx/len,uy=dy/len;
+    X.strokeStyle=color;X.lineWidth=2.5;X.beginPath();X.moveTo(x1,y1);X.lineTo(x2,y2);X.stroke();
+    X.fillStyle=color;X.beginPath();X.moveTo(x2,y2);X.lineTo(x2-ux*hs+uy*hs*.5,y2-uy*hs-ux*hs*.5);X.lineTo(x2-ux*hs-uy*hs*.5,y2-uy*hs+ux*hs*.5);X.closePath();X.fill();
+}
+
+function drawForces(st){
+    const r=st.r*MR;if(r<10)return;
+    const fc=st.fc,absF=Math.abs(fc),maxL=Math.min(r*.5,42),gap=r+14;
+    const inS=fc<0?1:Math.max(.25,1-absF), outS=fc>0?1:Math.max(.25,1-absF);
+    const inL=maxL*inS,outL=maxL*outS;
+    const angles=[0,Math.PI/2,Math.PI,Math.PI*1.5];
+    for(const a of angles){
+        const cos=Math.cos(a),sin=Math.sin(a);
+        if(inL>3) drawArrow(CX+cos*(gap+inL),CY+sin*(gap+inL),CX+cos*gap,CY+sin*gap,`rgba(100,180,255,${.25+inS*.4})`,5+inS*4);
+        if(outL>3) drawArrow(CX+cos*(gap+1),CY+sin*(gap+1),CX+cos*(gap+outL+1),CY+sin*(gap+outL+1),`rgba(255,180,80,${.25+outS*.4})`,5+outS*4);
+    }
+    X.font='600 11px -apple-system,sans-serif';X.textAlign='center';
+    const ly=CY+r+Math.max(inL,outL)+28;
+    if(absF<.12){X.fillStyle='rgba(255,255,255,.45)';X.fillText('중력 = 복사압 (평형)',CX,ly);}
+    else if(fc<-.12){X.fillStyle='rgba(100,180,255,.75)';X.fillText('중력 수축 → 온도 상승',CX,ly);}
+    else{X.fillStyle='rgba(255,180,80,.75)';X.fillText('복사압 > 중력 → 팽창',CX,ly);}
+}
+
+function fmtTemp(k){
+    if(k>=1e10) return Math.round(k/1e8)+'억';
+    if(k>=1e8) return (k/1e8).toFixed(0)+'억';
+    if(k>=1e7){const m=Math.round(k/1e4);return m.toLocaleString()+'만';}
+    if(k>=1e6){const m=Math.round(k/1e4);return m.toLocaleString()+'만';}
+    if(k>=1e4) return Math.round(k/1e4)+'만';
+    if(k>=1000) return Math.round(k/100)*100+'';
+    return Math.round(k)+'';
+}
+
+function drawTemp(st){
+    const r=st.r*MR;if(r<5)return;
+    const hasCt=st.ct>1e5,hasSht=st.sht>1e5,hasT=st.temp>100;if(!hasCt&&!hasT)return;
+    const bx=CX-r-16;let by=CY-r-8;
+    X.textAlign='right';X.textBaseline='middle';
+    if(hasCt){
+        const s='중심부  '+fmtTemp(st.ct)+' K',hot=st.ct>=1e8;
+        X.font=`700 ${hot?15:13}px -apple-system,sans-serif`;
+        const tw=X.measureText(s).width;
+        X.fillStyle=hot?'rgba(255,80,50,.12)':'rgba(255,255,255,.08)';
+        X.fillRect(bx-tw-8,by-12,tw+14,24);
+        X.fillStyle=hot?'rgba(255,120,60,.95)':'rgba(255,200,100,.75)';
+        X.fillText(s,bx,by);by+=26;
+    }
+    if(hasSht){
+        const s='수소연소각  '+fmtTemp(st.sht)+' K';
+        X.font='600 12px -apple-system,sans-serif';
+        const tw=X.measureText(s).width;
+        X.fillStyle='rgba(255,160,40,.1)';X.fillRect(bx-tw-8,by-11,tw+14,22);
+        X.fillStyle='rgba(255,180,60,.8)';X.fillText(s,bx,by);by+=24;
+    }
+    if(hasT){
+        const s='표면  '+fmtTemp(st.temp)+' K';
+        X.font='600 11px -apple-system,sans-serif';
+        const tw=X.measureText(s).width;
+        X.fillStyle='rgba(255,255,255,.06)';X.fillRect(bx-tw-8,by-10,tw+14,20);
+        X.fillStyle='rgba(255,255,255,.5)';X.fillText(s,bx,by);
+    }
+}
+
+function drawPlanetary(st){
+    const coreR=Math.max(st.r*MR,3),ringR=st.ring*MR;
+    const coreC=st.ly&&st.ly.length?st.ly[0].c:[200,230,255];
+    for(const p of ringP){p.x+=p.vx;p.y+=p.vy;p.life-=p.decay;if(p.life<=0)continue;
+        X.fillStyle=rgb(p.c,p.life*.4);X.beginPath();X.arc(CX+p.x,CY+p.y,p.s*p.life,0,Math.PI*2);X.fill();}
+    if(ringR>5){X.beginPath();X.arc(CX,CY,ringR,0,Math.PI*2);X.strokeStyle=`rgba(120,180,255,${Math.max(0,.3-st.ring*.15)})`;X.lineWidth=ringR*.08;X.stroke();}
+    if(coreR>1){
+        const cg=X.createRadialGradient(CX,CY,0,CX,CY,coreR*3);
+        cg.addColorStop(0,rgb(coreC,.8));cg.addColorStop(.3,rgb(coreC,.3));cg.addColorStop(1,'rgba(0,0,0,0)');
+        X.fillStyle=cg;X.beginPath();X.arc(CX,CY,coreR*3,0,Math.PI*2);X.fill();
+        X.fillStyle=rgb(coreC);X.beginPath();X.arc(CX,CY,coreR,0,Math.PI*2);X.fill();
+    }
+}
+
+function drawSupernova(st){
+    const phase=st.boom;
+    if(phase<1.3){const flash=Math.max(0,1-(phase/.6));if(flash>0){X.fillStyle=rgb([255,255,240],flash*.9);X.fillRect(0,0,W,H);}}
+    const labelShown=new Set();
+    for(const p of boomP){
+        p.x+=p.vx*2;p.y+=p.vy*2;p.life-=p.decay;if(p.life<=0)continue;
+        const trail=Math.min(p.life,.6);
+        X.fillStyle=rgb(p.c,trail*.7);X.beginPath();X.arc(CX+p.x,CY+p.y,p.s*p.life,0,Math.PI*2);X.fill();
+        if(p.label&&p.life>.4&&!labelShown.has(p.label)){
+            const dist=Math.sqrt(p.x*p.x+p.y*p.y);
+            if(dist>80&&dist<350){
+                X.font='bold 11px -apple-system,sans-serif';X.textAlign='center';X.fillStyle=rgb(p.c,.9);
+                X.fillText(p.label,CX+p.x,CY+p.y-p.s*p.life-6);
+                labelShown.add(p.label);
+            }
+        }
+    }
+    if(phase>1&&phase<2.5){
+        X.font='600 14px -apple-system,sans-serif';X.textAlign='center';
+        X.fillStyle=`rgba(255,255,200,${Math.max(0,1-(phase-1)*.7)})`;
+        X.fillText('Au, Pt, U 등 중원소 생성',CX,CY+MR*.35);
+    }
+}
+
+let lastBoomState=0,lastRingState=0;
+
+function render(){
+    const st=interp(progress);
+    if(st.n!==prevStage){$stage.textContent=st.n||'';prevStage=st.n;}
+    drawBg();
+
+    const nebOp=Math.max(0,1-st.r/.12);
+    if(nebOp>0) drawNebula(nebOp);
+
+    if(progress>.02&&progress<.16){
+        const cond=Math.min(1,(progress-.02)/.08);
+        const fade=progress>.11?Math.max(0,1-(progress-.11)/.05):1;
+        if(fade>0) drawDisk(cond,fade);
+    }
+
+    if(st.ring>0){if(lastRingState===0)mkRing();drawPlanetary(st);lastRingState=st.ring;}
+    else lastRingState=0;
+
+    if(st.boom>0){if(lastBoomState===0)mkBoom();drawSupernova(st);lastBoomState=st.boom;}
+    else lastBoomState=0;
+
+    if(st.r>0&&st.ly&&st.ly.length>0&&st.boom===0&&st.ring===0){
+        drawStar(st);drawForces(st);drawTemp(st);
+    }
+}
+
+function animate(){
+    if(playing){progress=Math.min(1,progress+speed);$tl.value=Math.round(progress*10000);if(progress>=1){playing=false;$bp.textContent='▶';}}
+    const t=performance.now()*.0003;
+    for(const s of bgStars) s.b=(Math.sin(t+s.tw)*.15+.85)*(s.b*.5+.5);
+    bgCanvas=null;render();requestAnimationFrame(animate);
+}
+
+function updateMarks(){
+    const P=getPath(),names=[];let last='';
+    for(const s of P){if(s.n&&s.n!==last){names.push({n:s.n,t:s.t});last=s.n;}}
+    $marks.innerHTML=names.map(m=>`<span style="left:${m.t*100}%">${m.n}</span>`).join('');
+}
+
+$bp.onclick=()=>{if(progress>=1){progress=0;$tl.value=0;}playing=!playing;$bp.textContent=playing?'⏸':'▶';$bp.classList.toggle('active',playing);};
+document.getElementById('br').onclick=()=>{progress=0;playing=false;$tl.value=0;$bp.textContent='▶';$bp.classList.remove('active');lastBoomState=0;lastRingState=0;};
+$tl.addEventListener('input',()=>{progress=$tl.value/10000;playing=false;$bp.textContent='▶';$bp.classList.remove('active');});
+document.querySelectorAll('.mo').forEach(el=>{el.onclick=()=>{mass=el.dataset.m;document.querySelectorAll('.mo').forEach(e=>e.classList.toggle('on',e.dataset.m===mass));progress=0;$tl.value=0;playing=false;$bp.textContent='▶';$bp.classList.remove('active');lastBoomState=0;lastRingState=0;updateMarks();};});
+window.addEventListener('resize',()=>{resize();bgCanvas=null;});
+document.addEventListener('keydown',e=>{
+    if(e.code==='Space'){e.preventDefault();$bp.click();}
+    if(e.code==='KeyR')document.getElementById('br').click();
+    if(e.code==='ArrowRight'){progress=Math.min(1,progress+.01);$tl.value=Math.round(progress*10000);}
+    if(e.code==='ArrowLeft'){progress=Math.max(0,progress-.01);$tl.value=Math.round(progress*10000);}
+});
+
+resize();updateMarks();animate();
+</script>
+</body>
+</html>
