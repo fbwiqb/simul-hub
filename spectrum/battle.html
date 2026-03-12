@@ -730,9 +730,47 @@ async function joinRoom() {
     return;
   }
   var roomData = roomSnap.data();
-  if (roomData.status !== 'lobby') {
-    errEl.textContent = '이미 시작된 방입니다.';
+  if (roomData.status === 'finished') {
+    errEl.textContent = '종료된 방입니다.';
     errEl.style.display = 'block';
+    return;
+  }
+
+  if (roomData.status !== 'lobby') {
+    var playersSnap = await roomRef.collection('players').where('name', '==', name).get();
+    if (playersSnap.empty) {
+      errEl.textContent = '이미 시작된 방입니다. 기존 이름으로 재접속하세요.';
+      errEl.style.display = 'block';
+      return;
+    }
+    var existingDoc = playersSnap.docs[0];
+    var existingData = existingDoc.data();
+    errEl.style.display = 'none';
+
+    state.role = 'student';
+    state.roomCode = code;
+    state.playerId = existingDoc.id;
+    state.playerName = name;
+    sessionStorage.setItem('spectrum_battle', JSON.stringify({
+      roomCode: code, playerId: existingDoc.id, playerName: name
+    }));
+
+    if (existingData.champion) {
+      document.getElementById('championName').textContent = '\uD83C\uDFC6 ' + name + '!';
+      showScreen('screenChampion');
+      spawnConfetti();
+    } else if (existingData.eliminated) {
+      showScreen('screenEliminated');
+    } else if (existingData.matchId && existingData.status === 'matched') {
+      state.matchId = existingData.matchId;
+      loadRoomSettings(function() {
+        showScreen('screenBattle');
+        listenMatch();
+      });
+    } else {
+      showScreen('screenWaitNextRound');
+      listenForNextRound();
+    }
     return;
   }
 
