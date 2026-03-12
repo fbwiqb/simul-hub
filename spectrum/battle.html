@@ -366,8 +366,8 @@ var state = {
 };
 
 function getElementCount(round) {
-  if (round <= 2) return 1;
-  if (round <= 4) return 2;
+  if (round <= 4) return 1;
+  if (round <= 10) return 2;
   return 3;
 }
 
@@ -841,6 +841,7 @@ function loadRoomSettings(cb) {
 
 function listenMatch() {
   if (state.matchUnsub) state.matchUnsub();
+  _lastContentKey = '';
   state.matchUnsub = db.collection('spectrum_battle').doc(state.roomCode)
     .collection('matches').doc(state.matchId).onSnapshot(function(snap) {
       if (!snap.exists) return;
@@ -855,8 +856,11 @@ function getMyPlayer(data) {
   return { me: data.p2, opp: data.p1, myKey: 'p2', oppKey: 'p1' };
 }
 
+var _lastContentKey = '';
+
 function renderBattle(data) {
   if (data.status === 'finished') {
+    _lastContentKey = '';
     renderMatchEnd(data);
     return;
   }
@@ -878,6 +882,10 @@ function renderBattle(data) {
     '</div>';
 
   document.getElementById('roundBadge').innerHTML = 'Round <span>' + data.round + '</span>';
+
+  var contentKey = data.turn.phase + '_' + data.round;
+  if (contentKey === _lastContentKey) return;
+  _lastContentKey = contentKey;
 
   var content = document.getElementById('battleContent');
   var turn = data.turn;
@@ -991,7 +999,7 @@ async function submitAttack() {
   if (!elements || elements.length === 0 || !mode) return;
   document.getElementById('btnAttack').disabled = true;
 
-  var timeLimit = elements.length * 8;
+  var timeLimit = elements.length * 12;
 
   await db.collection('spectrum_battle').doc(state.roomCode)
     .collection('matches').doc(state.matchId).update({
@@ -1434,7 +1442,7 @@ var AIPlayer = {
     var count = data.turn.elementCount;
     var elements = pickRandomElements(count);
     var mode = Math.random() < 0.5 ? 'emission' : 'absorption';
-    var timeLimit = elements.length * 8;
+    var timeLimit = elements.length * 12;
     await db.collection('spectrum_battle').doc(roomCode)
       .collection('matches').doc(matchId).update({
         'turn.elements': elements,
