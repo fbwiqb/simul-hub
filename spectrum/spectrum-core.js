@@ -68,7 +68,7 @@ function renderMiniSpectrum(element) {
   ELEMENTS[element].forEach(function(wl) {
     if (wl >= 380 && wl <= 750) {
       const line = document.createElement('div');
-      line.style.cssText = 'position:absolute;top:0;bottom:0;width:2px;left:' + wlToPercent(wl) + '%;background:' + wavelengthToRgb(wl);
+      line.style.cssText = 'position:absolute;top:0;bottom:0;width:3px;left:' + wlToPercent(wl) + '%;background:' + wavelengthToRgb(wl);
       container.appendChild(line);
     }
   });
