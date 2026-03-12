@@ -26,6 +26,7 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
 .screen{display:none;width:100%;max-width:900px;padding:16px 10px;flex-direction:column;align-items:center;min-height:100vh;}
+#screenTeacherOverview{max-width:1400px;}
 .screen.active{display:flex;}
 h1{font-size:2em;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:8px;}
 h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
@@ -146,18 +147,15 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
 .mode-badge.absorption{background:rgba(124,77,255,0.15);color:var(--accent2);border:1px solid var(--accent2);}
 .count-hint{color:var(--text-dim);font-size:0.9em;text-align:center;margin-bottom:8px;}
 .footer{position:fixed;bottom:8px;text-align:center;font-size:0.7em;color:rgba(255,255,255,0.3);}
-.ref-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:50;overflow-y:auto;padding:20px;display:none;}
-.ref-overlay.active{display:block;}
-.ref-title{text-align:center;font-size:1.6em;font-weight:800;color:var(--accent);margin-bottom:20px;}
-.ref-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:1200px;margin:0 auto;}
-.ref-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
-.ref-card-header{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
-.ref-card-header .ref-symbol{font-size:1.8em;font-weight:800;color:var(--text);min-width:50px;text-align:center;}
-.ref-card-header .ref-name{font-size:1em;color:var(--text-dim);}
-.ref-spectrum-row{margin:6px 0;}
-.ref-spectrum-label{font-size:0.75em;color:var(--text-dim);margin-bottom:4px;}
-.ref-spectrum-bar{height:36px;border-radius:6px;position:relative;border:1px solid var(--border);overflow:visible;}
-.ref-close{position:fixed;top:16px;right:16px;z-index:51;background:var(--wrong);color:#fff;border:none;width:48px;height:48px;border-radius:50%;font-size:1.5em;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.teacher-layout{display:flex;gap:16px;width:100%;flex:1;min-height:0;}
+.teacher-ref-col{width:340px;flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
+.teacher-match-col{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.ref-title{font-size:1em;font-weight:700;color:var(--accent);margin-bottom:4px;text-align:center;}
+.ref-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;}
+.ref-card .ref-symbol{font-size:1.4em;font-weight:800;color:var(--text);min-width:36px;text-align:center;}
+.ref-card .ref-name{font-size:0.8em;color:var(--text-dim);min-width:40px;}
+.ref-card .ref-bar-wrap{flex:1;min-width:0;}
+.ref-spectrum-bar{height:28px;border-radius:5px;position:relative;border:1px solid var(--border);overflow:visible;}
 .mode-select{display:flex;gap:8px;margin-bottom:12px;justify-content:center;}
 .mode-select-btn{flex:1;max-width:160px;padding:12px 8px;border:2px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--text-dim);font-size:1em;font-weight:700;cursor:pointer;text-align:center;transition:all 0.2s;}
 .mode-select-btn.sel-emission{border-color:var(--accent);color:var(--accent);background:rgba(79,195,247,0.15);}
@@ -197,7 +195,8 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
   .spectrum-preview .spectrum-bar{height:60px;}
   .wl-tooltip{font-size:11px;top:-24px;}
   .wavelength-scale{font-size:10px;}
-  .ref-grid{grid-template-columns:1fr;}
+  .teacher-layout{flex-direction:column;}
+  .teacher-ref-col{width:100%;max-height:200px;flex-shrink:0;}
   .mode-select-btn{padding:14px 8px;font-size:1.05em;}
 }
 </style>
@@ -251,20 +250,25 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
 <div class="screen" id="screenTeacherOverview">
   <div class="flex-row items-center w-full" style="justify-content:space-between;margin-bottom:12px;">
     <h2 style="margin:0;">매치 현황</h2>
-    <div class="flex-row gap-8">
-      <button class="btn btn-outline" onclick="toggleRefPanel()">스펙트럼 참고표</button>
-      <button class="btn btn-danger" onclick="finishRoom()">종료</button>
+    <button class="btn btn-danger" onclick="finishRoom()">종료</button>
+  </div>
+  <div class="teacher-layout">
+    <div class="teacher-ref-col">
+      <div class="ref-title">방출 스펙트럼 참고표</div>
+      <div id="refGrid"></div>
     </div>
-  </div>
-  <div class="bracket-info">
-    <span class="bracket-round-label" id="bracketRoundLabel">토너먼트 라운드 1</span>
-    <span class="bracket-match-count" id="bracketMatchCount"></span>
-  </div>
-  <div class="bracket-tabs" id="bracketTabs"></div>
-  <div id="championBanner" style="display:none;"></div>
-  <div class="match-grid" id="matchGrid"></div>
-  <div style="text-align:center;margin-top:16px;">
-    <button class="btn-next-round" id="btnNextRound" onclick="nextBracketRound()">다음 라운드 →</button>
+    <div class="teacher-match-col">
+      <div class="bracket-info">
+        <span class="bracket-round-label" id="bracketRoundLabel">토너먼트 라운드 1</span>
+        <span class="bracket-match-count" id="bracketMatchCount"></span>
+      </div>
+      <div class="bracket-tabs" id="bracketTabs"></div>
+      <div id="championBanner" style="display:none;"></div>
+      <div class="match-grid" id="matchGrid"></div>
+      <div style="text-align:center;margin-top:16px;">
+        <button class="btn-next-round" id="btnNextRound" onclick="nextBracketRound()">다음 라운드 →</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -322,12 +326,6 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
     <div class="winner-text win" style="font-size:1.4em;">승리! 다음 라운드를 기다려주세요...</div>
     <div class="waiting-text pulse" style="font-size:0.9em;">교사가 다음 라운드를 시작하면 자동으로 연결됩니다.</div>
   </div>
-</div>
-
-<div class="ref-overlay" id="refOverlay">
-  <button class="ref-close" onclick="toggleRefPanel()">&times;</button>
-  <div class="ref-title">원소별 스펙트럼 참고표</div>
-  <div class="ref-grid" id="refGrid"></div>
 </div>
 
 <div class="footer">ⓒ 2025 충남삼성고등학교 신도경T</div>
@@ -435,25 +433,18 @@ function generateQR(code) {
   container.innerHTML = qr.createImgTag(4, 8);
 }
 
-function toggleRefPanel() {
-  var overlay = document.getElementById('refOverlay');
-  if (overlay.classList.contains('active')) {
-    overlay.classList.remove('active');
-    return;
-  }
-  overlay.classList.add('active');
+function buildRefGrid() {
   var grid = document.getElementById('refGrid');
   if (grid.children.length > 0) return;
   ALL_ELEMENTS.forEach(function(el) {
     var card = document.createElement('div');
     card.className = 'ref-card';
     card.innerHTML =
-      '<div class="ref-card-header"><span class="ref-symbol">' + el + '</span><span class="ref-name">' + ELEMENT_NAMES[el] + '</span></div>' +
-      '<div class="ref-spectrum-row"><div class="ref-spectrum-label">방출</div><div class="ref-spectrum-bar" id="ref-em-' + el + '"></div></div>' +
-      '<div class="ref-spectrum-row"><div class="ref-spectrum-label">흡수</div><div class="ref-spectrum-bar" id="ref-ab-' + el + '"></div></div>';
+      '<span class="ref-symbol">' + el + '</span>' +
+      '<span class="ref-name">' + ELEMENT_NAMES[el] + '</span>' +
+      '<div class="ref-bar-wrap"><div class="ref-spectrum-bar" id="ref-em-' + el + '"></div></div>';
     grid.appendChild(card);
     renderRefSpectrum(el, 'emission', document.getElementById('ref-em-' + el));
-    renderRefSpectrum(el, 'absorption', document.getElementById('ref-ab-' + el));
   });
 }
 
@@ -514,6 +505,7 @@ async function startBattle() {
   state.viewingBracketRound = 1;
   await matchPlayers(state.roomCode, 1);
   showScreen('screenTeacherOverview');
+  buildRefGrid();
   listenMatches();
 }
 
