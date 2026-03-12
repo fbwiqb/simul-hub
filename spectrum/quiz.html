@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>스펙트럼 퀴즈 - 교사 대시보드</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --surface: #131830;
+  --surface2: #1a2040;
+  --border: #2a3060;
+  --text: #e8eaf6;
+  --text-dim: #8890b0;
+  --accent: #4fc3f7;
+  --accent2: #7c4dff;
+  --correct: #00e676;
+  --wrong: #ff1744;
+  --gold: #ffd700;
+  --silver: #c0c0c0;
+  --bronze: #cd7f32;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Segoe UI', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+.screen { display:none; }
+.screen.active { display:flex; flex-direction:column; min-height:100vh; }
+.wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  width: 100%;
+}
+h1 {
+  text-align: center;
+  font-size: 1.6em;
+  margin-bottom: 24px;
+  color: var(--accent);
+}
+.subtitle {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.9em;
+  margin-top: -16px;
+  margin-bottom: 24px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+.btn:active { transform: translateY(0); }
+.btn-accent { background: var(--accent); color: #0a0e1a; }
+.btn-accent2 { background: var(--accent2); color: white; }
+.btn-correct { background: var(--correct); color: #0a0e1a; }
+.btn-wrong { background: var(--wrong); color: white; }
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--border);
+  color: var(--text);
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sm { padding: 8px 16px; font-size: 13px; }
+.btn-lg { padding: 14px 32px; font-size: 17px; }
+input[type="password"], input[type="text"] {
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  color: var(--text);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+input:focus { border-color: var(--accent); }
+.input-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  max-width: 400px;
+  margin: 0 auto;
+}
+.input-group input { flex:1; }
+.error-msg {
+  color: var(--wrong);
+  text-align: center;
+  margin-top: 8px;
+  font-size: 13px;
+  min-height: 20px;
+}
+
+.login-screen {
+  align-items: center;
+  justify-content: center;
+}
+.login-box {
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+  padding: 40px;
+}
+.login-box h1 { font-size: 2em; margin-bottom: 8px; }
+.login-box .subtitle { margin-bottom: 32px; }
+.login-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.session-code-display {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0;
+}
+.code-digit {
+  background: var(--surface2);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  width: 52px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2em;
+  font-weight: 800;
+  color: var(--accent);
+  font-family: 'Consolas', monospace;
+}
+.qr-section {
+  text-align: center;
+  margin: 16px 0;
+}
+.qr-section img { border-radius: 8px; }
+.join-url {
+  color: var(--text-dim);
+  font-size: 12px;
+  word-break: break-all;
+  margin-top: 8px;
+  user-select: all;
+}
+
+.player-area {
+  margin-top: 16px;
+}
+.player-count {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  text-align: center;
+}
+.player-count strong {
+  color: var(--accent);
+  font-size: 1.6em;
+}
+.player-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  min-height: 40px;
+}
+.player-tag {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--text);
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity:0; transform:scale(0.8); }
+  to { opacity:1; transform:scale(1); }
+}
+.lobby-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.builder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.builder-header h2 {
+  font-size: 1.3em;
+  color: var(--accent);
+}
+.mode-toggle {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--accent2);
+}
+.mode-toggle label {
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: var(--surface2);
+  transition: all 0.2s;
+  user-select: none;
+}
+.mode-toggle input { display:none; }
+.mode-toggle input:checked + label {
+  background: var(--accent2);
+  color: white;
+}
+.element-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.element-card {
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  user-select: none;
+}
+.element-card:hover { border-color: var(--accent); }
+.element-card.selected {
+  border-color: var(--accent);
+  background: rgba(79,195,247,0.15);
+  box-shadow: 0 0 12px rgba(79,195,247,0.2);
+}
+.element-card .el-symbol {
+  font-size: 1.4em;
+  font-weight: 800;
+  color: var(--text);
+}
+.element-card .el-name {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+.element-card .mini-spectrum {
+  height: 12px;
+  background: #000;
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.preview-section {
+  margin-bottom: 20px;
+}
+.preview-section h3 {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.spectrum-bar {
+  height: 40px;
+  background: #000;
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.spectral-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+.wl-tooltip {
+  position: absolute;
+  top: -24px;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.9);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.spectral-line:hover .wl-tooltip { opacity:1; }
+.wavelength-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+.builder-options {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.option-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.option-group span { font-size: 13px; color: var(--text-dim); }
+.timer-pills {
+  display: flex;
+  gap: 6px;
+}
+.timer-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+.timer-pill.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(79,195,247,0.1);
+}
+.timer-pill:hover { border-color: var(--accent); }
+select {
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+}
+select:focus { border-color: var(--accent); }
+.builder-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.dash-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin-bottom: 16px;
+}
+.dash-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.dash-info .q-label {
+  font-size: 1.2em;
+  font-weight: 700;
+  color: var(--accent);
+}
+.dash-info .q-detail {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.dash-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+.dash-stat {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.dash-stat strong {
+  color: var(--text);
+}
+.dash-spectrum {
+  margin-top: 12px;
+}
+.dash-spectrum .spectrum-bar { height: 50px; }
+
+.answer-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+.answer-table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--text-dim);
+  border-bottom: 2px solid var(--border);
+  font-weight: 600;
+}
+.answer-table td {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.answer-table tr:last-child td { border-bottom: none; }
+.rank-cell {
+  font-size: 18px;
+  text-align: center;
+  width: 40px;
+}
+.name-cell { font-weight: 600; }
+.time-cell {
+  font-family: 'Consolas', monospace;
+  color: var(--accent);
+}
+.time-bar-cell { width: 30%; }
+.time-bar-bg {
+  height: 8px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.time-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+.time-bar-fill.correct { background: var(--correct); }
+.time-bar-fill.wrong { background: var(--wrong); }
+.selected-elements {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.selected-elements .el-correct { color: var(--correct); }
+.selected-elements .el-wrong { color: var(--wrong); }
+.status-pending {
+  color: var(--text-dim);
+  font-style: italic;
+}
+.correct-mark { color: var(--correct); font-weight: 700; }
+.wrong-mark { color: var(--wrong); font-weight: 700; }
+
+.dash-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.active {
+  display: flex;
+}
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-top h2 {
+  font-size: 1.2em;
+  color: var(--accent);
+}
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+}
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 20px; }
+
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.lb-table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--text-dim);
+  border-bottom: 2px solid var(--border);
+}
+.lb-table td {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.lb-table tr:last-child td { border-bottom: none; }
+
+.footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.timer-display {
+  text-align: center;
+  font-size: 2em;
+  font-weight: 800;
+  font-family: 'Consolas', monospace;
+  margin: 8px 0;
+}
+.timer-display.warning { color: var(--gold); }
+.timer-display.danger { color: var(--wrong); }
+.timer-display.normal { color: var(--accent); }
+
+.empty-msg {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 32px;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .wrap { padding: 12px; }
+  .element-grid { grid-template-columns: repeat(3, 1fr); }
+  .dash-info { flex-direction: column; align-items: flex-start; }
+  .builder-options { flex-direction: column; align-items: flex-start; }
+  .code-digit { width: 42px; height: 52px; font-size: 1.6em; }
+  .answer-table { font-size: 12px; }
+  .answer-table th, .answer-table td { padding: 8px 6px; }
+  .time-bar-cell { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="screen login-screen active">
+  <div class="login-box">
+    <div class="login-icon">🔬</div>
+    <h1>스펙트럼 퀴즈</h1>
+    <p class="subtitle">교사 대시보드</p>
+    <div class="input-group">
+      <input type="password" id="pwInput" placeholder="비밀번호 입력">
+      <button class="btn btn-accent" id="loginBtn">로그인</button>
+    </div>
+    <div class="error-msg" id="loginError"></div>
+  </div>
+</div>
+
+<div id="lobbyScreen" class="screen">
+  <div class="wrap">
+    <h1>스펙트럼 퀴즈</h1>
+    <div class="card">
+      <div style="text-align:center; margin-bottom:12px; font-size:14px; color:var(--text-dim)">세션 코드</div>
+      <div class="session-code-display" id="codeDisplay"></div>
+      <div class="qr-section">
+        <div id="qrContainer"></div>
+        <div class="join-url" id="joinUrl"></div>
+      </div>
+    </div>
+    <div class="card player-area">
+      <div class="player-count">참가자 <strong id="playerCount">0</strong>명</div>
+      <div class="player-tags" id="playerTags"></div>
+    </div>
+    <div class="lobby-actions">
+      <button class="btn btn-accent btn-lg" id="goBuilderBtn">문제 출제하기</button>
+    </div>
+    <div class="footer">ⓒ 2025 충남삼성고등학교 신도경T</div>
+  </div>
+</div>
+
+<div id="builderScreen" class="screen">
+  <div class="wrap">
+    <div class="builder-header">
+      <button class="btn btn-outline btn-sm" id="backLobbyBtn">← 대기실</button>
+      <h2>문제 출제</h2>
+      <div style="width:80px"></div>
+    </div>
+
+    <div class="card">
+      <div class="mode-toggle" id="modeToggle">
+        <input type="radio" name="mode" id="modeEmission" value="emission" checked>
+        <label for="modeEmission">방출 스펙트럼</label>
+        <input type="radio" name="mode" id="modeAbsorption" value="absorption">
+        <label for="modeAbsorption">흡수 스펙트럼</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="margin-bottom:12px; font-size:13px; color:var(--text-dim)">원소를 선택하세요</div>
+      <div class="element-grid" id="elementGrid"></div>
+    </div>
+
+    <div class="card preview-section">
+      <h3>미리보기</h3>
+      <div id="previewSpectrum"></div>
+    </div>
+
+    <div class="card">
+      <div class="builder-options">
+        <div class="option-group">
+          <span>타이머</span>
+          <div class="timer-pills" id="timerPills">
+            <div class="timer-pill active" data-val="30">30초</div>
+            <div class="timer-pill" data-val="45">45초</div>
+            <div class="timer-pill" data-val="60">60초</div>
+            <div class="timer-pill" data-val="0">없음</div>
+          </div>
+        </div>
+        <div class="option-group">
+          <span>원소 수 힌트</span>
+          <select id="countHint">
+            <option value="2">2개</option>
+            <option value="3" selected>3개</option>
+            <option value="4">4개</option>
+            <option value="5">5개</option>
+            <option value="6">6개</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="builder-actions">
+      <button class="btn btn-accent btn-lg" id="publishBtn">출제!</button>
+    </div>
+    <div class="footer">ⓒ 2025 충남삼성고등학교 신도경T</div>
+  </div>
+</div>
+
+<div id="dashScreen" class="screen">
+  <div class="wrap">
+    <div class="dash-header">
+      <div class="dash-info">
+        <span class="q-label" id="dashQLabel">Q1</span>
+        <span class="q-detail" id="dashQDetail"></span>
+      </div>
+      <div class="dash-stats">
+        <div class="dash-stat">제출: <strong id="dashSubmitted">0</strong>/<strong id="dashTotal">0</strong></div>
+        <div class="dash-stat">정답: <strong id="dashCorrectCount" style="color:var(--correct)">0</strong></div>
+      </div>
+      <div class="timer-display normal" id="dashTimer"></div>
+      <div class="dash-spectrum" id="dashSpectrum"></div>
+    </div>
+
+    <div class="card">
+      <table class="answer-table" id="answerTable">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th>이름</th>
+            <th>결과</th>
+            <th>시간</th>
+            <th class="time-bar-cell">속도</th>
+            <th>선택 원소</th>
+          </tr>
+        </thead>
+        <tbody id="answerBody"></tbody>
+      </table>
+      <div class="empty-msg" id="noAnswers">아직 제출된 답이 없습니다</div>
+    </div>
+
+    <div class="dash-actions">
+      <button class="btn btn-correct" id="revealBtn">결과 공개</button>
+      <button class="btn btn-accent" id="nextQBtn">다음 문제</button>
+      <button class="btn btn-accent2" id="leaderboardBtn">누적 순위</button>
+      <button class="btn btn-wrong btn-sm" id="endSessionBtn">세션 종료</button>
+    </div>
+    <div class="footer">ⓒ 2025 충남삼성고등학교 신도경T</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="lbModal">
+  <div class="modal-box">
+    <div class="modal-top">
+      <h2>누적 순위</h2>
+      <button class="modal-close" id="closeLbModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th>이름</th>
+            <th>정답 수</th>
+            <th>평균 시간</th>
+          </tr>
+        </thead>
+        <tbody id="lbBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script src="spectrum-core.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:'AIzaSyBWrkpW1J2bV19SxBNpW0YbBqtU0zaf1ok',
+  authDomain:'dahatni-dbe19.firebaseapp.com',
+  projectId:'dahatni-dbe19',
+  storageBucket:'dahatni-dbe19.appspot.com',
+  messagingSenderId:'576498073498',
+  appId:'1:576498073498:web:d5e7e3e1a0b1c2d3'
+});
+var db = firebase.firestore();
+
+var TEACHER_HASH = 'b9270ef103a6a5d4d21a75330111fd651df4f3b75b81f81dd580820e4ee9aad0';
+
+var sessionCode = null;
+var currentQuestionNumber = 0;
+var currentQuestion = null;
+var selectedBuilderElements = [];
+var selectedTimer = 30;
+var timerInterval = null;
+var timerRemaining = 0;
+var playersData = {};
+var playerUnsub = null;
+var sessionUnsub = null;
+
+async function hashPw(pw) {
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+
+document.getElementById('loginBtn').addEventListener('click', async function() {
+  var pw = document.getElementById('pwInput').value;
+  if (!pw) return;
+  var h = await hashPw(pw);
+  if (h === TEACHER_HASH) {
+    await startSession();
+  } else {
+    document.getElementById('loginError').textContent = '비밀번호가 올바르지 않습니다';
+  }
+});
+
+document.getElementById('pwInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('loginBtn').click();
+});
+
+async function createSession() {
+  var code = String(Math.floor(100000 + Math.random() * 900000));
+  await db.collection('spectrum_quiz').doc(code).set({
+    status: 'lobby',
+    question: null,
+    questionNumber: 0,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  return code;
+}
+
+async function startSession() {
+  sessionCode = await createSession();
+  currentQuestionNumber = 0;
+  playersData = {};
+  renderLobby();
+  showScreen('lobbyScreen');
+  listenPlayers();
+  listenSession();
+}
+
+function renderLobby() {
+  var display = document.getElementById('codeDisplay');
+  display.innerHTML = '';
+  sessionCode.split('').forEach(function(d) {
+    var el = document.createElement('div');
+    el.className = 'code-digit';
+    el.textContent = d;
+    display.appendChild(el);
+  });
+
+  var url = window.location.origin + window.location.pathname.replace('quiz.html', 'play.html') + '?s=' + sessionCode;
+  document.getElementById('joinUrl').textContent = url;
+
+  var qr = qrcode(0, 'M');
+  qr.addData(url);
+  qr.make();
+  document.getElementById('qrContainer').innerHTML = qr.createImgTag(4, 8);
+}
+
+function listenPlayers() {
+  if (playerUnsub) playerUnsub();
+  playerUnsub = db.collection('spectrum_quiz').doc(sessionCode)
+    .collection('players').onSnapshot(function(snap) {
+      playersData = {};
+      snap.forEach(function(doc) {
+        playersData[doc.id] = doc.data();
+      });
+      renderPlayerTags();
+      if (currentQuestion && document.getElementById('dashScreen').classList.contains('active')) {
+        renderAnswerTable();
+      }
+    });
+}
+
+function listenSession() {
+  if (sessionUnsub) sessionUnsub();
+  sessionUnsub = db.collection('spectrum_quiz').doc(sessionCode)
+    .onSnapshot(function(doc) {
+      var data = doc.data();
+      if (data && data.question && data.question.startedAt && currentQuestion) {
+        currentQuestion._startedAtMs = data.question.startedAt.toMillis();
+      }
+    });
+}
+
+function renderPlayerTags() {
+  var tags = document.getElementById('playerTags');
+  tags.innerHTML = '';
+  var names = Object.keys(playersData).map(function(id) { return playersData[id].name || id; });
+  names.sort();
+  document.getElementById('playerCount').textContent = names.length;
+  names.forEach(function(n) {
+    var tag = document.createElement('div');
+    tag.className = 'player-tag';
+    tag.textContent = n;
+    tags.appendChild(tag);
+  });
+}
+
+document.getElementById('goBuilderBtn').addEventListener('click', function() {
+  selectedBuilderElements = [];
+  renderBuilder();
+  showScreen('builderScreen');
+});
+
+document.getElementById('backLobbyBtn').addEventListener('click', function() {
+  showScreen('lobbyScreen');
+});
+
+function renderBuilder() {
+  var grid = document.getElementById('elementGrid');
+  grid.innerHTML = '';
+  ALL_ELEMENTS.forEach(function(el) {
+    var card = document.createElement('div');
+    card.className = 'element-card';
+    card.dataset.el = el;
+    if (selectedBuilderElements.indexOf(el) !== -1) card.classList.add('selected');
+
+    var sym = document.createElement('div');
+    sym.className = 'el-symbol';
+    sym.textContent = el;
+
+    var name = document.createElement('div');
+    name.className = 'el-name';
+    name.textContent = ELEMENT_NAMES[el];
+
+    var mini = renderMiniSpectrum(el);
+
+    card.appendChild(sym);
+    card.appendChild(name);
+    card.appendChild(mini);
+
+    card.addEventListener('click', function() {
+      var idx = selectedBuilderElements.indexOf(el);
+      if (idx === -1) {
+        selectedBuilderElements.push(el);
+        card.classList.add('selected');
+      } else {
+        selectedBuilderElements.splice(idx, 1);
+        card.classList.remove('selected');
+      }
+      updatePreview();
+      updateCountHint();
+    });
+
+    grid.appendChild(card);
+  });
+  updatePreview();
+
+  document.querySelectorAll('.timer-pill').forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      document.querySelectorAll('.timer-pill').forEach(function(p) { p.classList.remove('active'); });
+      pill.classList.add('active');
+      selectedTimer = parseInt(pill.dataset.val);
+    });
+  });
+}
+
+function updateCountHint() {
+  if (selectedBuilderElements.length >= 2 && selectedBuilderElements.length <= 6) {
+    document.getElementById('countHint').value = selectedBuilderElements.length;
+  }
+}
+
+function getSelectedMode() {
+  return document.getElementById('modeEmission').checked ? 'emission' : 'absorption';
+}
+
+function updatePreview() {
+  var container = document.getElementById('previewSpectrum');
+  container.innerHTML = '';
+  if (selectedBuilderElements.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:16px;font-size:13px">원소를 선택하면 미리보기가 표시됩니다</div>';
+    return;
+  }
+  renderSpectrum(container, selectedBuilderElements, getSelectedMode());
+}
+
+document.getElementById('modeEmission').addEventListener('change', updatePreview);
+document.getElementById('modeAbsorption').addEventListener('change', updatePreview);
+
+document.getElementById('publishBtn').addEventListener('click', async function() {
+  if (selectedBuilderElements.length < 1) {
+    alert('원소를 1개 이상 선택하세요');
+    return;
+  }
+  await publishQuestion(
+    sessionCode,
+    selectedBuilderElements.slice(),
+    getSelectedMode(),
+    selectedTimer
+  );
+});
+
+async function publishQuestion(code, elements, mode, timer) {
+  var qNum = currentQuestionNumber + 1;
+  currentQuestionNumber = qNum;
+  currentQuestion = {
+    elements: elements,
+    mode: mode,
+    count: parseInt(document.getElementById('countHint').value),
+    timer: timer,
+    number: qNum
+  };
+
+  var playerIds = Object.keys(playersData);
+  var batch = db.batch();
+  playerIds.forEach(function(pid) {
+    var ref = db.collection('spectrum_quiz').doc(code).collection('players').doc(pid);
+    batch.update(ref, { currentAnswer: null });
+  });
+  await batch.commit();
+
+  await db.collection('spectrum_quiz').doc(code).update({
+    status: 'active',
+    questionNumber: qNum,
+    question: {
+      elements: elements,
+      mode: mode,
+      count: parseInt(document.getElementById('countHint').value),
+      timer: timer,
+      number: qNum,
+      startedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }
+  });
+
+  showDashboard();
+}
+
+function showDashboard() {
+  showScreen('dashScreen');
+  renderDashboard();
+  startDashTimer();
+}
+
+function renderDashboard() {
+  var modeLabel = currentQuestion.mode === 'emission' ? '방출' : '흡수';
+  document.getElementById('dashQLabel').textContent = 'Q' + currentQuestion.number;
+  document.getElementById('dashQDetail').textContent =
+    modeLabel + ' 스펙트럼 (' + currentQuestion.elements.join(', ') + ')';
+
+  var specContainer = document.getElementById('dashSpectrum');
+  specContainer.innerHTML = '';
+  renderSpectrum(specContainer, currentQuestion.elements, currentQuestion.mode);
+
+  renderAnswerTable();
+}
+
+function startDashTimer() {
+  stopDashTimer();
+  if (!currentQuestion.timer || currentQuestion.timer === 0) {
+    document.getElementById('dashTimer').textContent = '';
+    return;
+  }
+  timerRemaining = currentQuestion.timer;
+  var timerEl = document.getElementById('dashTimer');
+  timerEl.textContent = timerRemaining + '초';
+  timerEl.className = 'timer-display normal';
+
+  timerInterval = setInterval(function() {
+    timerRemaining--;
+    if (timerRemaining <= 0) {
+      timerRemaining = 0;
+      stopDashTimer();
+      timerEl.textContent = '시간 종료!';
+      timerEl.className = 'timer-display danger';
+      return;
+    }
+    timerEl.textContent = timerRemaining + '초';
+    if (timerRemaining <= 5) {
+      timerEl.className = 'timer-display danger';
+    } else if (timerRemaining <= 15) {
+      timerEl.className = 'timer-display warning';
+    } else {
+      timerEl.className = 'timer-display normal';
+    }
+  }, 1000);
+}
+
+function stopDashTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function renderAnswerTable() {
+  var body = document.getElementById('answerBody');
+  var noMsg = document.getElementById('noAnswers');
+  var correctElements = currentQuestion.elements.slice().sort();
+  var qNumStr = String(currentQuestion.number);
+
+  var correctList = [];
+  var wrongList = [];
+  var pendingList = [];
+  var totalPlayers = Object.keys(playersData).length;
+  var totalSubmitted = 0;
+  var totalCorrectCount = 0;
+
+  Object.keys(playersData).forEach(function(pid) {
+    var p = playersData[pid];
+    var name = p.name || pid;
+
+    var answer = null;
+    if (p.answers && p.answers[qNumStr]) {
+      answer = p.answers[qNumStr];
+    } else if (p.currentAnswer && p.currentAnswer.selected) {
+      var sel = (p.currentAnswer.selected || []).slice().sort();
+      var isCorrect = sel.length === correctElements.length &&
+        sel.every(function(v, i) { return v === correctElements[i]; });
+      var time = 0;
+      if (p.currentAnswer.at && currentQuestion._startedAtMs) {
+        var atMs = typeof p.currentAnswer.at.toMillis === 'function'
+          ? p.currentAnswer.at.toMillis()
+          : p.currentAnswer.at;
+        time = Math.max(0, atMs - currentQuestion._startedAtMs);
+      }
+      answer = {
+        selected: p.currentAnswer.selected || [],
+        correct: isCorrect,
+        time: time
+      };
+    }
+
+    if (answer) {
+      totalSubmitted++;
+      if (answer.correct) {
+        totalCorrectCount++;
+        correctList.push({ name: name, time: answer.time || 0, selected: answer.selected || [] });
+      } else {
+        wrongList.push({ name: name, time: answer.time || 0, selected: answer.selected || [] });
+      }
+    } else {
+      pendingList.push({ name: name });
+    }
+  });
+
+  correctList.sort(function(a, b) { return a.time - b.time; });
+  wrongList.sort(function(a, b) { return a.time - b.time; });
+
+  document.getElementById('dashSubmitted').textContent = totalSubmitted;
+  document.getElementById('dashTotal').textContent = totalPlayers;
+  document.getElementById('dashCorrectCount').textContent = totalCorrectCount;
+
+  body.innerHTML = '';
+
+  var maxTime = 1;
+  correctList.concat(wrongList).forEach(function(item) {
+    if (item.time > maxTime) maxTime = item.time;
+  });
+
+  if (totalPlayers === 0) {
+    noMsg.style.display = 'block';
+    return;
+  }
+  noMsg.style.display = 'none';
+
+  var rank = 0;
+  correctList.forEach(function(item) {
+    rank++;
+    var tr = document.createElement('tr');
+    var medal = rank === 1 ? '\uD83E\uDD47' : rank === 2 ? '\uD83E\uDD48' : rank === 3 ? '\uD83E\uDD49' : rank;
+    var timeSec = (item.time / 1000).toFixed(1);
+    var barPct = maxTime > 0 ? Math.max(5, (item.time / maxTime) * 100) : 5;
+
+    tr.innerHTML =
+      '<td class="rank-cell">' + medal + '</td>' +
+      '<td class="name-cell">' + escHtml(item.name) + '</td>' +
+      '<td class="correct-mark">O</td>' +
+      '<td class="time-cell">' + timeSec + '초</td>' +
+      '<td class="time-bar-cell"><div class="time-bar-bg"><div class="time-bar-fill correct" style="width:' + barPct + '%"></div></div></td>' +
+      '<td></td>';
+    body.appendChild(tr);
+  });
+
+  wrongList.forEach(function(item) {
+    var tr = document.createElement('tr');
+    var timeSec = (item.time / 1000).toFixed(1);
+    var barPct = maxTime > 0 ? Math.max(5, (item.time / maxTime) * 100) : 5;
+
+    var selHtml = (item.selected || []).map(function(el) {
+      var cls = correctElements.indexOf(el) !== -1 ? 'el-correct' : 'el-wrong';
+      return '<span class="' + cls + '">' + escHtml(el) + '</span>';
+    }).join(', ');
+
+    tr.innerHTML =
+      '<td class="rank-cell"></td>' +
+      '<td class="name-cell">' + escHtml(item.name) + '</td>' +
+      '<td class="wrong-mark">✗</td>' +
+      '<td class="time-cell">' + timeSec + '초</td>' +
+      '<td class="time-bar-cell"><div class="time-bar-bg"><div class="time-bar-fill wrong" style="width:' + barPct + '%"></div></div></td>' +
+      '<td class="selected-elements">' + selHtml + '</td>';
+    body.appendChild(tr);
+  });
+
+  pendingList.forEach(function(item) {
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="rank-cell"></td>' +
+      '<td class="name-cell">' + escHtml(item.name) + '</td>' +
+      '<td class="status-pending">대기중</td>' +
+      '<td class="status-pending">—</td>' +
+      '<td class="time-bar-cell"></td>' +
+      '<td></td>';
+    body.appendChild(tr);
+  });
+}
+
+function escHtml(str) {
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+document.getElementById('revealBtn').addEventListener('click', async function() {
+  await db.collection('spectrum_quiz').doc(sessionCode).update({
+    status: 'reviewing'
+  });
+  this.disabled = true;
+  this.textContent = '공개됨';
+});
+
+document.getElementById('nextQBtn').addEventListener('click', function() {
+  stopDashTimer();
+  document.getElementById('revealBtn').disabled = false;
+  document.getElementById('revealBtn').textContent = '결과 공개';
+  selectedBuilderElements = [];
+  renderBuilder();
+  showScreen('builderScreen');
+});
+
+document.getElementById('endSessionBtn').addEventListener('click', async function() {
+  if (!confirm('세션을 종료하시겠습니까?')) return;
+  stopDashTimer();
+  await db.collection('spectrum_quiz').doc(sessionCode).update({
+    status: 'finished'
+  });
+  if (playerUnsub) playerUnsub();
+  if (sessionUnsub) sessionUnsub();
+  showScreen('loginScreen');
+  document.getElementById('pwInput').value = '';
+  document.getElementById('loginError').textContent = '';
+});
+
+document.getElementById('leaderboardBtn').addEventListener('click', function() {
+  renderLeaderboard();
+  document.getElementById('lbModal').classList.add('active');
+});
+
+document.getElementById('closeLbModal').addEventListener('click', function() {
+  document.getElementById('lbModal').classList.remove('active');
+});
+
+document.getElementById('lbModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('active');
+});
+
+function renderLeaderboard() {
+  var body = document.getElementById('lbBody');
+  body.innerHTML = '';
+
+  var stats = [];
+  Object.keys(playersData).forEach(function(pid) {
+    var p = playersData[pid];
+    var name = p.name || pid;
+    var totalCorrect = 0;
+    var totalTime = 0;
+
+    if (p.totalCorrect) {
+      totalCorrect = p.totalCorrect;
+      totalTime = p.totalTime || 0;
+    } else if (p.answers) {
+      Object.keys(p.answers).forEach(function(qn) {
+        if (p.answers[qn].correct) {
+          totalCorrect++;
+          totalTime += p.answers[qn].time || 0;
+        }
+      });
+    }
+
+    var avgTime = totalCorrect > 0 ? totalTime / totalCorrect : 999999;
+
+    stats.push({
+      name: name,
+      totalCorrect: totalCorrect,
+      totalTime: totalTime,
+      avgTime: avgTime
+    });
+  });
+
+  stats.sort(function(a, b) {
+    if (b.totalCorrect !== a.totalCorrect) return b.totalCorrect - a.totalCorrect;
+    return a.avgTime - b.avgTime;
+  });
+
+  stats.forEach(function(s, i) {
+    var tr = document.createElement('tr');
+    var medal = i === 0 ? '\uD83E\uDD47' : i === 1 ? '\uD83E\uDD48' : i === 2 ? '\uD83E\uDD49' : (i + 1);
+    var avgStr = s.totalCorrect > 0 ? (s.avgTime / 1000).toFixed(1) + '초' : '—';
+    tr.innerHTML =
+      '<td class="rank-cell">' + medal + '</td>' +
+      '<td class="name-cell">' + escHtml(s.name) + '</td>' +
+      '<td><strong>' + s.totalCorrect + '</strong>문제</td>' +
+      '<td class="time-cell">' + avgStr + '</td>';
+    body.appendChild(tr);
+  });
+
+  if (stats.length === 0) {
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td colspan="4" style="text-align:center;color:var(--text-dim);padding:20px">참가자가 없습니다</td>';
+    body.appendChild(tr);
+  }
+}
+</script>
+</body>
+</html>

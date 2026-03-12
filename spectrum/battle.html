@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>스펙트럼 배틀</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --surface: #131830;
+  --surface2: #1a2040;
+  --border: #2a3060;
+  --text: #e8eaf6;
+  --text-dim: #8890b0;
+  --accent: #4fc3f7;
+  --accent2: #7c4dff;
+  --correct: #00e676;
+  --wrong: #ff1744;
+  --gold: #ffd700;
+  --silver: #c0c0c0;
+  --bronze: #cd7f32;
+  --hp-green: #00e676;
+  --hp-yellow: #ffd740;
+  --hp-red: #ff1744;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+.screen{display:none;width:100%;max-width:900px;padding:20px;flex-direction:column;align-items:center;min-height:100vh;}
+.screen.active{display:flex;}
+h1{font-size:2em;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:8px;}
+h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
+.subtitle{color:var(--text-dim);font-size:0.9em;text-align:center;margin-bottom:24px;}
+.btn{border:none;padding:12px 28px;border-radius:12px;font-size:1em;font-weight:700;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px;}
+.btn:active{transform:scale(0.97);}
+.btn-accent{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
+.btn-accent:hover{filter:brightness(1.15);transform:translateY(-2px);}
+.btn-danger{background:var(--wrong);color:#fff;}
+.btn-danger:hover{filter:brightness(1.15);}
+.btn-outline{background:transparent;border:2px solid var(--accent);color:var(--accent);}
+.btn-outline:hover{background:rgba(79,195,247,0.1);}
+.btn-success{background:var(--correct);color:#000;}
+.btn-success:hover{filter:brightness(1.15);}
+.btn-large{padding:16px 40px;font-size:1.2em;border-radius:16px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;width:100%;}
+.input-field{background:var(--surface2);border:2px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-size:1em;width:100%;outline:none;transition:border-color 0.2s;}
+.input-field:focus{border-color:var(--accent);}
+.input-field::placeholder{color:var(--text-dim);}
+.room-code-display{font-size:3em;font-weight:800;letter-spacing:0.5em;text-align:center;color:var(--gold);font-family:'Courier New',monospace;padding:16px;background:var(--surface2);border-radius:12px;margin:12px 0;}
+.room-code-input{font-size:2em;font-weight:800;letter-spacing:0.5em;text-align:center;text-transform:uppercase;font-family:'Courier New',monospace;max-width:280px;}
+.qr-container{display:flex;justify-content:center;margin:12px 0;}
+.qr-container canvas,.qr-container img{border-radius:8px;background:#fff;padding:8px;}
+.settings-group{display:flex;flex-direction:column;gap:12px;margin:16px 0;}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.setting-label{color:var(--text-dim);font-size:0.9em;font-weight:600;}
+.radio-group{display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:3px;border:1px solid var(--border);}
+.radio-btn{padding:8px 16px;border:none;background:transparent;color:var(--text-dim);font-size:0.85em;font-weight:600;cursor:pointer;border-radius:8px;transition:all 0.2s;}
+.radio-btn.active{background:var(--accent);color:#000;}
+.select-field{background:var(--surface2);border:2px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:0.9em;outline:none;cursor:pointer;}
+.select-field option{background:var(--surface);color:var(--text);}
+.player-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;min-height:40px;}
+.player-chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:0.85em;color:var(--text);display:flex;align-items:center;gap:6px;}
+.player-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--correct);flex-shrink:0;}
+.hp-bar-container{width:100%;height:28px;background:var(--surface2);border-radius:14px;overflow:hidden;position:relative;border:1px solid var(--border);}
+.hp-bar-fill{height:100%;border-radius:14px;transition:width 0.6s ease;position:relative;}
+.hp-bar-fill.green{background:linear-gradient(90deg,#00c853,var(--hp-green));}
+.hp-bar-fill.yellow{background:linear-gradient(90deg,#ff8f00,var(--hp-yellow));}
+.hp-bar-fill.red{background:linear-gradient(90deg,#d50000,var(--hp-red));}
+.hp-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:0.8em;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.5);z-index:2;white-space:nowrap;}
+.battle-header{width:100%;display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.battle-player-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.battle-player-col .pname{font-weight:700;font-size:0.95em;color:var(--text);}
+.battle-vs{font-size:1.4em;font-weight:800;color:var(--wrong);flex-shrink:0;}
+.round-badge{text-align:center;color:var(--text-dim);font-size:0.85em;margin-bottom:8px;}
+.round-badge span{color:var(--accent);font-weight:700;}
+.element-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0;}
+.element-card{background:var(--surface2);border:2px solid var(--border);border-radius:10px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:all 0.2s;user-select:none;}
+.element-card:hover{border-color:var(--accent);background:rgba(79,195,247,0.05);}
+.element-card.selected{border-color:var(--accent);background:rgba(79,195,247,0.15);box-shadow:0 0 12px rgba(79,195,247,0.3);}
+.element-card .el-symbol{font-weight:800;font-size:1em;}
+.element-card .el-name{font-size:0.7em;color:var(--text-dim);}
+.element-card .mini-spectrum{width:100%;height:10px;background:#000;border-radius:3px;position:relative;overflow:hidden;}
+.spectrum-preview{margin:16px 0;}
+.spectrum-preview .spectrum-bar{height:50px;border-radius:8px;overflow:hidden;}
+.spectrum-preview .wavelength-scale{padding:0 4px;}
+.timer-section{width:100%;margin:12px 0;}
+.timer-track{width:100%;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;border:1px solid var(--border);}
+.timer-fill{height:100%;border-radius:4px;transition:width 0.1s linear;background:var(--accent);}
+.timer-fill.warn{background:var(--hp-yellow);}
+.timer-fill.danger{background:var(--wrong);}
+.timer-text{text-align:center;font-size:1.4em;font-weight:700;margin-bottom:4px;}
+.result-flash{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:100;pointer-events:none;animation:flashFade 2s ease forwards;}
+.result-flash-inner{font-size:1.8em;font-weight:800;padding:24px 40px;border-radius:20px;text-align:center;line-height:1.4;}
+.result-flash-inner.correct-fast{background:rgba(0,230,118,0.2);color:var(--correct);border:2px solid var(--correct);}
+.result-flash-inner.correct-slow{background:rgba(255,215,64,0.2);color:var(--hp-yellow);border:2px solid var(--hp-yellow);}
+.result-flash-inner.wrong{background:rgba(255,23,68,0.2);color:var(--wrong);border:2px solid var(--wrong);}
+.result-flash-inner.timeout{background:rgba(255,23,68,0.15);color:var(--wrong);border:2px solid var(--wrong);}
+@keyframes flashFade{0%{opacity:0;transform:scale(0.8);}15%{opacity:1;transform:scale(1);}75%{opacity:1;}100%{opacity:0;}}
+.match-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;width:100%;margin:12px 0;}
+.match-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;}
+.match-card.finished{opacity:0.7;border-color:var(--gold);}
+.match-card-header{display:flex;align-items:center;gap:8px;}
+.match-card-header .mc-name{flex:1;font-weight:700;font-size:0.85em;text-align:center;}
+.match-card-header .mc-vs{color:var(--wrong);font-weight:800;font-size:0.85em;}
+.match-hp-row{display:flex;gap:8px;align-items:center;}
+.match-hp-row .hp-bar-container{height:18px;border-radius:9px;}
+.match-hp-row .hp-bar-fill{border-radius:9px;}
+.match-hp-row .hp-text{font-size:0.65em;}
+.match-info{display:flex;justify-content:space-between;font-size:0.75em;color:var(--text-dim);}
+.match-winner{text-align:center;font-weight:700;color:var(--gold);font-size:0.9em;}
+.winner-screen{display:flex;flex-direction:column;align-items:center;gap:16px;padding:40px 20px;}
+.winner-text{font-size:2.2em;font-weight:800;}
+.winner-text.win{color:var(--gold);}
+.winner-text.lose{color:var(--text-dim);}
+.hp-compare{display:flex;gap:24px;align-items:center;}
+.hp-compare-col{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.hp-compare-col .final-hp{font-size:1.8em;font-weight:800;}
+.hp-compare-col .final-hp.alive{color:var(--correct);}
+.hp-compare-col .final-hp.dead{color:var(--wrong);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.pulse{animation:pulse 1.5s ease-in-out infinite;}
+.waiting-text{font-size:1.2em;color:var(--text-dim);text-align:center;}
+.instruction{text-align:center;color:var(--accent);font-size:1em;font-weight:600;margin-bottom:12px;}
+.mode-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.85em;font-weight:700;margin-bottom:8px;}
+.mode-badge.emission{background:rgba(79,195,247,0.15);color:var(--accent);border:1px solid var(--accent);}
+.mode-badge.absorption{background:rgba(124,77,255,0.15);color:var(--accent2);border:1px solid var(--accent2);}
+.count-hint{color:var(--text-dim);font-size:0.9em;text-align:center;margin-bottom:8px;}
+.footer{position:fixed;bottom:8px;text-align:center;font-size:0.7em;color:rgba(255,255,255,0.3);}
+.gap-8{gap:8px;}
+.gap-12{gap:12px;}
+.gap-16{gap:16px;}
+.gap-24{gap:24px;}
+.mt-8{margin-top:8px;}
+.mt-12{margin-top:12px;}
+.mt-16{margin-top:16px;}
+.mt-24{margin-top:24px;}
+.mb-8{margin-bottom:8px;}
+.mb-12{margin-bottom:12px;}
+.w-full{width:100%;}
+.text-center{text-align:center;}
+.flex-col{display:flex;flex-direction:column;}
+.flex-row{display:flex;flex-direction:row;}
+.items-center{align-items:center;}
+.justify-center{justify-content:center;}
+.pwd-input{max-width:300px;text-align:center;}
+@media(max-width:600px){
+  .element-grid{grid-template-columns:repeat(3,1fr);}
+  .match-grid{grid-template-columns:1fr;}
+  .room-code-display{font-size:2.2em;letter-spacing:0.4em;}
+  .battle-header{flex-wrap:wrap;}
+  h1{font-size:1.5em;}
+  .winner-text{font-size:1.6em;}
+  .hp-compare-col .final-hp{font-size:1.4em;}
+  .result-flash-inner{font-size:1.2em;padding:16px 24px;}
+}
+</style>
+</head>
+<body>
+
+<div class="screen active" id="screenRole">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;">
+    <h1>스펙트럼 배틀</h1>
+    <p class="subtitle">원소 스펙트럼 대전 게임</p>
+    <div class="flex-col gap-12" style="width:100%;max-width:320px;">
+      <button class="btn btn-accent btn-large w-full" onclick="showPasswordPrompt()">교사</button>
+      <button class="btn btn-outline btn-large w-full" onclick="showScreen('screenStudentJoin')">학생</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screenPassword">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+    <h2>교사 인증</h2>
+    <input type="password" class="input-field pwd-input" id="pwdInput" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')verifyPassword()">
+    <div id="pwdError" style="color:var(--wrong);font-size:0.85em;display:none;">비밀번호가 올바르지 않습니다.</div>
+    <div class="flex-row gap-8">
+      <button class="btn btn-outline" onclick="showScreen('screenRole')">취소</button>
+      <button class="btn btn-accent" onclick="verifyPassword()">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screenTeacherLobby">
+  <h2>배틀 로비</h2>
+  <div class="card">
+    <div class="setting-label mb-8">방 코드</div>
+    <div class="room-code-display" id="lobbyRoomCode"></div>
+    <div class="qr-container" id="lobbyQR"></div>
+    <div class="settings-group">
+      <div class="setting-row">
+        <span class="setting-label">스펙트럼 모드</span>
+        <div class="radio-group" id="modeGroup">
+          <button class="radio-btn active" data-val="emission">방출</button>
+          <button class="radio-btn" data-val="absorption">흡수</button>
+          <button class="radio-btn" data-val="random">랜덤</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">원소 개수 (최소)</span>
+        <select class="select-field" id="elCountMin">
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">원소 개수 (최대)</span>
+        <select class="select-field" id="elCountMax">
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">HP</span>
+        <span style="color:var(--gold);font-weight:700;">1000</span>
+      </div>
+    </div>
+    <div class="setting-label mt-16 mb-8">참가자 (<span id="playerCount">0</span>명)</div>
+    <div class="player-list" id="playerList"></div>
+    <button class="btn btn-accent btn-large w-full mt-16" id="btnStartBattle" onclick="startBattle()" disabled>매칭 &amp; 배틀 시작</button>
+  </div>
+</div>
+
+<div class="screen" id="screenTeacherOverview">
+  <div class="flex-row items-center w-full" style="justify-content:space-between;margin-bottom:12px;">
+    <h2 style="margin:0;">매치 현황</h2>
+    <button class="btn btn-danger" onclick="finishRoom()">종료</button>
+  </div>
+  <div class="match-grid" id="matchGrid"></div>
+</div>
+
+<div class="screen" id="screenStudentJoin">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+    <h2>배틀 참여</h2>
+    <input type="text" class="input-field room-code-input" id="joinRoomCode" placeholder="방코드" maxlength="4" oninput="this.value=this.value.toUpperCase()">
+    <input type="text" class="input-field" id="joinName" placeholder="이름" style="max-width:280px;text-align:center;" maxlength="10">
+    <div id="joinError" style="color:var(--wrong);font-size:0.85em;display:none;"></div>
+    <div class="flex-row gap-8">
+      <button class="btn btn-outline" onclick="showScreen('screenRole')">취소</button>
+      <button class="btn btn-accent" onclick="joinRoom()">참여하기</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screenWaiting">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+    <div class="waiting-text pulse">매칭을 기다리는 중...</div>
+    <div style="color:var(--text-dim);font-size:0.85em;">교사가 배틀을 시작하면 자동으로 연결됩니다.</div>
+  </div>
+</div>
+
+<div class="screen" id="screenBattle">
+  <div class="battle-header" id="battleHeader"></div>
+  <div class="round-badge" id="roundBadge"></div>
+  <div id="battleContent" class="w-full flex-col items-center"></div>
+</div>
+
+<div class="screen" id="screenMatchEnd">
+  <div class="winner-screen" id="winnerContent"></div>
+</div>
+
+<div class="footer">ⓒ 2025 충남삼성고등학교 신도경T</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script src="spectrum-core.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:'AIzaSyBWrkpW1J2bV19SxBNpW0YbBqtU0zaf1ok',
+  authDomain:'dahatni-dbe19.firebaseapp.com',
+  projectId:'dahatni-dbe19',
+  storageBucket:'dahatni-dbe19.appspot.com',
+  messagingSenderId:'576498073498',
+  appId:'1:576498073498:web:d5e7e3e1a0b1c2d3'
+});
+var db = firebase.firestore();
+
+var TEACHER_HASH = 'b9270ef103a6a5d4d21a75330111fd651df4f3b75b81f81dd580820e4ee9aad0';
+
+var state = {
+  role: null,
+  roomCode: null,
+  playerId: null,
+  playerName: null,
+  matchId: null,
+  matchUnsub: null,
+  playerUnsub: null,
+  playersUnsub: null,
+  matchesUnsub: null,
+  timerInterval: null,
+  attackStartTime: null,
+  currentMatchData: null,
+  roomSettings: null
+};
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  if (id === 'screenStudentJoin') {
+    var params = new URLSearchParams(window.location.search);
+    var room = params.get('room');
+    if (room) document.getElementById('joinRoomCode').value = room.toUpperCase();
+    tryReconnect();
+  }
+}
+
+async function sha256(message) {
+  var msgBuffer = new TextEncoder().encode(message);
+  var hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  var hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
+function showPasswordPrompt() {
+  showScreen('screenPassword');
+  document.getElementById('pwdInput').value = '';
+  document.getElementById('pwdError').style.display = 'none';
+  setTimeout(function() { document.getElementById('pwdInput').focus(); }, 100);
+}
+
+async function verifyPassword() {
+  var pwd = document.getElementById('pwdInput').value;
+  var hash = await sha256(pwd);
+  if (hash === TEACHER_HASH) {
+    state.role = 'teacher';
+    createRoom();
+  } else {
+    document.getElementById('pwdError').style.display = 'block';
+  }
+}
+
+async function createRoom() {
+  var code = Math.random().toString(36).substring(2, 6).toUpperCase();
+  state.roomCode = code;
+  await db.collection('spectrum_battle').doc(code).set({
+    status: 'lobby',
+    mode: 'emission',
+    elementCount: { min: 2, max: 3 },
+    hp: 1000,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    lastActivity: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  showScreen('screenTeacherLobby');
+  document.getElementById('lobbyRoomCode').textContent = code.split('').join(' ');
+  generateQR(code);
+  initModeGroup();
+  listenPlayers();
+}
+
+function generateQR(code) {
+  var url = window.location.origin + window.location.pathname + '?room=' + code;
+  var qr = qrcode(0, 'M');
+  qr.addData(url);
+  qr.make();
+  var container = document.getElementById('lobbyQR');
+  container.innerHTML = qr.createImgTag(4, 8);
+}
+
+function initModeGroup() {
+  var btns = document.querySelectorAll('#modeGroup .radio-btn');
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      btns.forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      updateRoomSettings();
+    });
+  });
+  document.getElementById('elCountMin').addEventListener('change', updateRoomSettings);
+  document.getElementById('elCountMax').addEventListener('change', updateRoomSettings);
+}
+
+async function updateRoomSettings() {
+  if (!state.roomCode) return;
+  var activeMode = document.querySelector('#modeGroup .radio-btn.active');
+  var mode = activeMode ? activeMode.dataset.val : 'emission';
+  var min = parseInt(document.getElementById('elCountMin').value);
+  var max = parseInt(document.getElementById('elCountMax').value);
+  if (max < min) {
+    max = min;
+    document.getElementById('elCountMax').value = max;
+  }
+  await db.collection('spectrum_battle').doc(state.roomCode).update({
+    mode: mode,
+    elementCount: { min: min, max: max },
+    lastActivity: firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
+
+function listenPlayers() {
+  if (state.playersUnsub) state.playersUnsub();
+  state.playersUnsub = db.collection('spectrum_battle').doc(state.roomCode)
+    .collection('players').onSnapshot(function(snap) {
+      var list = document.getElementById('playerList');
+      var count = document.getElementById('playerCount');
+      list.innerHTML = '';
+      var n = 0;
+      snap.forEach(function(doc) {
+        n++;
+        var d = doc.data();
+        var chip = document.createElement('div');
+        chip.className = 'player-chip';
+        chip.innerHTML = '<span class="dot"></span>' + escapeHtml(d.name);
+        list.appendChild(chip);
+      });
+      count.textContent = n;
+      document.getElementById('btnStartBattle').disabled = n < 1;
+    });
+}
+
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+async function startBattle() {
+  var roomSnap = await db.collection('spectrum_battle').doc(state.roomCode).get();
+  state.roomSettings = roomSnap.data();
+  await matchPlayers(state.roomCode);
+  showScreen('screenTeacherOverview');
+  listenMatches();
+}
+
+async function matchPlayers(roomCode) {
+  var snap = await db.collection('spectrum_battle').doc(roomCode).collection('players').get();
+  var players = [];
+  snap.forEach(function(d) { players.push({ id: d.id, name: d.data().name }); });
+
+  for (var i = players.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = players[i];
+    players[i] = players[j];
+    players[j] = tmp;
+  }
+
+  if (players.length % 2 === 1) {
+    var aiId = 'ai_' + Date.now();
+    players.push({ id: aiId, name: '\uD83E\uDD16 AI', isAI: true });
+  }
+
+  var rs = state.roomSettings;
+  var batch = db.batch();
+
+  for (var idx = 0; idx < players.length; idx += 2) {
+    var matchId = 'm' + Date.now() + '_' + idx;
+    var p1 = players[idx], p2 = players[idx + 1];
+    var mode = rs.mode === 'random' ?
+      (Math.random() < 0.5 ? 'emission' : 'absorption') : rs.mode;
+    var elCount = rs.elementCount.min + Math.floor(Math.random() * (rs.elementCount.max - rs.elementCount.min + 1));
+
+    batch.set(db.collection('spectrum_battle').doc(roomCode).collection('matches').doc(matchId), {
+      p1: { id: p1.id, name: p1.name, hp: 1000, isAI: p1.isAI || false },
+      p2: { id: p2.id, name: p2.name, hp: 1000, isAI: p2.isAI || false },
+      round: 1,
+      status: 'playing',
+      winner: null,
+      turn: {
+        attackerId: p1.id,
+        defenderId: p2.id,
+        phase: 'attack',
+        elements: [],
+        mode: mode,
+        elementCount: elCount,
+        timeLimit: 0,
+        attackedAt: null,
+        answer: [],
+        damage: 0,
+        counter: 0
+      }
+    });
+
+    if (!p1.isAI) {
+      batch.update(db.collection('spectrum_battle').doc(roomCode).collection('players').doc(p1.id), {
+        status: 'matched', matchId: matchId
+      });
+    }
+    if (!p2.isAI) {
+      batch.update(db.collection('spectrum_battle').doc(roomCode).collection('players').doc(p2.id), {
+        status: 'matched', matchId: matchId
+      });
+    }
+  }
+
+  batch.update(db.collection('spectrum_battle').doc(roomCode), { status: 'playing' });
+  await batch.commit();
+}
+
+function listenMatches() {
+  if (state.matchesUnsub) state.matchesUnsub();
+  state.matchesUnsub = db.collection('spectrum_battle').doc(state.roomCode)
+    .collection('matches').onSnapshot(function(snap) {
+      var grid = document.getElementById('matchGrid');
+      grid.innerHTML = '';
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        var card = document.createElement('div');
+        card.className = 'match-card' + (d.status === 'finished' ? ' finished' : '');
+
+        var p1Pct = (d.p1.hp / 1000) * 100;
+        var p2Pct = (d.p2.hp / 1000) * 100;
+
+        var phaseText = '';
+        if (d.status === 'finished') {
+          phaseText = '종료';
+        } else if (d.turn.phase === 'attack') {
+          phaseText = '공격 선택 중';
+        } else if (d.turn.phase === 'defend') {
+          phaseText = '방어 중';
+        } else if (d.turn.phase === 'result') {
+          phaseText = '결과 표시';
+        }
+
+        card.innerHTML =
+          '<div class="match-card-header">' +
+            '<span class="mc-name">' + escapeHtml(d.p1.name) + '</span>' +
+            '<span class="mc-vs">VS</span>' +
+            '<span class="mc-name">' + escapeHtml(d.p2.name) + '</span>' +
+          '</div>' +
+          '<div class="match-hp-row">' +
+            '<div class="hp-bar-container"><div class="hp-bar-fill ' + hpColor(p1Pct) + '" style="width:' + p1Pct + '%"></div><div class="hp-text">' + d.p1.hp + '</div></div>' +
+            '<div class="hp-bar-container"><div class="hp-bar-fill ' + hpColor(p2Pct) + '" style="width:' + p2Pct + '%"></div><div class="hp-text">' + d.p2.hp + '</div></div>' +
+          '</div>' +
+          '<div class="match-info"><span>R' + d.round + '</span><span>' + phaseText + '</span></div>' +
+          (d.status === 'finished' ? '<div class="match-winner">\uD83C\uDFC6 ' + escapeHtml(getWinnerName(d)) + ' 승리</div>' : '');
+
+        grid.appendChild(card);
+      });
+    });
+}
+
+function getWinnerName(data) {
+  if (!data.winner) return '';
+  if (data.p1.id === data.winner) return data.p1.name;
+  return data.p2.name;
+}
+
+function hpColor(pct) {
+  if (pct > 50) return 'green';
+  if (pct > 25) return 'yellow';
+  return 'red';
+}
+
+async function finishRoom() {
+  if (state.matchesUnsub) state.matchesUnsub();
+  await db.collection('spectrum_battle').doc(state.roomCode).update({ status: 'finished' });
+  showScreen('screenRole');
+}
+
+function tryReconnect() {
+  try {
+    var saved = JSON.parse(sessionStorage.getItem('spectrum_battle'));
+    if (saved && saved.roomCode && saved.playerId && saved.playerName) {
+      document.getElementById('joinRoomCode').value = saved.roomCode;
+      document.getElementById('joinName').value = saved.playerName;
+    }
+  } catch (e) {}
+}
+
+async function joinRoom() {
+  var code = document.getElementById('joinRoomCode').value.trim().toUpperCase();
+  var name = document.getElementById('joinName').value.trim();
+  var errEl = document.getElementById('joinError');
+
+  if (code.length !== 4) {
+    errEl.textContent = '방 코드는 4자리입니다.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!name) {
+    errEl.textContent = '이름을 입력해주세요.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  var roomRef = db.collection('spectrum_battle').doc(code);
+  var roomSnap = await roomRef.get();
+  if (!roomSnap.exists) {
+    errEl.textContent = '존재하지 않는 방입니다.';
+    errEl.style.display = 'block';
+    return;
+  }
+  var roomData = roomSnap.data();
+  if (roomData.status !== 'lobby') {
+    errEl.textContent = '이미 시작된 방입니다.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  errEl.style.display = 'none';
+
+  var playerId = 'p_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+  await roomRef.collection('players').doc(playerId).set({
+    name: name,
+    status: 'lobby',
+    matchId: null,
+    joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  state.role = 'student';
+  state.roomCode = code;
+  state.playerId = playerId;
+  state.playerName = name;
+
+  sessionStorage.setItem('spectrum_battle', JSON.stringify({
+    roomCode: code, playerId: playerId, playerName: name
+  }));
+
+  showScreen('screenWaiting');
+  listenForMatch();
+}
+
+function listenForMatch() {
+  if (state.playerUnsub) state.playerUnsub();
+  state.playerUnsub = db.collection('spectrum_battle').doc(state.roomCode)
+    .collection('players').doc(state.playerId).onSnapshot(function(snap) {
+      if (!snap.exists) return;
+      var data = snap.data();
+      if (data.matchId && data.status === 'matched') {
+        state.matchId = data.matchId;
+        if (state.playerUnsub) { state.playerUnsub(); state.playerUnsub = null; }
+        loadRoomSettings(function() {
+          showScreen('screenBattle');
+          listenMatch();
+        });
+      }
+    });
+}
+
+function loadRoomSettings(cb) {
+  db.collection('spectrum_battle').doc(state.roomCode).get().then(function(snap) {
+    state.roomSettings = snap.data();
+    cb();
+  });
+}
+
+function listenMatch() {
+  if (state.matchUnsub) state.matchUnsub();
+  state.matchUnsub = db.collection('spectrum_battle').doc(state.roomCode)
+    .collection('matches').doc(state.matchId).onSnapshot(function(snap) {
+      if (!snap.exists) return;
+      var data = snap.data();
+      state.currentMatchData = data;
+      renderBattle(data);
+    });
+}
+
+function getMyPlayer(data) {
+  if (data.p1.id === state.playerId) return { me: data.p1, opp: data.p2, myKey: 'p1', oppKey: 'p2' };
+  return { me: data.p2, opp: data.p1, myKey: 'p2', oppKey: 'p1' };
+}
+
+function renderBattle(data) {
+  if (data.status === 'finished') {
+    renderMatchEnd(data);
+    return;
+  }
+
+  var info = getMyPlayer(data);
+  var header = document.getElementById('battleHeader');
+  var myPct = (info.me.hp / 1000) * 100;
+  var oppPct = (info.opp.hp / 1000) * 100;
+
+  header.innerHTML =
+    '<div class="battle-player-col">' +
+      '<span class="pname">' + escapeHtml(info.me.name) + '</span>' +
+      '<div class="hp-bar-container"><div class="hp-bar-fill ' + hpColor(myPct) + '" style="width:' + myPct + '%"></div><div class="hp-text">' + info.me.hp + ' / 1000</div></div>' +
+    '</div>' +
+    '<span class="battle-vs">VS</span>' +
+    '<div class="battle-player-col">' +
+      '<span class="pname">' + escapeHtml(info.opp.name) + '</span>' +
+      '<div class="hp-bar-container"><div class="hp-bar-fill ' + hpColor(oppPct) + '" style="width:' + oppPct + '%"></div><div class="hp-text">' + info.opp.hp + ' / 1000</div></div>' +
+    '</div>';
+
+  document.getElementById('roundBadge').innerHTML = 'Round <span>' + data.round + '</span>';
+
+  var content = document.getElementById('battleContent');
+  var turn = data.turn;
+
+  if (turn.phase === 'result') {
+    renderTurnResult(data, content);
+    return;
+  }
+
+  var isMyAttack = turn.attackerId === state.playerId;
+  var isMyDefend = turn.defenderId === state.playerId;
+
+  if (turn.phase === 'attack') {
+    if (isMyAttack) {
+      renderAttackPhase(data, content);
+    } else {
+      content.innerHTML = '<div class="waiting-text pulse" style="margin-top:40px;">상대가 공격을 준비하고 있습니다...</div>';
+      handleAIAttack(data);
+    }
+  } else if (turn.phase === 'defend') {
+    if (isMyDefend) {
+      renderDefendPhase(data, content);
+    } else {
+      content.innerHTML = '<div class="waiting-text pulse" style="margin-top:40px;">상대가 방어 중입니다...</div>';
+      handleAIDefend(data);
+    }
+  }
+}
+
+function renderAttackPhase(data, container) {
+  var turn = data.turn;
+  var modeLabel = turn.mode === 'emission' ? '방출' : '흡수';
+  var modeClass = turn.mode === 'emission' ? 'emission' : 'absorption';
+
+  container.innerHTML =
+    '<div class="instruction">원소를 선택해서 상대에게 문제를 내세요!</div>' +
+    '<span class="mode-badge ' + modeClass + '">' + modeLabel + ' 스펙트럼</span>' +
+    '<div class="count-hint">원소 ' + turn.elementCount + '개를 선택하세요</div>' +
+    '<div class="element-grid" id="attackGrid"></div>' +
+    '<div class="spectrum-preview" id="attackPreview"></div>' +
+    '<button class="btn btn-accent btn-large w-full mt-8" id="btnAttack" onclick="submitAttack()" disabled>공격!</button>';
+
+  var grid = document.getElementById('attackGrid');
+  var selected = [];
+
+  ALL_ELEMENTS.forEach(function(el) {
+    var card = document.createElement('div');
+    card.className = 'element-card';
+    card.dataset.el = el;
+
+    var sym = document.createElement('div');
+    sym.className = 'el-symbol';
+    sym.textContent = el;
+
+    var nm = document.createElement('div');
+    nm.className = 'el-name';
+    nm.textContent = ELEMENT_NAMES[el];
+
+    var mini = renderMiniSpectrum(el);
+
+    card.appendChild(sym);
+    card.appendChild(nm);
+    card.appendChild(mini);
+
+    card.addEventListener('click', function() {
+      var idx = selected.indexOf(el);
+      if (idx >= 0) {
+        selected.splice(idx, 1);
+        card.classList.remove('selected');
+      } else {
+        if (selected.length >= turn.elementCount) return;
+        selected.push(el);
+        card.classList.add('selected');
+      }
+      updateAttackPreview(selected, turn.mode);
+      document.getElementById('btnAttack').disabled = selected.length !== turn.elementCount;
+    });
+
+    grid.appendChild(card);
+  });
+
+  window._attackSelected = selected;
+}
+
+function updateAttackPreview(elements, mode) {
+  var preview = document.getElementById('attackPreview');
+  if (elements.length === 0) {
+    preview.innerHTML = '';
+    return;
+  }
+  renderSpectrum(preview, elements, mode);
+}
+
+async function submitAttack() {
+  var elements = window._attackSelected;
+  if (!elements || elements.length === 0) return;
+  document.getElementById('btnAttack').disabled = true;
+
+  var data = state.currentMatchData;
+  var mode = data.turn.mode;
+  var timeLimit = elements.length * 8;
+
+  await db.collection('spectrum_battle').doc(state.roomCode)
+    .collection('matches').doc(state.matchId).update({
+      'turn.elements': elements,
+      'turn.mode': mode,
+      'turn.elementCount': elements.length,
+      'turn.timeLimit': timeLimit,
+      'turn.phase': 'defend',
+      'turn.attackedAt': firebase.firestore.FieldValue.serverTimestamp()
+    });
+}
+
+var defendTimerStarted = false;
+
+function renderDefendPhase(data, container) {
+  var turn = data.turn;
+  var modeLabel = turn.mode === 'emission' ? '방출' : '흡수';
+  var modeClass = turn.mode === 'emission' ? 'emission' : 'absorption';
+  var timeLimit = turn.timeLimit;
+
+  container.innerHTML =
+    '<div class="instruction">상대가 보낸 스펙트럼을 분석하세요!</div>' +
+    '<span class="mode-badge ' + modeClass + '">' + modeLabel + ' 스펙트럼</span>' +
+    '<div class="count-hint">원소 ' + turn.elementCount + '개</div>' +
+    '<div class="spectrum-preview" id="defendSpectrum"></div>' +
+    '<div class="timer-section"><div class="timer-text" id="timerText">' + timeLimit + '</div><div class="timer-track"><div class="timer-fill" id="timerFill" style="width:100%"></div></div></div>' +
+    '<div class="element-grid" id="defendGrid"></div>' +
+    '<button class="btn btn-success btn-large w-full mt-8" id="btnDefend" onclick="submitDefense()" disabled>방어!</button>';
+
+  renderSpectrum(document.getElementById('defendSpectrum'), turn.elements, turn.mode);
+
+  var grid = document.getElementById('defendGrid');
+  var selected = [];
+
+  ALL_ELEMENTS.forEach(function(el) {
+    var card = document.createElement('div');
+    card.className = 'element-card';
+    card.dataset.el = el;
+
+    var sym = document.createElement('div');
+    sym.className = 'el-symbol';
+    sym.textContent = el;
+
+    var nm = document.createElement('div');
+    nm.className = 'el-name';
+    nm.textContent = ELEMENT_NAMES[el];
+
+    var mini = renderMiniSpectrum(el);
+
+    card.appendChild(sym);
+    card.appendChild(nm);
+    card.appendChild(mini);
+
+    card.addEventListener('click', function() {
+      var idx = selected.indexOf(el);
+      if (idx >= 0) {
+        selected.splice(idx, 1);
+        card.classList.remove('selected');
+      } else {
+        if (selected.length >= turn.elementCount) return;
+        selected.push(el);
+        card.classList.add('selected');
+      }
+      document.getElementById('btnDefend').disabled = selected.length !== turn.elementCount;
+    });
+
+    grid.appendChild(card);
+  });
+
+  window._defendSelected = selected;
+
+  if (state.timerInterval) clearInterval(state.timerInterval);
+  defendTimerStarted = true;
+  state.attackStartTime = Date.now();
+  var totalMs = timeLimit * 1000;
+
+  state.timerInterval = setInterval(function() {
+    var elapsed = Date.now() - state.attackStartTime;
+    var remaining = totalMs - elapsed;
+    if (remaining <= 0) {
+      clearInterval(state.timerInterval);
+      state.timerInterval = null;
+      submitDefenseTimeout();
+      return;
+    }
+    var pct = (remaining / totalMs) * 100;
+    var secs = Math.ceil(remaining / 1000);
+    var textEl = document.getElementById('timerText');
+    var fillEl = document.getElementById('timerFill');
+    if (textEl) textEl.textContent = secs;
+    if (fillEl) {
+      fillEl.style.width = pct + '%';
+      fillEl.className = 'timer-fill' + (pct < 20 ? ' danger' : pct < 40 ? ' warn' : '');
+    }
+  }, 100);
+}
+
+async function submitDefense() {
+  if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+  var answer = window._defendSelected;
+  if (!answer || answer.length === 0) return;
+  document.getElementById('btnDefend').disabled = true;
+
+  var timeUsedMs = Date.now() - state.attackStartTime;
+  await sendDefense(state.roomCode, state.matchId, answer, timeUsedMs);
+}
+
+async function submitDefenseTimeout() {
+  if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+  await sendDefense(state.roomCode, state.matchId, [], -1);
+}
+
+async function sendDefense(roomCode, matchId, answer, timeUsedMs) {
+  var matchRef = db.collection('spectrum_battle').doc(roomCode).collection('matches').doc(matchId);
+  var snap = await matchRef.get();
+  var data = snap.data();
+  var turn = data.turn;
+
+  if (turn.phase !== 'defend') return;
+
+  var isTimeout = timeUsedMs < 0;
+  var expected = turn.elements.slice().sort();
+  var submitted = answer.slice().sort();
+  var allCorrect = !isTimeout && expected.length === submitted.length && expected.every(function(e, i) { return e === submitted[i]; });
+
+  var damage = 0, counter = 0;
+  if (isTimeout) {
+    damage = 150;
+  } else if (!allCorrect) {
+    damage = 200;
+  } else {
+    var ratio = timeUsedMs / (turn.timeLimit * 1000);
+    if (ratio > 0.7) {
+      damage = 80;
+    } else if (ratio > 0.3) {
+      damage = 40;
+    } else {
+      damage = 0;
+      counter = 50;
+    }
+  }
+
+  var isP1Defender = turn.defenderId === data.p1.id;
+  var defKey = isP1Defender ? 'p1' : 'p2';
+  var atkKey = isP1Defender ? 'p2' : 'p1';
+
+  var newDefHp = Math.max(0, data[defKey].hp - damage);
+  var newAtkHp = Math.max(0, data[atkKey].hp - counter);
+
+  var updates = {
+    'turn.answer': answer,
+    'turn.damage': damage,
+    'turn.counter': counter,
+    'turn.phase': 'result'
+  };
+  updates[defKey + '.hp'] = newDefHp;
+  updates[atkKey + '.hp'] = newAtkHp;
+
+  await matchRef.update(updates);
+
+  var opponentIsAI = isP1Defender ? data[atkKey].isAI : data[defKey].isAI;
+  var myIdIsDefender = turn.defenderId === state.playerId;
+  if (myIdIsDefender || (opponentIsAI && !AIPlayer.isAI(state.playerId))) {
+    setTimeout(function() { checkAndAdvance(roomCode, matchId); }, 2500);
+  }
+}
+
+function renderTurnResult(data, container) {
+  var turn = data.turn;
+  var info = getMyPlayer(data);
+  var amDefender = turn.defenderId === state.playerId;
+  var amAttacker = turn.attackerId === state.playerId;
+
+  var msg = '';
+  var cls = '';
+
+  if (turn.damage === 0 && turn.counter > 0) {
+    msg = amDefender ?
+      '\uCE74\uC6B4\uD130! \uBC18\uACA9 \uC131\uACF5! \uC0C1\uB300 -' + turn.counter + ' HP' :
+      '\uCE74\uC6B4\uD130 \uB2F9\uD568! -' + turn.counter + ' HP';
+    cls = 'correct-fast';
+  } else if (turn.damage > 0 && turn.damage < 150) {
+    var expected = turn.elements.slice().sort();
+    var submitted = turn.answer.slice().sort();
+    var correct = expected.length === submitted.length && expected.every(function(e, i) { return e === submitted[i]; });
+    if (correct) {
+      msg = amDefender ?
+        '\uBC29\uC5B4 \uC131\uACF5! \uD558\uC9C0\uB9CC -' + turn.damage + ' HP' :
+        '\uC0C1\uB300\uAC00 \uBC29\uC5B4\uD588\uC9C0\uB9CC ' + turn.damage + ' \uB370\uBBF8\uC9C0!';
+      cls = 'correct-slow';
+    } else {
+      msg = amDefender ?
+        '\uBC29\uC5B4 \uC2E4\uD328! -' + turn.damage + ' HP' :
+        '\uC0C1\uB300 \uBC29\uC5B4 \uC2E4\uD328! ' + turn.damage + ' \uB370\uBBF8\uC9C0!';
+      cls = 'wrong';
+    }
+  } else if (turn.damage >= 150 && turn.answer.length === 0) {
+    msg = amDefender ?
+      '\uC2DC\uAC04 \uCD08\uACFC! -150 HP' :
+      '\uC0C1\uB300 \uC2DC\uAC04 \uCD08\uACFC! 150 \uB370\uBBF8\uC9C0!';
+    cls = 'timeout';
+  } else {
+    msg = amDefender ?
+      '\uBC29\uC5B4 \uC2E4\uD328! -' + turn.damage + ' HP' :
+      '\uC0C1\uB300 \uBC29\uC5B4 \uC2E4\uD328! ' + turn.damage + ' \uB370\uBBF8\uC9C0!';
+    cls = 'wrong';
+  }
+
+  container.innerHTML =
+    '<div style="margin-top:20px;text-align:center;">' +
+      '<div class="count-hint">\uC815\uB2F5: ' + turn.elements.join(', ') + '</div>' +
+      '<div class="count-hint">\uC751\uB2F5: ' + (turn.answer.length > 0 ? turn.answer.join(', ') : '(\uC2DC\uAC04 \uCD08\uACFC)') + '</div>' +
+    '</div>';
+
+  showResultFlash(msg, cls);
+}
+
+function showResultFlash(msg, cls) {
+  var existing = document.querySelector('.result-flash');
+  if (existing) existing.remove();
+  var flash = document.createElement('div');
+  flash.className = 'result-flash';
+  flash.innerHTML = '<div class="result-flash-inner ' + cls + '">' + escapeHtml(msg) + '</div>';
+  document.body.appendChild(flash);
+  setTimeout(function() { flash.remove(); }, 2500);
+}
+
+async function checkAndAdvance(roomCode, matchId) {
+  var matchRef = db.collection('spectrum_battle').doc(roomCode).collection('matches').doc(matchId);
+  var snap = await matchRef.get();
+  var data = snap.data();
+
+  if (data.status === 'finished') return;
+
+  if (data.p1.hp <= 0 || data.p2.hp <= 0) {
+    var winner = data.p1.hp <= 0 ? data.p2.id : data.p1.id;
+    await matchRef.update({ status: 'finished', winner: winner });
+    return;
+  }
+
+  var roomSnap = await db.collection('spectrum_battle').doc(roomCode).get();
+  var roomData = roomSnap.data();
+  var mode = roomData.mode === 'random' ?
+    (Math.random() < 0.5 ? 'emission' : 'absorption') : roomData.mode;
+  var elCount = roomData.elementCount.min + Math.floor(Math.random() * (roomData.elementCount.max - roomData.elementCount.min + 1));
+
+  await matchRef.update({
+    round: data.round + 1,
+    turn: {
+      attackerId: data.turn.defenderId,
+      defenderId: data.turn.attackerId,
+      phase: 'attack',
+      elements: [],
+      mode: mode,
+      elementCount: elCount,
+      timeLimit: 0,
+      attackedAt: null,
+      answer: [],
+      damage: 0,
+      counter: 0
+    }
+  });
+}
+
+function renderMatchEnd(data) {
+  if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+  showScreen('screenMatchEnd');
+
+  var info = getMyPlayer(data);
+  var iWon = data.winner === state.playerId;
+  var content = document.getElementById('winnerContent');
+
+  content.innerHTML =
+    '<div class="winner-text ' + (iWon ? 'win' : 'lose') + '">' +
+      (iWon ? '\uD83C\uDFC6 \uC2B9\uB9AC!' : '\uD328\uBC30...') +
+    '</div>' +
+    '<div class="hp-compare">' +
+      '<div class="hp-compare-col">' +
+        '<span class="pname">' + escapeHtml(info.me.name) + '</span>' +
+        '<span class="final-hp ' + (info.me.hp > 0 ? 'alive' : 'dead') + '">' + info.me.hp + '</span>' +
+      '</div>' +
+      '<span class="battle-vs">VS</span>' +
+      '<div class="hp-compare-col">' +
+        '<span class="pname">' + escapeHtml(info.opp.name) + '</span>' +
+        '<span class="final-hp ' + (info.opp.hp > 0 ? 'alive' : 'dead') + '">' + info.opp.hp + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<button class="btn btn-outline btn-large mt-24" onclick="backToLobby()">\uB3CC\uC544\uAC00\uAE30</button>';
+}
+
+function backToLobby() {
+  if (state.matchUnsub) { state.matchUnsub(); state.matchUnsub = null; }
+  state.matchId = null;
+  state.currentMatchData = null;
+  showScreen('screenWaiting');
+  listenForMatch();
+}
+
+var AIPlayer = {
+  handleTurn: function(matchData, roomCode, matchId) {
+    var turn = matchData.turn;
+    if (turn.phase === 'attack' && this.isAI(turn.attackerId)) {
+      setTimeout(function() { AIPlayer.doAttack(matchData, roomCode, matchId); }, 1500 + Math.random() * 1000);
+    } else if (turn.phase === 'defend' && this.isAI(turn.defenderId)) {
+      setTimeout(function() { AIPlayer.doDefend(matchData, roomCode, matchId); }, 2000 + Math.random() * 2000);
+    }
+  },
+  isAI: function(id) { return id && id.startsWith('ai_'); },
+  doAttack: async function(data, roomCode, matchId) {
+    var count = data.turn.elementCount;
+    var elements = pickRandomElements(count);
+    var mode = data.turn.mode;
+    var timeLimit = elements.length * 8;
+    await db.collection('spectrum_battle').doc(roomCode)
+      .collection('matches').doc(matchId).update({
+        'turn.elements': elements,
+        'turn.mode': mode,
+        'turn.elementCount': elements.length,
+        'turn.timeLimit': timeLimit,
+        'turn.phase': 'defend',
+        'turn.attackedAt': firebase.firestore.FieldValue.serverTimestamp()
+      });
+  },
+  doDefend: async function(data, roomCode, matchId) {
+    var expected = data.turn.elements;
+    var r = Math.random();
+    var answer;
+    if (r < 0.2) {
+      answer = pickRandomElements(expected.length);
+    } else {
+      answer = expected.slice();
+    }
+    var timeUsedMs = (0.3 + Math.random() * 0.5) * data.turn.timeLimit * 1000;
+    await sendDefense(roomCode, matchId, answer, timeUsedMs);
+  }
+};
+
+function handleAIAttack(data) {
+  var turn = data.turn;
+  if (AIPlayer.isAI(turn.attackerId) && !AIPlayer.isAI(state.playerId)) {
+    AIPlayer.handleTurn(data, state.roomCode, state.matchId);
+  }
+}
+
+function handleAIDefend(data) {
+  var turn = data.turn;
+  if (AIPlayer.isAI(turn.defenderId) && !AIPlayer.isAI(state.playerId)) {
+    AIPlayer.handleTurn(data, state.roomCode, state.matchId);
+  }
+}
+
+(function init() {
+  var params = new URLSearchParams(window.location.search);
+  var room = params.get('room');
+  if (room) {
+    showScreen('screenStudentJoin');
+  }
+})();
+</script>
+</body>
+</html>

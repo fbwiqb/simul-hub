@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>스펙트럼 퀴즈 - 학생</title>
+    <style>
+        :root {
+            --bg: #0a0e1a;
+            --surface: #131830;
+            --surface2: #1a2040;
+            --border: #2a3060;
+            --text: #e8eaf6;
+            --text-dim: #8890b0;
+            --accent: #4fc3f7;
+            --accent2: #7c4dff;
+            --correct: #00e676;
+            --wrong: #ff1744;
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+        .app {
+            width: 100%;
+            max-width: 600px;
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .screen { display: none; flex-direction: column; flex: 1; }
+        .screen.active { display: flex; }
+
+        .join-screen {
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        .join-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent);
+            text-align: center;
+            letter-spacing: -0.5px;
+        }
+        .join-subtitle {
+            font-size: 14px;
+            color: var(--text-dim);
+            text-align: center;
+            margin-top: -8px;
+        }
+        .join-form {
+            width: 100%;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .join-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface);
+            color: var(--text);
+            font-size: 18px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .join-input:focus { border-color: var(--accent); }
+        .join-input::placeholder { color: var(--text-dim); }
+        .join-input.code-input {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 8px;
+            font-family: 'Courier New', monospace;
+        }
+        .join-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.15s;
+        }
+        .join-btn:hover { transform: translateY(-2px); }
+        .join-btn:active { transform: translateY(0); }
+        .join-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .join-error {
+            color: var(--wrong);
+            font-size: 13px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .player-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: var(--surface);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .player-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--correct);
+            box-shadow: 0 0 6px var(--correct);
+        }
+        .player-name {
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .player-score {
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .waiting-screen {
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+        }
+        .waiting-msg {
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            color: var(--text-dim);
+        }
+        .waiting-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        .waiting-dots span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+        .waiting-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .waiting-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes pulse {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .question-header {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px;
+            flex-shrink: 0;
+        }
+        .spectrum-container {
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+        .spectrum-bar {
+            height: 60px;
+            background: #000;
+            position: relative;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .spectral-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+        }
+        .wl-tooltip {
+            position: absolute;
+            top: -24px;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        .spectral-line:hover .wl-tooltip { opacity: 1; }
+        .wavelength-scale {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2px;
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+        .element-hint {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .timer-section {
+            flex-shrink: 0;
+            margin-bottom: 10px;
+        }
+        .timer-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .timer-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+        .timer-seconds {
+            font-size: 22px;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+        }
+        .timer-seconds.warning { color: #ff9800; }
+        .timer-seconds.danger { color: var(--wrong); }
+        .timer-track {
+            height: 6px;
+            background: var(--surface2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .timer-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+            transition: width 0.1s linear;
+        }
+        .timer-fill.warning { background: #ff9800; }
+        .timer-fill.danger { background: var(--wrong); }
+
+        .elements-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            flex: 1;
+            overflow-y: auto;
+            align-content: start;
+            padding-bottom: 8px;
+        }
+        .element-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 4px;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 44px;
+        }
+        .element-card:active { transform: scale(0.95); }
+        .element-card.selected {
+            border-color: var(--accent);
+            background: rgba(79, 195, 247, 0.15);
+            box-shadow: 0 0 12px rgba(79, 195, 247, 0.25);
+        }
+        .element-symbol {
+            font-size: 16px;
+            font-weight: 800;
+        }
+        .element-name-kr {
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+        .element-card.selected .element-name-kr { color: var(--accent); }
+        .mini-spectrum {
+            width: 100%;
+            height: 14px;
+            background: #000;
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-section {
+            flex-shrink: 0;
+            padding-top: 8px;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.15s;
+        }
+        .submit-btn:hover { transform: translateY(-2px); }
+        .submit-btn:active { transform: translateY(0); }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .result-screen {
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+        }
+        .result-icon {
+            font-size: 80px;
+            line-height: 1;
+        }
+        .result-text {
+            font-size: 26px;
+            font-weight: 800;
+            text-align: center;
+        }
+        .result-text.correct { color: var(--correct); }
+        .result-text.wrong { color: var(--wrong); }
+        .result-detail {
+            font-size: 15px;
+            color: var(--text-dim);
+            text-align: center;
+            line-height: 1.6;
+        }
+        .result-detail strong { color: var(--text); }
+        .result-rank-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .result-rank-badge.rank-1 { border-color: var(--gold); color: var(--gold); }
+        .result-rank-badge.rank-2 { border-color: var(--silver); color: var(--silver); }
+        .result-rank-badge.rank-3 { border-color: var(--bronze); color: var(--bronze); }
+        .result-time {
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+        .result-wait {
+            font-size: 14px;
+            color: var(--text-dim);
+            text-align: center;
+            margin-top: 8px;
+        }
+        .result-wait-dots {
+            display: inline-flex;
+            gap: 4px;
+        }
+        .result-wait-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-dim);
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+        .result-wait-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .result-wait-dots span:nth-child(3) { animation-delay: 0.4s; }
+        .result-correct-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+        }
+        .result-el-tag {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .result-el-tag.matched { background: rgba(0,230,118,0.15); color: var(--correct); border: 1px solid rgba(0,230,118,0.3); }
+        .result-el-tag.missed { background: rgba(255,23,68,0.15); color: var(--wrong); border: 1px solid rgba(255,23,68,0.3); }
+
+        .finished-screen {
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+        }
+        .finished-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .finished-stats {
+            text-align: center;
+            line-height: 2;
+            font-size: 16px;
+        }
+        .finished-stats strong { color: var(--accent); font-size: 20px; }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        .confetti {
+            position: fixed;
+            top: 0;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            z-index: 9999;
+            pointer-events: none;
+            animation: confettiFall 2s ease-out forwards;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .shake { animation: shake 0.4s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .scale-in { animation: scaleIn 0.4s ease; }
+
+        .footer {
+            text-align: center;
+            padding: 12px;
+            font-size: 11px;
+            color: var(--text-dim);
+            opacity: 0.6;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 480px) {
+            .elements-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .app { padding: 10px; }
+            .spectrum-bar { height: 50px; }
+            .element-symbol { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+
+    <div id="joinScreen" class="screen join-screen active">
+        <div class="join-title">스펙트럼 퀴즈</div>
+        <div class="join-subtitle">세션 코드를 입력하고 참여하세요</div>
+        <div class="join-form">
+            <input type="text" id="codeInput" class="join-input code-input" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+            <input type="text" id="nameInput" class="join-input" placeholder="이름을 입력하세요" maxlength="10" autocomplete="off">
+            <button id="joinBtn" class="join-btn">참여하기</button>
+            <div id="joinError" class="join-error"></div>
+        </div>
+    </div>
+
+    <div id="waitingScreen" class="screen waiting-screen">
+        <div class="player-header">
+            <div class="player-info">
+                <div class="player-dot"></div>
+                <span class="player-name" id="waitName"></span>
+            </div>
+            <span class="player-score" id="waitScore">0문제 정답</span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;">
+            <div class="waiting-msg">곧 문제가 출제됩니다</div>
+            <div class="waiting-dots"><span></span><span></span><span></span></div>
+        </div>
+    </div>
+
+    <div id="questionScreen" class="screen">
+        <div class="player-header">
+            <div class="player-info">
+                <div class="player-dot"></div>
+                <span class="player-name" id="qName"></span>
+            </div>
+            <span class="player-score" id="qScore">0문제 정답</span>
+        </div>
+        <div class="question-header" id="questionHeader"></div>
+        <div class="spectrum-container" id="spectrumContainer"></div>
+        <div class="element-hint" id="elementHint"></div>
+        <div class="timer-section" id="timerSection" style="display:none;">
+            <div class="timer-row">
+                <span class="timer-label">남은 시간</span>
+                <span class="timer-seconds" id="timerSeconds">30</span>
+            </div>
+            <div class="timer-track">
+                <div class="timer-fill" id="timerFill" style="width:100%"></div>
+            </div>
+        </div>
+        <div class="elements-grid" id="elementsGrid"></div>
+        <div class="submit-section">
+            <button id="submitBtn" class="submit-btn">제출하기</button>
+        </div>
+    </div>
+
+    <div id="resultScreen" class="screen result-screen">
+        <div class="player-header" style="width:100%;">
+            <div class="player-info">
+                <div class="player-dot"></div>
+                <span class="player-name" id="rName"></span>
+            </div>
+            <span class="player-score" id="rScore">0문제 정답</span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;">
+            <div class="result-icon scale-in" id="resultIcon"></div>
+            <div class="result-text" id="resultText"></div>
+            <div class="result-correct-list" id="resultElements"></div>
+            <div class="result-detail" id="resultDetail"></div>
+            <div class="result-rank-badge" id="resultRank"></div>
+            <div class="result-time" id="resultTime"></div>
+            <div class="result-wait">
+                다음 문제를 기다려주세요
+                <div class="result-wait-dots"><span></span><span></span><span></span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="finishedScreen" class="screen finished-screen">
+        <div class="finished-title">퀴즈 종료!</div>
+        <div class="finished-stats" id="finishedStats"></div>
+    </div>
+</div>
+
+<div class="footer">ⓒ 2025 충남삼성고등학교 신도경T</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="spectrum-core.js"></script>
+<script>
+firebase.initializeApp({
+    apiKey:'AIzaSyBWrkpW1J2bV19SxBNpW0YbBqtU0zaf1ok',
+    authDomain:'dahatni-dbe19.firebaseapp.com',
+    projectId:'dahatni-dbe19',
+    storageBucket:'dahatni-dbe19.appspot.com',
+    messagingSenderId:'576498073498',
+    appId:'1:576498073498:web:d5e7e3e1a0b1c2d3'
+});
+var db = firebase.firestore();
+
+var state = {
+    code: null,
+    playerId: null,
+    playerName: null,
+    currentQuestion: null,
+    questionStartTime: null,
+    submitted: false,
+    totalCorrect: 0,
+    totalTime: 0,
+    timerInterval: null,
+    sessionUnsub: null,
+    questionNumber: null
+};
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+}
+
+function updateScoreDisplay() {
+    var txt = state.totalCorrect + '문제 정답';
+    ['waitScore','qScore','rScore'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = txt;
+    });
+}
+
+function updateNameDisplay() {
+    ['waitName','qName','rName'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = state.playerName;
+    });
+}
+
+function prefillCode() {
+    var params = new URLSearchParams(window.location.search);
+    var s = params.get('s');
+    if (s) {
+        document.getElementById('codeInput').value = s;
+        document.getElementById('nameInput').focus();
+    }
+}
+
+async function joinSession(code, name) {
+    var joinBtn = document.getElementById('joinBtn');
+    var errorEl = document.getElementById('joinError');
+    joinBtn.disabled = true;
+    errorEl.textContent = '';
+
+    try {
+        var sessionRef = db.collection('spectrum_quiz').doc(code);
+        var sessionSnap = await sessionRef.get();
+        if (!sessionSnap.exists) {
+            errorEl.textContent = '세션을 찾을 수 없습니다';
+            joinBtn.disabled = false;
+            return;
+        }
+        var sessionData = sessionSnap.data();
+        if (sessionData.status === 'finished') {
+            errorEl.textContent = '이미 종료된 세션입니다';
+            joinBtn.disabled = false;
+            return;
+        }
+
+        var playerId = 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+        await sessionRef.collection('players').doc(playerId).set({
+            name: name,
+            joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            currentAnswer: null,
+            totalCorrect: 0,
+            totalTime: 0
+        });
+
+        state.code = code;
+        state.playerId = playerId;
+        state.playerName = name;
+        state.totalCorrect = 0;
+        state.totalTime = 0;
+
+        sessionStorage.setItem('spectrum_quiz', JSON.stringify({
+            code: code,
+            playerId: playerId,
+            name: name
+        }));
+
+        updateNameDisplay();
+        updateScoreDisplay();
+        startListening();
+
+    } catch (e) {
+        errorEl.textContent = '연결 실패: ' + e.message;
+        joinBtn.disabled = false;
+    }
+}
+
+async function tryReconnect() {
+    var saved = sessionStorage.getItem('spectrum_quiz');
+    if (!saved) return false;
+
+    try {
+        var data = JSON.parse(saved);
+        var sessionRef = db.collection('spectrum_quiz').doc(data.code);
+        var sessionSnap = await sessionRef.get();
+        if (!sessionSnap.exists) {
+            sessionStorage.removeItem('spectrum_quiz');
+            return false;
+        }
+        var sessionData = sessionSnap.data();
+        if (sessionData.status === 'finished') {
+            sessionStorage.removeItem('spectrum_quiz');
+            return false;
+        }
+
+        var playerSnap = await sessionRef.collection('players').doc(data.playerId).get();
+        if (!playerSnap.exists) {
+            sessionStorage.removeItem('spectrum_quiz');
+            return false;
+        }
+
+        var playerData = playerSnap.data();
+        state.code = data.code;
+        state.playerId = data.playerId;
+        state.playerName = data.name;
+        state.totalCorrect = playerData.totalCorrect || 0;
+        state.totalTime = playerData.totalTime || 0;
+
+        updateNameDisplay();
+        updateScoreDisplay();
+        startListening();
+        return true;
+
+    } catch (e) {
+        sessionStorage.removeItem('spectrum_quiz');
+        return false;
+    }
+}
+
+function startListening() {
+    if (state.sessionUnsub) state.sessionUnsub();
+
+    var sessionRef = db.collection('spectrum_quiz').doc(state.code);
+    state.sessionUnsub = sessionRef.onSnapshot(function(snap) {
+        if (!snap.exists) return;
+        var data = snap.data();
+
+        if (data.status === 'finished') {
+            stopTimer();
+            showFinished();
+            return;
+        }
+
+        if (data.status === 'lobby' || !data.question) {
+            showScreen('waitingScreen');
+            return;
+        }
+
+        if (data.status === 'reviewing') {
+            return;
+        }
+
+        if (data.status === 'active' && data.question) {
+            var qNum = data.question.number;
+            if (qNum !== state.questionNumber) {
+                state.questionNumber = qNum;
+                state.currentQuestion = data.question;
+                state.submitted = false;
+                state.questionStartTime = data.question.startedAt ? data.question.startedAt.toMillis() : Date.now();
+                showQuestion(data.question);
+            }
+        }
+    });
+
+    showScreen('waitingScreen');
+}
+
+function showQuestion(q) {
+    stopTimer();
+    showScreen('questionScreen');
+
+    var modeLabel = q.mode === 'emission' ? '방출' : '흡수';
+    document.getElementById('questionHeader').textContent = 'Q' + q.number + ' \u00b7 ' + modeLabel + ' 스펙트럼';
+
+    var container = document.getElementById('spectrumContainer');
+    renderSpectrum(container, q.elements, q.mode);
+
+    document.getElementById('elementHint').textContent = '원소 ' + q.count + '개를 찾으세요';
+
+    buildElementGrid(q);
+
+    if (q.timer && q.timer > 0) {
+        document.getElementById('timerSection').style.display = '';
+        startTimer(q.timer);
+    } else {
+        document.getElementById('timerSection').style.display = 'none';
+    }
+
+    document.getElementById('submitBtn').disabled = false;
+}
+
+function buildElementGrid(q) {
+    var grid = document.getElementById('elementsGrid');
+    grid.innerHTML = '';
+
+    ALL_ELEMENTS.forEach(function(el) {
+        var card = document.createElement('div');
+        card.className = 'element-card';
+        card.dataset.element = el;
+
+        var sym = document.createElement('div');
+        sym.className = 'element-symbol';
+        sym.textContent = el;
+
+        var nameKr = document.createElement('div');
+        nameKr.className = 'element-name-kr';
+        nameKr.textContent = ELEMENT_NAMES[el];
+
+        var mini = renderMiniSpectrum(el);
+
+        card.appendChild(sym);
+        card.appendChild(nameKr);
+        card.appendChild(mini);
+
+        card.addEventListener('click', function() {
+            if (state.submitted) return;
+            this.classList.toggle('selected');
+        });
+
+        grid.appendChild(card);
+    });
+}
+
+function getSelectedElements() {
+    var selected = [];
+    document.querySelectorAll('#elementsGrid .element-card.selected').forEach(function(card) {
+        selected.push(card.dataset.element);
+    });
+    return selected;
+}
+
+async function submitAnswer() {
+    if (state.submitted) return;
+    var selected = getSelectedElements();
+    if (selected.length === 0) return;
+
+    state.submitted = true;
+    stopTimer();
+    document.getElementById('submitBtn').disabled = true;
+
+    var q = state.currentQuestion;
+    var timeTaken = Date.now() - state.questionStartTime;
+
+    var sortedSelected = selected.slice().sort();
+    var sortedCorrect = q.elements.slice().sort();
+    var isCorrect = sortedSelected.length === sortedCorrect.length && sortedSelected.every(function(el, i) {
+        return el === sortedCorrect[i];
+    });
+
+    var playerRef = db.collection('spectrum_quiz').doc(state.code).collection('players').doc(state.playerId);
+    var updates = {
+        currentAnswer: {
+            selected: selected,
+            at: firebase.firestore.FieldValue.serverTimestamp()
+        }
+    };
+    updates['answers.' + q.number] = {
+        selected: selected,
+        correct: isCorrect,
+        time: timeTaken,
+        at: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    if (isCorrect) {
+        updates.totalCorrect = firebase.firestore.FieldValue.increment(1);
+        updates.totalTime = firebase.firestore.FieldValue.increment(timeTaken);
+        state.totalCorrect++;
+        state.totalTime += timeTaken;
+    }
+
+    try {
+        await playerRef.update(updates);
+    } catch (e) {}
+
+    updateScoreDisplay();
+    showResult(isCorrect, selected, q, timeTaken);
+}
+
+async function showResult(isCorrect, selected, q, timeTaken) {
+    showScreen('resultScreen');
+
+    var iconEl = document.getElementById('resultIcon');
+    var textEl = document.getElementById('resultText');
+    var detailEl = document.getElementById('resultDetail');
+    var elementsEl = document.getElementById('resultElements');
+    var rankEl = document.getElementById('resultRank');
+    var timeEl = document.getElementById('resultTime');
+
+    var sortedCorrect = q.elements.slice().sort();
+    var matched = selected.filter(function(el) { return sortedCorrect.indexOf(el) !== -1; });
+
+    if (isCorrect) {
+        iconEl.textContent = '\u2705';
+        textEl.textContent = '정답!';
+        textEl.className = 'result-text correct';
+        detailEl.innerHTML = '<strong>' + matched.length + '/' + sortedCorrect.length + '</strong> 맞춤';
+        spawnConfetti();
+    } else {
+        iconEl.textContent = '\u274c';
+        textEl.textContent = '오답';
+        textEl.className = 'result-text wrong';
+        var resultScreen = document.getElementById('resultScreen');
+        resultScreen.classList.add('shake');
+        setTimeout(function() { resultScreen.classList.remove('shake'); }, 400);
+
+        elementsEl.innerHTML = '';
+        sortedCorrect.forEach(function(el) {
+            var tag = document.createElement('span');
+            tag.className = 'result-el-tag';
+            if (selected.indexOf(el) !== -1) {
+                tag.classList.add('matched');
+            } else {
+                tag.classList.add('missed');
+            }
+            tag.textContent = el + '(' + ELEMENT_NAMES[el] + ')';
+            elementsEl.appendChild(tag);
+        });
+
+        detailEl.innerHTML = '정답: <strong>' + sortedCorrect.map(function(el) { return el; }).join(', ') + '</strong>';
+    }
+
+    var secs = (timeTaken / 1000).toFixed(1);
+    timeEl.textContent = '소요 시간: ' + secs + '초';
+
+    var rank = await calcRank(q.number, timeTaken, isCorrect);
+    if (rank > 0) {
+        var rankClass = '';
+        var rankIcon = '';
+        if (rank === 1) { rankClass = 'rank-1'; rankIcon = '\ud83e\udd47'; }
+        else if (rank === 2) { rankClass = 'rank-2'; rankIcon = '\ud83e\udd48'; }
+        else if (rank === 3) { rankClass = 'rank-3'; rankIcon = '\ud83e\udd49'; }
+        else { rankIcon = '#'; }
+        rankEl.className = 'result-rank-badge ' + rankClass;
+        rankEl.textContent = rankIcon + ' ' + rank + '등';
+        rankEl.style.display = '';
+    } else {
+        rankEl.style.display = 'none';
+    }
+}
+
+async function calcRank(questionNumber, myTime, myCorrect) {
+    try {
+        var playersRef = db.collection('spectrum_quiz').doc(state.code).collection('players');
+        var snap = await playersRef.get();
+        var results = [];
+        snap.forEach(function(doc) {
+            var d = doc.data();
+            if (d.answers && d.answers[questionNumber]) {
+                var a = d.answers[questionNumber];
+                results.push({
+                    id: doc.id,
+                    correct: a.correct,
+                    time: a.time
+                });
+            }
+        });
+
+        if (!myCorrect) {
+            var totalSubmitted = results.length;
+            return totalSubmitted;
+        }
+
+        results.sort(function(a, b) {
+            if (a.correct && !b.correct) return -1;
+            if (!a.correct && b.correct) return 1;
+            return a.time - b.time;
+        });
+
+        for (var i = 0; i < results.length; i++) {
+            if (results[i].id === state.playerId) return i + 1;
+        }
+        return results.length;
+    } catch (e) {
+        return 0;
+    }
+}
+
+function showFinished() {
+    showScreen('finishedScreen');
+    var statsEl = document.getElementById('finishedStats');
+    var avgTime = state.totalCorrect > 0 ? (state.totalTime / state.totalCorrect / 1000).toFixed(1) : '-';
+    statsEl.innerHTML =
+        '총 정답: <strong>' + state.totalCorrect + '문제</strong><br>' +
+        '평균 소요시간: <strong>' + avgTime + '초</strong>';
+    sessionStorage.removeItem('spectrum_quiz');
+}
+
+function startTimer(duration) {
+    stopTimer();
+    var totalMs = duration * 1000;
+    var startTime = state.questionStartTime || Date.now();
+    var fillEl = document.getElementById('timerFill');
+    var secEl = document.getElementById('timerSeconds');
+
+    state.timerInterval = setInterval(function() {
+        var elapsed = Date.now() - startTime;
+        var remaining = totalMs - elapsed;
+        if (remaining <= 0) {
+            remaining = 0;
+            stopTimer();
+            if (!state.submitted) {
+                var selected = getSelectedElements();
+                if (selected.length > 0) {
+                    submitAnswer();
+                } else {
+                    state.submitted = true;
+                    autoSubmitEmpty();
+                }
+            }
+        }
+        var pct = (remaining / totalMs) * 100;
+        var sec = Math.ceil(remaining / 1000);
+        fillEl.style.width = pct + '%';
+        secEl.textContent = sec;
+
+        fillEl.className = 'timer-fill';
+        secEl.className = 'timer-seconds';
+        if (pct < 20) {
+            fillEl.classList.add('danger');
+            secEl.classList.add('danger');
+        } else if (pct < 50) {
+            fillEl.classList.add('warning');
+            secEl.classList.add('warning');
+        }
+    }, 50);
+}
+
+async function autoSubmitEmpty() {
+    var q = state.currentQuestion;
+    var timeTaken = Date.now() - state.questionStartTime;
+
+    var playerRef = db.collection('spectrum_quiz').doc(state.code).collection('players').doc(state.playerId);
+    var updates = {
+        currentAnswer: {
+            selected: [],
+            at: firebase.firestore.FieldValue.serverTimestamp()
+        }
+    };
+    updates['answers.' + q.number] = {
+        selected: [],
+        correct: false,
+        time: timeTaken,
+        at: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    try {
+        await playerRef.update(updates);
+    } catch (e) {}
+
+    showResult(false, [], q, timeTaken);
+}
+
+function stopTimer() {
+    if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+    }
+}
+
+function spawnConfetti() {
+    var colors = ['#ff6b6b','#feca57','#48dbfb','#ff9ff3','#54a0ff','#5f27cd','#01a3a4','#ff4757'];
+    for (var i = 0; i < 40; i++) {
+        var c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random() * 100 + 'vw';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.animationDuration = (1.5 + Math.random()) + 's';
+        c.style.animationDelay = Math.random() * 0.5 + 's';
+        document.body.appendChild(c);
+        setTimeout(function(el) { el.remove(); }, 3000, c);
+    }
+}
+
+function init() {
+    prefillCode();
+
+    document.getElementById('joinBtn').addEventListener('click', function() {
+        var code = document.getElementById('codeInput').value.trim();
+        var name = document.getElementById('nameInput').value.trim();
+        var errorEl = document.getElementById('joinError');
+
+        if (!code || code.length !== 6) {
+            errorEl.textContent = '6자리 세션 코드를 입력하세요';
+            return;
+        }
+        if (!name) {
+            errorEl.textContent = '이름을 입력하세요';
+            return;
+        }
+        joinSession(code, name);
+    });
+
+    document.getElementById('codeInput').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter' && this.value.length === 6) {
+            document.getElementById('nameInput').focus();
+        }
+    });
+
+    document.getElementById('nameInput').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('joinBtn').click();
+        }
+    });
+
+    document.getElementById('submitBtn').addEventListener('click', function() {
+        submitAnswer();
+    });
+
+    tryReconnect().then(function(reconnected) {
+        if (!reconnected) {
+            showScreen('joinScreen');
+        }
+    });
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+</script>
+</body>
+</html>
