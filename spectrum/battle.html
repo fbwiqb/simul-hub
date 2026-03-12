@@ -119,6 +119,25 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 .pulse{animation:pulse 1.5s ease-in-out infinite;}
 .waiting-text{font-size:1.2em;color:var(--text-dim);text-align:center;}
+.bracket-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.bracket-tab{padding:6px 16px;border-radius:20px;font-size:0.85em;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);transition:all 0.2s;}
+.bracket-tab.active{border-color:var(--accent);color:var(--accent);background:rgba(79,195,247,0.12);}
+.bracket-tab.completed{border-color:var(--correct);color:var(--correct);background:rgba(0,230,118,0.08);}
+.bracket-info{display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.bracket-round-label{font-size:1.1em;font-weight:700;color:var(--accent);}
+.bracket-match-count{font-size:0.85em;color:var(--text-dim);}
+.btn-next-round{padding:14px 32px;border:none;border-radius:12px;font-size:1.05em;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--correct),#2e7d32);color:#fff;transition:all 0.2s;display:none;}
+.btn-next-round:hover{filter:brightness(1.15);transform:translateY(-2px);}
+.btn-next-round:disabled{opacity:0.4;cursor:not-allowed;transform:none;filter:none;}
+.champion-banner{text-align:center;padding:24px;background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,215,0,0.05));border:2px solid var(--gold);border-radius:16px;margin:12px 0;}
+.champion-banner .champ-icon{font-size:3em;margin-bottom:8px;}
+.champion-banner .champ-name{font-size:1.8em;font-weight:800;color:var(--gold);}
+.champion-banner .champ-sub{font-size:0.9em;color:var(--text-dim);margin-top:4px;}
+.eliminated-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px 20px;}
+.eliminated-text{font-size:1.6em;font-weight:700;color:var(--text-dim);}
+.next-round-waiting{font-size:1.1em;color:var(--accent);text-align:center;}
+@keyframes confetti-fall{0%{transform:translateY(-10vh) rotate(0deg);opacity:1;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+.confetti-piece{position:fixed;width:10px;height:10px;z-index:200;pointer-events:none;animation:confetti-fall 3s ease-out forwards;}
 .instruction{text-align:center;color:var(--accent);font-size:1em;font-weight:600;margin-bottom:12px;}
 .mode-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.85em;font-weight:700;margin-bottom:8px;}
 .mode-badge.emission{background:rgba(79,195,247,0.15);color:var(--accent);border:1px solid var(--accent);}
@@ -224,7 +243,16 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
     <h2 style="margin:0;">매치 현황</h2>
     <button class="btn btn-danger" onclick="finishRoom()">종료</button>
   </div>
+  <div class="bracket-info">
+    <span class="bracket-round-label" id="bracketRoundLabel">토너먼트 라운드 1</span>
+    <span class="bracket-match-count" id="bracketMatchCount"></span>
+  </div>
+  <div class="bracket-tabs" id="bracketTabs"></div>
+  <div id="championBanner" style="display:none;"></div>
   <div class="match-grid" id="matchGrid"></div>
+  <div style="text-align:center;margin-top:16px;">
+    <button class="btn-next-round" id="btnNextRound" onclick="nextBracketRound()">다음 라운드 →</button>
+  </div>
 </div>
 
 <div class="screen" id="screenStudentJoin">
@@ -255,6 +283,32 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
 
 <div class="screen" id="screenMatchEnd">
   <div class="winner-screen" id="winnerContent"></div>
+</div>
+
+<div class="screen" id="screenEliminated">
+  <div class="eliminated-screen">
+    <div style="font-size:3em;">😢</div>
+    <div class="eliminated-text">탈락!</div>
+    <div style="color:var(--text-dim);font-size:0.95em;">수고하셨습니다</div>
+    <button class="btn btn-outline btn-large mt-16" onclick="backToRole()">돌아가기</button>
+  </div>
+</div>
+
+<div class="screen" id="screenChampion">
+  <div class="eliminated-screen">
+    <div style="font-size:4em;">🏆</div>
+    <div class="winner-text win" id="championName"></div>
+    <div style="color:var(--text-dim);font-size:1em;">토너먼트 챔피언!</div>
+    <button class="btn btn-accent btn-large mt-16" onclick="backToRole()">돌아가기</button>
+  </div>
+</div>
+
+<div class="screen" id="screenWaitNextRound">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+    <div style="font-size:2.5em;">🎉</div>
+    <div class="winner-text win" style="font-size:1.4em;">승리! 다음 라운드를 기다려주세요...</div>
+    <div class="waiting-text pulse" style="font-size:0.9em;">교사가 다음 라운드를 시작하면 자동으로 연결됩니다.</div>
+  </div>
 </div>
 
 <div class="footer">ⓒ 2025 충남삼성고등학교 신도경T</div>
@@ -289,7 +343,9 @@ var state = {
   timerInterval: null,
   attackStartTime: null,
   currentMatchData: null,
-  roomSettings: null
+  roomSettings: null,
+  allMatches: {},
+  viewingBracketRound: 1
 };
 
 function showScreen(id) {
@@ -336,6 +392,8 @@ async function createRoom() {
     mode: 'emission',
     elementCount: { min: 2, max: 3 },
     hp: 1000,
+    bracketRound: 1,
+    bracketStatus: 'playing',
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     lastActivity: firebase.firestore.FieldValue.serverTimestamp()
   });
@@ -415,15 +473,20 @@ function escapeHtml(str) {
 async function startBattle() {
   var roomSnap = await db.collection('spectrum_battle').doc(state.roomCode).get();
   state.roomSettings = roomSnap.data();
-  await matchPlayers(state.roomCode);
+  state.viewingBracketRound = 1;
+  await matchPlayers(state.roomCode, 1);
   showScreen('screenTeacherOverview');
   listenMatches();
 }
 
-async function matchPlayers(roomCode) {
-  var snap = await db.collection('spectrum_battle').doc(roomCode).collection('players').get();
+async function matchPlayers(roomCode, bracketRound, playerList) {
   var players = [];
-  snap.forEach(function(d) { players.push({ id: d.id, name: d.data().name }); });
+  if (playerList) {
+    players = playerList;
+  } else {
+    var snap = await db.collection('spectrum_battle').doc(roomCode).collection('players').get();
+    snap.forEach(function(d) { players.push({ id: d.id, name: d.data().name }); });
+  }
 
   for (var i = players.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
@@ -451,6 +514,7 @@ async function matchPlayers(roomCode) {
       p1: { id: p1.id, name: p1.name, hp: 1000, isAI: p1.isAI || false },
       p2: { id: p2.id, name: p2.name, hp: 1000, isAI: p2.isAI || false },
       round: 1,
+      bracket: bracketRound,
       status: 'playing',
       winner: null,
       turn: {
@@ -470,61 +534,139 @@ async function matchPlayers(roomCode) {
 
     if (!p1.isAI) {
       batch.update(db.collection('spectrum_battle').doc(roomCode).collection('players').doc(p1.id), {
-        status: 'matched', matchId: matchId
+        status: 'matched', matchId: matchId, eliminated: false
       });
     }
     if (!p2.isAI) {
       batch.update(db.collection('spectrum_battle').doc(roomCode).collection('players').doc(p2.id), {
-        status: 'matched', matchId: matchId
+        status: 'matched', matchId: matchId, eliminated: false
       });
     }
   }
 
-  batch.update(db.collection('spectrum_battle').doc(roomCode), { status: 'playing' });
+  batch.update(db.collection('spectrum_battle').doc(roomCode), {
+    status: 'playing',
+    bracketRound: bracketRound,
+    bracketStatus: 'playing'
+  });
   await batch.commit();
 }
 
 function listenMatches() {
   if (state.matchesUnsub) state.matchesUnsub();
+  state.allMatches = {};
   state.matchesUnsub = db.collection('spectrum_battle').doc(state.roomCode)
     .collection('matches').onSnapshot(function(snap) {
-      var grid = document.getElementById('matchGrid');
-      grid.innerHTML = '';
       snap.forEach(function(doc) {
-        var d = doc.data();
-        var card = document.createElement('div');
-        card.className = 'match-card' + (d.status === 'finished' ? ' finished' : '');
-
-        var p1Pct = (d.p1.hp / 1000) * 100;
-        var p2Pct = (d.p2.hp / 1000) * 100;
-
-        var phaseText = '';
-        if (d.status === 'finished') {
-          phaseText = '종료';
-        } else if (d.turn.phase === 'attack') {
-          phaseText = '공격 선택 중';
-        } else if (d.turn.phase === 'defend') {
-          phaseText = '방어 중';
-        } else if (d.turn.phase === 'result') {
-          phaseText = '결과 표시';
-        }
-
-        card.innerHTML =
-          '<div class="match-card-header">' +
-            '<span class="mc-name">' + escapeHtml(d.p1.name) + '</span>' +
-            '<span class="mc-vs">VS</span>' +
-            '<span class="mc-name">' + escapeHtml(d.p2.name) + '</span>' +
-          '</div>' +
-          '<div class="match-hp-row">' +
-            '<div class="hp-bar-container"><div class="hp-bar-fill ' + hpColor(p1Pct) + '" style="width:' + p1Pct + '%"></div><div class="hp-text">' + d.p1.hp + '</div></div>' +
-            '<div class="hp-bar-container"><div class="hp-bar-fill ' + hpColor(p2Pct) + '" style="width:' + p2Pct + '%"></div><div class="hp-text">' + d.p2.hp + '</div></div>' +
-          '</div>' +
-          '<div class="match-info"><span>R' + d.round + '</span><span>' + phaseText + '</span></div>' +
-          (d.status === 'finished' ? '<div class="match-winner">\uD83C\uDFC6 ' + escapeHtml(getWinnerName(d)) + ' 승리</div>' : '');
-
-        grid.appendChild(card);
+        state.allMatches[doc.id] = doc.data();
       });
+      renderTeacherOverview();
     });
+}
+
+function renderTeacherOverview() {
+  var allMatches = state.allMatches;
+  var maxBracket = 1;
+  var matchesByBracket = {};
+
+  Object.keys(allMatches).forEach(function(id) {
+    var m = allMatches[id];
+    var b = m.bracket || 1;
+    if (b > maxBracket) maxBracket = b;
+    if (!matchesByBracket[b]) matchesByBracket[b] = [];
+    matchesByBracket[b].push({ id: id, data: m });
+  });
+
+  var viewRound = state.viewingBracketRound || 1;
+  if (viewRound > maxBracket) viewRound = maxBracket;
+
+  var tabsEl = document.getElementById('bracketTabs');
+  tabsEl.innerHTML = '';
+  for (var r = 1; r <= maxBracket; r++) {
+    var tab = document.createElement('div');
+    var isActive = r === viewRound;
+    var roundMatches = matchesByBracket[r] || [];
+    var allDone = roundMatches.length > 0 && roundMatches.every(function(m) { return m.data.status === 'finished'; });
+    tab.className = 'bracket-tab' + (isActive ? ' active' : '') + (allDone && !isActive ? ' completed' : '');
+    tab.textContent = 'R' + r;
+    tab.dataset.round = r;
+    tab.addEventListener('click', function() {
+      state.viewingBracketRound = parseInt(this.dataset.round);
+      renderTeacherOverview();
+    });
+    tabsEl.appendChild(tab);
+  }
+
+  var currentMatches = matchesByBracket[viewRound] || [];
+  var finishedCount = currentMatches.filter(function(m) { return m.data.status === 'finished'; }).length;
+  var totalCount = currentMatches.length;
+
+  document.getElementById('bracketRoundLabel').textContent = '토너먼트 라운드 ' + viewRound;
+  document.getElementById('bracketMatchCount').textContent = '완료: ' + finishedCount + '/' + totalCount + ' 매치';
+
+  var grid = document.getElementById('matchGrid');
+  grid.innerHTML = '';
+  currentMatches.forEach(function(match) {
+    var d = match.data;
+    var card = document.createElement('div');
+    card.className = 'match-card' + (d.status === 'finished' ? ' finished' : '');
+
+    var p1Pct = (d.p1.hp / 1000) * 100;
+    var p2Pct = (d.p2.hp / 1000) * 100;
+
+    var phaseText = '';
+    if (d.status === 'finished') {
+      phaseText = '종료';
+    } else if (d.turn.phase === 'attack') {
+      phaseText = '공격 선택 중';
+    } else if (d.turn.phase === 'defend') {
+      phaseText = '방어 중';
+    } else if (d.turn.phase === 'result') {
+      phaseText = '결과 표시';
+    }
+
+    card.innerHTML =
+      '<div class="match-card-header">' +
+        '<span class="mc-name">' + escapeHtml(d.p1.name) + '</span>' +
+        '<span class="mc-vs">VS</span>' +
+        '<span class="mc-name">' + escapeHtml(d.p2.name) + '</span>' +
+      '</div>' +
+      '<div class="match-hp-row">' +
+        '<div class="hp-bar-container"><div class="hp-bar-fill ' + hpColor(p1Pct) + '" style="width:' + p1Pct + '%"></div><div class="hp-text">' + d.p1.hp + '</div></div>' +
+        '<div class="hp-bar-container"><div class="hp-bar-fill ' + hpColor(p2Pct) + '" style="width:' + p2Pct + '%"></div><div class="hp-text">' + d.p2.hp + '</div></div>' +
+      '</div>' +
+      '<div class="match-info"><span>R' + d.round + '</span><span>' + phaseText + '</span></div>' +
+      (d.status === 'finished' ? '<div class="match-winner">\uD83C\uDFC6 ' + escapeHtml(getWinnerName(d)) + ' 승리</div>' : '');
+
+    grid.appendChild(card);
+  });
+
+  var championBanner = document.getElementById('championBanner');
+  var btnNext = document.getElementById('btnNextRound');
+
+  var latestRoundMatches = matchesByBracket[maxBracket] || [];
+  var latestAllDone = latestRoundMatches.length > 0 && latestRoundMatches.every(function(m) { return m.data.status === 'finished'; });
+
+  if (latestAllDone && latestRoundMatches.length === 1) {
+    var champMatch = latestRoundMatches[0].data;
+    var champName = getWinnerName(champMatch);
+    championBanner.style.display = 'block';
+    championBanner.innerHTML =
+      '<div class="champion-banner">' +
+        '<div class="champ-icon">\uD83C\uDFC6</div>' +
+        '<div class="champ-name">' + escapeHtml(champName) + '</div>' +
+        '<div class="champ-sub">토너먼트 챔피언!</div>' +
+      '</div>';
+    btnNext.style.display = 'none';
+  } else if (latestAllDone) {
+    championBanner.style.display = 'none';
+    btnNext.style.display = 'inline-flex';
+    btnNext.disabled = false;
+  } else {
+    championBanner.style.display = 'none';
+    btnNext.style.display = latestRoundMatches.length > 0 ? 'inline-flex' : 'none';
+    btnNext.disabled = true;
+  }
 }
 
 function getWinnerName(data) {
@@ -1038,28 +1180,161 @@ async function checkAndAdvance(roomCode, matchId) {
 
 function renderMatchEnd(data) {
   if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
-  showScreen('screenMatchEnd');
+  if (state.matchUnsub) { state.matchUnsub(); state.matchUnsub = null; }
 
   var info = getMyPlayer(data);
   var iWon = data.winner === state.playerId;
-  var content = document.getElementById('winnerContent');
 
-  content.innerHTML =
-    '<div class="winner-text ' + (iWon ? 'win' : 'lose') + '">' +
-      (iWon ? '\uD83C\uDFC6 \uC2B9\uB9AC!' : '\uD328\uBC30...') +
-    '</div>' +
-    '<div class="hp-compare">' +
-      '<div class="hp-compare-col">' +
-        '<span class="pname">' + escapeHtml(info.me.name) + '</span>' +
-        '<span class="final-hp ' + (info.me.hp > 0 ? 'alive' : 'dead') + '">' + info.me.hp + '</span>' +
-      '</div>' +
-      '<span class="battle-vs">VS</span>' +
-      '<div class="hp-compare-col">' +
-        '<span class="pname">' + escapeHtml(info.opp.name) + '</span>' +
-        '<span class="final-hp ' + (info.opp.hp > 0 ? 'alive' : 'dead') + '">' + info.opp.hp + '</span>' +
-      '</div>' +
-    '</div>' +
-    '<button class="btn btn-outline btn-large mt-24" onclick="backToLobby()">\uB3CC\uC544\uAC00\uAE30</button>';
+  if (iWon) {
+    showScreen('screenMatchEnd');
+    var content = document.getElementById('winnerContent');
+    content.innerHTML =
+      '<div class="winner-text win">\uD83C\uDFC6 \uC2B9\uB9AC!</div>' +
+      '<div class="hp-compare">' +
+        '<div class="hp-compare-col">' +
+          '<span class="pname">' + escapeHtml(info.me.name) + '</span>' +
+          '<span class="final-hp alive">' + info.me.hp + '</span>' +
+        '</div>' +
+        '<span class="battle-vs">VS</span>' +
+        '<div class="hp-compare-col">' +
+          '<span class="pname">' + escapeHtml(info.opp.name) + '</span>' +
+          '<span class="final-hp dead">' + info.opp.hp + '</span>' +
+        '</div>' +
+      '</div>';
+
+    setTimeout(function() {
+      showScreen('screenWaitNextRound');
+      listenForNextRound();
+    }, 3000);
+  } else {
+    showScreen('screenMatchEnd');
+    var content = document.getElementById('winnerContent');
+    content.innerHTML =
+      '<div class="winner-text lose">\uD328\uBC30...</div>' +
+      '<div class="hp-compare">' +
+        '<div class="hp-compare-col">' +
+          '<span class="pname">' + escapeHtml(info.me.name) + '</span>' +
+          '<span class="final-hp dead">' + info.me.hp + '</span>' +
+        '</div>' +
+        '<span class="battle-vs">VS</span>' +
+        '<div class="hp-compare-col">' +
+          '<span class="pname">' + escapeHtml(info.opp.name) + '</span>' +
+          '<span class="final-hp alive">' + info.opp.hp + '</span>' +
+        '</div>' +
+      '</div>';
+
+    setTimeout(function() {
+      showScreen('screenEliminated');
+    }, 3000);
+  }
+}
+
+function listenForNextRound() {
+  if (state.playerUnsub) state.playerUnsub();
+  state.playerUnsub = db.collection('spectrum_battle').doc(state.roomCode)
+    .collection('players').doc(state.playerId).onSnapshot(function(snap) {
+      if (!snap.exists) return;
+      var data = snap.data();
+      if (data.eliminated) {
+        if (state.playerUnsub) { state.playerUnsub(); state.playerUnsub = null; }
+        showScreen('screenEliminated');
+        return;
+      }
+      if (data.champion) {
+        if (state.playerUnsub) { state.playerUnsub(); state.playerUnsub = null; }
+        document.getElementById('championName').textContent = '\uD83C\uDFC6 ' + state.playerName + '!';
+        showScreen('screenChampion');
+        spawnConfetti();
+        return;
+      }
+      if (data.matchId && data.matchId !== state.matchId && data.status === 'matched') {
+        state.matchId = data.matchId;
+        if (state.playerUnsub) { state.playerUnsub(); state.playerUnsub = null; }
+        showScreen('screenBattle');
+        listenMatch();
+      }
+    });
+}
+
+async function nextBracketRound() {
+  var roomCode = state.roomCode;
+  var roomRef = db.collection('spectrum_battle').doc(roomCode);
+  var roomSnap = await roomRef.get();
+  var roomData = roomSnap.data();
+  var currentBracket = roomData.bracketRound || 1;
+
+  var matchSnap = await roomRef.collection('matches')
+    .where('bracket', '==', currentBracket).get();
+
+  var allFinished = true;
+  var winners = [];
+  var losers = [];
+  matchSnap.forEach(function(doc) {
+    var m = doc.data();
+    if (m.status !== 'finished') { allFinished = false; return; }
+    var winnerId = m.winner;
+    var loserId = m.p1.id === winnerId ? m.p2.id : m.p1.id;
+    var winnerName = m.p1.id === winnerId ? m.p1.name : m.p2.name;
+    var winnerIsAI = m.p1.id === winnerId ? m.p1.isAI : m.p2.isAI;
+    winners.push({ id: winnerId, name: winnerName, isAI: winnerIsAI || false });
+    losers.push(loserId);
+  });
+
+  if (!allFinished) return;
+
+  var batch = db.batch();
+
+  losers.forEach(function(lid) {
+    if (!lid.startsWith('ai_')) {
+      batch.update(roomRef.collection('players').doc(lid), {
+        eliminated: true, status: 'eliminated'
+      });
+    }
+  });
+
+  if (winners.length === 1) {
+    batch.update(roomRef, { bracketStatus: 'champion' });
+    if (!winners[0].isAI) {
+      batch.update(roomRef.collection('players').doc(winners[0].id), {
+        champion: true
+      });
+    }
+    await batch.commit();
+    renderTeacherOverview();
+    return;
+  }
+
+  var nextRound = currentBracket + 1;
+  await batch.commit();
+  await matchPlayers(roomCode, nextRound, winners);
+  state.viewingBracketRound = nextRound;
+  renderTeacherOverview();
+}
+
+function backToRole() {
+  if (state.matchUnsub) { state.matchUnsub(); state.matchUnsub = null; }
+  if (state.playerUnsub) { state.playerUnsub(); state.playerUnsub = null; }
+  state.matchId = null;
+  state.currentMatchData = null;
+  showScreen('screenRole');
+}
+
+function spawnConfetti() {
+  var colors = ['#ff1744','#ffd700','#00e676','#4fc3f7','#7c4dff','#ff9100'];
+  for (var i = 0; i < 60; i++) {
+    var piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = Math.random() * 2 + 's';
+    piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+    var size = 6 + Math.random() * 8;
+    piece.style.width = size + 'px';
+    piece.style.height = size + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    document.body.appendChild(piece);
+    setTimeout(function(el) { el.remove(); }.bind(null, piece), 5000);
+  }
 }
 
 function backToLobby() {
