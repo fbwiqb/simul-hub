@@ -958,7 +958,11 @@ function renderAttackPhase(data, container) {
         selected.splice(idx, 1);
         card.classList.remove('selected');
       } else {
-        if (selected.length >= turn.elementCount) return;
+        while (selected.length >= turn.elementCount) {
+          var old = selected.shift();
+          var oldCard = grid.querySelector('[data-el="' + old + '"]');
+          if (oldCard) oldCard.classList.remove('selected');
+        }
         selected.push(el);
         card.classList.add('selected');
       }
@@ -1059,7 +1063,11 @@ function renderDefendPhase(data, container) {
         selected.splice(idx, 1);
         card.classList.remove('selected');
       } else {
-        if (selected.length >= turn.elementCount) return;
+        while (selected.length >= turn.elementCount) {
+          var old = selected.shift();
+          var oldCard = grid.querySelector('[data-el="' + old + '"]');
+          if (oldCard) oldCard.classList.remove('selected');
+        }
         selected.push(el);
         card.classList.add('selected');
       }
