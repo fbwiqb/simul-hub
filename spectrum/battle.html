@@ -25,7 +25,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
-.screen{display:none;width:100%;max-width:900px;padding:20px;flex-direction:column;align-items:center;min-height:100vh;}
+.screen{display:none;width:100%;max-width:900px;padding:16px 10px;flex-direction:column;align-items:center;min-height:100vh;}
 .screen.active{display:flex;}
 h1{font-size:2em;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:8px;}
 h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
@@ -146,6 +146,22 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
 .mode-badge.absorption{background:rgba(124,77,255,0.15);color:var(--accent2);border:1px solid var(--accent2);}
 .count-hint{color:var(--text-dim);font-size:0.9em;text-align:center;margin-bottom:8px;}
 .footer{position:fixed;bottom:8px;text-align:center;font-size:0.7em;color:rgba(255,255,255,0.3);}
+.ref-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:50;overflow-y:auto;padding:20px;display:none;}
+.ref-overlay.active{display:block;}
+.ref-title{text-align:center;font-size:1.6em;font-weight:800;color:var(--accent);margin-bottom:20px;}
+.ref-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:1200px;margin:0 auto;}
+.ref-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.ref-card-header{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.ref-card-header .ref-symbol{font-size:1.8em;font-weight:800;color:var(--text);min-width:50px;text-align:center;}
+.ref-card-header .ref-name{font-size:1em;color:var(--text-dim);}
+.ref-spectrum-row{margin:6px 0;}
+.ref-spectrum-label{font-size:0.75em;color:var(--text-dim);margin-bottom:4px;}
+.ref-spectrum-bar{height:36px;border-radius:6px;position:relative;border:1px solid var(--border);overflow:visible;}
+.ref-close{position:fixed;top:16px;right:16px;z-index:51;background:var(--wrong);color:#fff;border:none;width:48px;height:48px;border-radius:50%;font-size:1.5em;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mode-select{display:flex;gap:8px;margin-bottom:12px;justify-content:center;}
+.mode-select-btn{flex:1;max-width:160px;padding:12px 8px;border:2px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--text-dim);font-size:1em;font-weight:700;cursor:pointer;text-align:center;transition:all 0.2s;}
+.mode-select-btn.sel-emission{border-color:var(--accent);color:var(--accent);background:rgba(79,195,247,0.15);}
+.mode-select-btn.sel-absorption{border-color:var(--accent2);color:var(--accent2);background:rgba(124,77,255,0.15);}
 .gap-8{gap:8px;}
 .gap-12{gap:12px;}
 .gap-16{gap:16px;}
@@ -164,6 +180,7 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
 .justify-center{justify-content:center;}
 .pwd-input{max-width:300px;text-align:center;}
 @media(max-width:600px){
+  .screen{padding:8px 6px;max-width:100%;}
   .element-grid{grid-template-columns:repeat(3,1fr);gap:10px;}
   .element-card{padding:12px 6px;gap:6px;}
   .element-card .el-symbol{font-size:1.2em;}
@@ -176,9 +193,12 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
   .winner-text{font-size:1.6em;}
   .hp-compare-col .final-hp{font-size:1.4em;}
   .result-flash-inner{font-size:1.2em;padding:16px 24px;}
+  .spectrum-preview{margin:10px 0;}
   .spectrum-preview .spectrum-bar{height:60px;}
   .wl-tooltip{font-size:11px;top:-24px;}
   .wavelength-scale{font-size:10px;}
+  .ref-grid{grid-template-columns:1fr;}
+  .mode-select-btn{padding:14px 8px;font-size:1.05em;}
 }
 </style>
 </head>
@@ -215,30 +235,11 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
     <div class="qr-container" id="lobbyQR"></div>
     <div class="settings-group">
       <div class="setting-row">
-        <span class="setting-label">스펙트럼 모드</span>
-        <div class="radio-group" id="modeGroup">
-          <button class="radio-btn active" data-val="emission">방출</button>
-          <button class="radio-btn" data-val="absorption">흡수</button>
-          <button class="radio-btn" data-val="random">랜덤</button>
-        </div>
-      </div>
-      <div class="setting-row">
-        <span class="setting-label">원소 개수 (최소)</span>
-        <select class="select-field" id="elCountMin">
-          <option value="2" selected>2</option>
-          <option value="3">3</option>
-        </select>
-      </div>
-      <div class="setting-row">
-        <span class="setting-label">원소 개수 (최대)</span>
-        <select class="select-field" id="elCountMax">
-          <option value="2">2</option>
-          <option value="3" selected>3</option>
-        </select>
-      </div>
-      <div class="setting-row">
         <span class="setting-label">HP</span>
         <span style="color:var(--gold);font-weight:700;">1000</span>
+      </div>
+      <div style="color:var(--text-dim);font-size:0.8em;margin-top:4px;">
+        공격자가 매 턴 방출/흡수 선택 &middot; 원소 수 자동 증가 (1→2→3)
       </div>
     </div>
     <div class="setting-label mt-16 mb-8">참가자 (<span id="playerCount">0</span>명)</div>
@@ -250,7 +251,10 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
 <div class="screen" id="screenTeacherOverview">
   <div class="flex-row items-center w-full" style="justify-content:space-between;margin-bottom:12px;">
     <h2 style="margin:0;">매치 현황</h2>
-    <button class="btn btn-danger" onclick="finishRoom()">종료</button>
+    <div class="flex-row gap-8">
+      <button class="btn btn-outline" onclick="toggleRefPanel()">스펙트럼 참고표</button>
+      <button class="btn btn-danger" onclick="finishRoom()">종료</button>
+    </div>
   </div>
   <div class="bracket-info">
     <span class="bracket-round-label" id="bracketRoundLabel">토너먼트 라운드 1</span>
@@ -320,6 +324,12 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
   </div>
 </div>
 
+<div class="ref-overlay" id="refOverlay">
+  <button class="ref-close" onclick="toggleRefPanel()">&times;</button>
+  <div class="ref-title">원소별 스펙트럼 참고표</div>
+  <div class="ref-grid" id="refGrid"></div>
+</div>
+
 <div class="footer">ⓒ 2025 충남삼성고등학교 신도경T</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -356,6 +366,12 @@ var state = {
   allMatches: {},
   viewingBracketRound: 1
 };
+
+function getElementCount(round) {
+  if (round <= 2) return 1;
+  if (round <= 4) return 2;
+  return 3;
+}
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
@@ -398,8 +414,6 @@ async function createRoom() {
   state.roomCode = code;
   await db.collection('spectrum_battle').doc(code).set({
     status: 'lobby',
-    mode: 'emission',
-    elementCount: { min: 2, max: 3 },
     hp: 1000,
     bracketRound: 1,
     bracketStatus: 'playing',
@@ -409,7 +423,6 @@ async function createRoom() {
   showScreen('screenTeacherLobby');
   document.getElementById('lobbyRoomCode').textContent = code.split('').join(' ');
   generateQR(code);
-  initModeGroup();
   listenPlayers();
 }
 
@@ -422,34 +435,51 @@ function generateQR(code) {
   container.innerHTML = qr.createImgTag(4, 8);
 }
 
-function initModeGroup() {
-  var btns = document.querySelectorAll('#modeGroup .radio-btn');
-  btns.forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      btns.forEach(function(b) { b.classList.remove('active'); });
-      this.classList.add('active');
-      updateRoomSettings();
-    });
+function toggleRefPanel() {
+  var overlay = document.getElementById('refOverlay');
+  if (overlay.classList.contains('active')) {
+    overlay.classList.remove('active');
+    return;
+  }
+  overlay.classList.add('active');
+  var grid = document.getElementById('refGrid');
+  if (grid.children.length > 0) return;
+  ALL_ELEMENTS.forEach(function(el) {
+    var card = document.createElement('div');
+    card.className = 'ref-card';
+    card.innerHTML =
+      '<div class="ref-card-header"><span class="ref-symbol">' + el + '</span><span class="ref-name">' + ELEMENT_NAMES[el] + '</span></div>' +
+      '<div class="ref-spectrum-row"><div class="ref-spectrum-label">방출</div><div class="ref-spectrum-bar" id="ref-em-' + el + '"></div></div>' +
+      '<div class="ref-spectrum-row"><div class="ref-spectrum-label">흡수</div><div class="ref-spectrum-bar" id="ref-ab-' + el + '"></div></div>';
+    grid.appendChild(card);
+    renderRefSpectrum(el, 'emission', document.getElementById('ref-em-' + el));
+    renderRefSpectrum(el, 'absorption', document.getElementById('ref-ab-' + el));
   });
-  document.getElementById('elCountMin').addEventListener('change', updateRoomSettings);
-  document.getElementById('elCountMax').addEventListener('change', updateRoomSettings);
 }
 
-async function updateRoomSettings() {
-  if (!state.roomCode) return;
-  var activeMode = document.querySelector('#modeGroup .radio-btn.active');
-  var mode = activeMode ? activeMode.dataset.val : 'emission';
-  var min = parseInt(document.getElementById('elCountMin').value);
-  var max = parseInt(document.getElementById('elCountMax').value);
-  if (max < min) {
-    max = min;
-    document.getElementById('elCountMax').value = max;
+function renderRefSpectrum(element, mode, container) {
+  container.style.position = 'relative';
+  if (mode === 'emission') {
+    container.style.background = '#000';
+    ELEMENTS[element].forEach(function(wl) {
+      if (wl >= 380 && wl <= 750) {
+        var line = document.createElement('div');
+        line.style.cssText = 'position:absolute;top:0;bottom:0;width:3px;left:' + wlToPercent(wl) + '%;background:' + wavelengthToRgb(wl);
+        container.appendChild(line);
+      }
+    });
+  } else {
+    var stops = [];
+    for (var w = 380; w <= 750; w += 5) stops.push(wavelengthToRgb(w) + ' ' + wlToPercent(w) + '%');
+    container.style.background = 'linear-gradient(to right, ' + stops.join(', ') + ')';
+    ELEMENTS[element].forEach(function(wl) {
+      if (wl >= 380 && wl <= 750) {
+        var line = document.createElement('div');
+        line.style.cssText = 'position:absolute;top:0;bottom:0;width:3px;left:' + wlToPercent(wl) + '%;background:#000';
+        container.appendChild(line);
+      }
+    });
   }
-  await db.collection('spectrum_battle').doc(state.roomCode).update({
-    mode: mode,
-    elementCount: { min: min, max: max },
-    lastActivity: firebase.firestore.FieldValue.serverTimestamp()
-  });
 }
 
 function listenPlayers() {
@@ -480,8 +510,7 @@ function escapeHtml(str) {
 }
 
 async function startBattle() {
-  var roomSnap = await db.collection('spectrum_battle').doc(state.roomCode).get();
-  state.roomSettings = roomSnap.data();
+  state.roomSettings = {};
   state.viewingBracketRound = 1;
   await matchPlayers(state.roomCode, 1);
   showScreen('screenTeacherOverview');
@@ -509,15 +538,12 @@ async function matchPlayers(roomCode, bracketRound, playerList) {
     players.push({ id: aiId, name: '\uD83E\uDD16 AI', isAI: true });
   }
 
-  var rs = state.roomSettings;
   var batch = db.batch();
+  var elCount = getElementCount(1);
 
   for (var idx = 0; idx < players.length; idx += 2) {
     var matchId = 'm' + Date.now() + '_' + idx;
     var p1 = players[idx], p2 = players[idx + 1];
-    var mode = rs.mode === 'random' ?
-      (Math.random() < 0.5 ? 'emission' : 'absorption') : rs.mode;
-    var elCount = rs.elementCount.min + Math.floor(Math.random() * (rs.elementCount.max - rs.elementCount.min + 1));
 
     batch.set(db.collection('spectrum_battle').doc(roomCode).collection('matches').doc(matchId), {
       p1: { id: p1.id, name: p1.name, hp: 1000, isAI: p1.isAI || false },
@@ -531,7 +557,7 @@ async function matchPlayers(roomCode, bracketRound, playerList) {
         defenderId: p2.id,
         phase: 'attack',
         elements: [],
-        mode: mode,
+        mode: '',
         elementCount: elCount,
         timeLimit: 0,
         attackedAt: null,
@@ -891,12 +917,14 @@ function renderBattle(data) {
 
 function renderAttackPhase(data, container) {
   var turn = data.turn;
-  var modeLabel = turn.mode === 'emission' ? '방출' : '흡수';
-  var modeClass = turn.mode === 'emission' ? 'emission' : 'absorption';
+  window._attackMode = '';
 
   container.innerHTML =
-    '<div class="instruction">원소를 선택해서 상대에게 문제를 내세요!</div>' +
-    '<span class="mode-badge ' + modeClass + '">' + modeLabel + ' 스펙트럼</span>' +
+    '<div class="instruction">스펙트럼 종류를 선택하고 원소를 골라 공격!</div>' +
+    '<div class="mode-select">' +
+      '<button class="mode-select-btn" id="msBtnEmission" onclick="selectAttackMode(\'emission\')">방출 스펙트럼</button>' +
+      '<button class="mode-select-btn" id="msBtnAbsorption" onclick="selectAttackMode(\'absorption\')">흡수 스펙트럼</button>' +
+    '</div>' +
     '<div class="count-hint">원소 ' + turn.elementCount + '개를 선택하세요</div>' +
     '<div class="element-grid" id="attackGrid"></div>' +
     '<div class="spectrum-preview" id="attackPreview"></div>' +
@@ -934,14 +962,26 @@ function renderAttackPhase(data, container) {
         selected.push(el);
         card.classList.add('selected');
       }
-      updateAttackPreview(selected, turn.mode);
-      document.getElementById('btnAttack').disabled = selected.length !== turn.elementCount;
+      if (window._attackMode) updateAttackPreview(selected, window._attackMode);
+      document.getElementById('btnAttack').disabled = !(selected.length === turn.elementCount && window._attackMode);
     });
 
     grid.appendChild(card);
   });
 
   window._attackSelected = selected;
+}
+
+function selectAttackMode(mode) {
+  window._attackMode = mode;
+  document.getElementById('msBtnEmission').className = 'mode-select-btn' + (mode === 'emission' ? ' sel-emission' : '');
+  document.getElementById('msBtnAbsorption').className = 'mode-select-btn' + (mode === 'absorption' ? ' sel-absorption' : '');
+  var sel = window._attackSelected || [];
+  if (sel.length > 0) updateAttackPreview(sel, mode);
+  var data = state.currentMatchData;
+  if (data) {
+    document.getElementById('btnAttack').disabled = !(sel.length === data.turn.elementCount && mode);
+  }
 }
 
 function updateAttackPreview(elements, mode) {
@@ -955,11 +995,10 @@ function updateAttackPreview(elements, mode) {
 
 async function submitAttack() {
   var elements = window._attackSelected;
-  if (!elements || elements.length === 0) return;
+  var mode = window._attackMode;
+  if (!elements || elements.length === 0 || !mode) return;
   document.getElementById('btnAttack').disabled = true;
 
-  var data = state.currentMatchData;
-  var mode = data.turn.mode;
   var timeLimit = elements.length * 8;
 
   await db.collection('spectrum_battle').doc(state.roomCode)
@@ -1201,20 +1240,17 @@ async function checkAndAdvance(roomCode, matchId) {
     return;
   }
 
-  var roomSnap = await db.collection('spectrum_battle').doc(roomCode).get();
-  var roomData = roomSnap.data();
-  var mode = roomData.mode === 'random' ?
-    (Math.random() < 0.5 ? 'emission' : 'absorption') : roomData.mode;
-  var elCount = roomData.elementCount.min + Math.floor(Math.random() * (roomData.elementCount.max - roomData.elementCount.min + 1));
+  var nextRound = data.round + 1;
+  var elCount = getElementCount(nextRound);
 
   await matchRef.update({
-    round: data.round + 1,
+    round: nextRound,
     turn: {
       attackerId: data.turn.defenderId,
       defenderId: data.turn.attackerId,
       phase: 'attack',
       elements: [],
-      mode: mode,
+      mode: '',
       elementCount: elCount,
       timeLimit: 0,
       attackedAt: null,
@@ -1405,7 +1441,7 @@ var AIPlayer = {
   doAttack: async function(data, roomCode, matchId) {
     var count = data.turn.elementCount;
     var elements = pickRandomElements(count);
-    var mode = data.turn.mode;
+    var mode = Math.random() < 0.5 ? 'emission' : 'absorption';
     var timeLimit = elements.length * 8;
     await db.collection('spectrum_battle').doc(roomCode)
       .collection('matches').doc(matchId).update({
