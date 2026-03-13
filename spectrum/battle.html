@@ -73,8 +73,8 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
 .battle-vs{font-size:1.4em;font-weight:800;color:var(--wrong);flex-shrink:0;}
 .round-badge{text-align:center;color:var(--text-dim);font-size:0.85em;margin-bottom:8px;}
 .round-badge span{color:var(--accent);font-weight:700;}
-.element-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0;width:100%;}
-.element-card{background:var(--surface2);border:2px solid var(--border);border-radius:10px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:all 0.2s;user-select:none;}
+.element-grid{display:flex;flex-direction:row;gap:8px;margin:12px 0;width:100%;justify-content:center;}
+.element-card{background:var(--surface2);border:2px solid var(--border);border-radius:10px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:all 0.2s;user-select:none;flex:1;max-width:160px;}
 .element-card:hover{border-color:var(--accent);background:rgba(79,195,247,0.05);}
 .element-card.selected{border-color:var(--accent);background:rgba(79,195,247,0.15);box-shadow:0 0 12px rgba(79,195,247,0.3);}
 .element-card .el-symbol{font-weight:800;font-size:1.1em;}
@@ -146,6 +146,8 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
 .mode-badge.emission{background:rgba(79,195,247,0.15);color:var(--accent);border:1px solid var(--accent);}
 .mode-badge.absorption{background:rgba(124,77,255,0.15);color:var(--accent2);border:1px solid var(--accent2);}
 .count-hint{color:var(--text-dim);font-size:0.9em;text-align:center;margin-bottom:8px;}
+.toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--wrong);color:#fff;padding:12px 24px;border-radius:12px;font-size:0.95em;font-weight:600;z-index:300;opacity:0;transition:all 0.3s ease;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .footer{position:fixed;bottom:8px;text-align:center;font-size:0.7em;color:rgba(255,255,255,0.3);}
 .teacher-layout{display:flex;gap:16px;width:100%;flex:1;min-height:0;}
 .teacher-ref-col{width:340px;flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
@@ -179,8 +181,8 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
 .pwd-input{max-width:300px;text-align:center;}
 @media(max-width:600px){
   .screen{padding:8px 6px;max-width:100%;}
-  .element-grid{grid-template-columns:repeat(3,1fr);gap:10px;}
-  .element-card{padding:12px 6px;gap:6px;}
+  .element-grid{flex-wrap:wrap;gap:6px;}
+  .element-card{padding:12px 6px;gap:6px;min-width:60px;}
   .element-card .el-symbol{font-size:1.2em;}
   .element-card .el-name{font-size:0.8em;}
   .element-card .mini-spectrum{height:20px;border-radius:4px;}
@@ -235,10 +237,14 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
     <div class="settings-group">
       <div class="setting-row">
         <span class="setting-label">HP</span>
-        <span style="color:var(--gold);font-weight:700;">1000</span>
+        <div class="radio-group" id="hpRadioGroup">
+          <button class="radio-btn" data-hp="300" onclick="selectHP(this)">300</button>
+          <button class="radio-btn active" data-hp="500" onclick="selectHP(this)">500</button>
+          <button class="radio-btn" data-hp="700" onclick="selectHP(this)">700</button>
+        </div>
       </div>
       <div style="color:var(--text-dim);font-size:0.8em;margin-top:4px;">
-        공격자가 매 턴 방출/흡수 선택 &middot; 원소 수 자동 증가 (1→2→3)
+        공격자가 매 턴 방출/흡수 선택 &middot; R1-4: 원소 1개, R5+: 원소 2개
       </div>
     </div>
     <div class="setting-label mt-16 mb-8">참가자 (<span id="playerCount">0</span>명)</div>
@@ -328,6 +334,7 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
 <div class="footer">ⓒ 2025 충남삼성고등학교 신도경T</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -365,10 +372,11 @@ var state = {
   viewingBracketRound: 1
 };
 
+var BATTLE_ELEMENTS = ['H', 'He', 'Ne', 'Na', 'Hg'];
+
 function getElementCount(round) {
   if (round <= 4) return 1;
-  if (round <= 10) return 2;
-  return 3;
+  return 2;
 }
 
 function showScreen(id) {
@@ -407,12 +415,22 @@ async function verifyPassword() {
   }
 }
 
+function selectHP(btn) {
+  document.querySelectorAll('#hpRadioGroup .radio-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+function getSelectedHP() {
+  var active = document.querySelector('#hpRadioGroup .radio-btn.active');
+  return active ? parseInt(active.dataset.hp) : 500;
+}
+
 async function createRoom() {
   var code = Math.random().toString(36).substring(2, 6).toUpperCase();
   state.roomCode = code;
   await db.collection('spectrum_battle').doc(code).set({
     status: 'lobby',
-    hp: 1000,
+    hp: 500,
     bracketRound: 1,
     bracketStatus: 'playing',
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -436,7 +454,7 @@ function generateQR(code) {
 function buildRefGrid() {
   var grid = document.getElementById('refGrid');
   if (grid.children.length > 0) return;
-  ALL_ELEMENTS.forEach(function(el) {
+  BATTLE_ELEMENTS.forEach(function(el) {
     var card = document.createElement('div');
     card.className = 'ref-card';
     card.innerHTML =
@@ -501,8 +519,10 @@ function escapeHtml(str) {
 }
 
 async function startBattle() {
-  state.roomSettings = {};
+  var hp = getSelectedHP();
+  state.roomSettings = { hp: hp };
   state.viewingBracketRound = 1;
+  await db.collection('spectrum_battle').doc(state.roomCode).update({ hp: hp });
   await matchPlayers(state.roomCode, 1);
   showScreen('screenTeacherOverview');
   buildRefGrid();
@@ -517,6 +537,9 @@ async function matchPlayers(roomCode, bracketRound, playerList) {
     var snap = await db.collection('spectrum_battle').doc(roomCode).collection('players').get();
     snap.forEach(function(d) { players.push({ id: d.id, name: d.data().name }); });
   }
+
+  var roomSnap = await db.collection('spectrum_battle').doc(roomCode).get();
+  var roomHP = roomSnap.data().hp || 500;
 
   for (var i = players.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
@@ -538,8 +561,9 @@ async function matchPlayers(roomCode, bracketRound, playerList) {
     var p1 = players[idx], p2 = players[idx + 1];
 
     batch.set(db.collection('spectrum_battle').doc(roomCode).collection('matches').doc(matchId), {
-      p1: { id: p1.id, name: p1.name, hp: 1000, isAI: p1.isAI || false },
-      p2: { id: p2.id, name: p2.name, hp: 1000, isAI: p2.isAI || false },
+      maxHp: roomHP,
+      p1: { id: p1.id, name: p1.name, hp: roomHP, isAI: p1.isAI || false },
+      p2: { id: p2.id, name: p2.name, hp: roomHP, isAI: p2.isAI || false },
       round: 1,
       bracket: bracketRound,
       status: 'playing',
@@ -638,8 +662,9 @@ function renderTeacherOverview() {
     var card = document.createElement('div');
     card.className = 'match-card' + (d.status === 'finished' ? ' finished' : '');
 
-    var p1Pct = (d.p1.hp / 1000) * 100;
-    var p2Pct = (d.p2.hp / 1000) * 100;
+    var mHp = d.maxHp || 500;
+    var p1Pct = (d.p1.hp / mHp) * 100;
+    var p2Pct = (d.p2.hp / mHp) * 100;
 
     var phaseText = '';
     if (d.status === 'finished') {
@@ -867,18 +892,19 @@ function renderBattle(data) {
 
   var info = getMyPlayer(data);
   var header = document.getElementById('battleHeader');
-  var myPct = (info.me.hp / 1000) * 100;
-  var oppPct = (info.opp.hp / 1000) * 100;
+  var maxHp = data.maxHp || 500;
+  var myPct = (info.me.hp / maxHp) * 100;
+  var oppPct = (info.opp.hp / maxHp) * 100;
 
   header.innerHTML =
     '<div class="battle-player-col">' +
       '<span class="pname">' + escapeHtml(info.me.name) + '</span>' +
-      '<div class="hp-bar-container"><div class="hp-bar-fill ' + hpColor(myPct) + '" style="width:' + myPct + '%"></div><div class="hp-text">' + info.me.hp + ' / 1000</div></div>' +
+      '<div class="hp-bar-container"><div class="hp-bar-fill ' + hpColor(myPct) + '" style="width:' + myPct + '%"></div><div class="hp-text">' + info.me.hp + ' / ' + maxHp + '</div></div>' +
     '</div>' +
     '<span class="battle-vs">VS</span>' +
     '<div class="battle-player-col">' +
       '<span class="pname">' + escapeHtml(info.opp.name) + '</span>' +
-      '<div class="hp-bar-container"><div class="hp-bar-fill ' + hpColor(oppPct) + '" style="width:' + oppPct + '%"></div><div class="hp-text">' + info.opp.hp + ' / 1000</div></div>' +
+      '<div class="hp-bar-container"><div class="hp-bar-fill ' + hpColor(oppPct) + '" style="width:' + oppPct + '%"></div><div class="hp-text">' + info.opp.hp + ' / ' + maxHp + '</div></div>' +
     '</div>';
 
   document.getElementById('roundBadge').innerHTML = 'Round <span>' + data.round + '</span>';
@@ -928,12 +954,12 @@ function renderAttackPhase(data, container) {
     '<div class="count-hint">원소 ' + turn.elementCount + '개를 선택하세요</div>' +
     '<div class="element-grid" id="attackGrid"></div>' +
     '<div class="spectrum-preview" id="attackPreview"></div>' +
-    '<button class="btn btn-accent btn-large w-full mt-8" id="btnAttack" onclick="submitAttack()" disabled>공격!</button>';
+    '<button class="btn btn-accent btn-large w-full mt-8" id="btnAttack" onclick="submitAttack()">공격!</button>';
 
   var grid = document.getElementById('attackGrid');
   var selected = [];
 
-  ALL_ELEMENTS.forEach(function(el) {
+  BATTLE_ELEMENTS.forEach(function(el) {
     var card = document.createElement('div');
     card.className = 'element-card';
     card.dataset.el = el;
@@ -967,7 +993,6 @@ function renderAttackPhase(data, container) {
         card.classList.add('selected');
       }
       if (window._attackMode) updateAttackPreview(selected, window._attackMode);
-      document.getElementById('btnAttack').disabled = !(selected.length === turn.elementCount && window._attackMode);
     });
 
     grid.appendChild(card);
@@ -982,10 +1007,6 @@ function selectAttackMode(mode) {
   document.getElementById('msBtnAbsorption').className = 'mode-select-btn' + (mode === 'absorption' ? ' sel-absorption' : '');
   var sel = window._attackSelected || [];
   if (sel.length > 0) updateAttackPreview(sel, mode);
-  var data = state.currentMatchData;
-  if (data) {
-    document.getElementById('btnAttack').disabled = !(sel.length === data.turn.elementCount && mode);
-  }
 }
 
 function updateAttackPreview(elements, mode) {
@@ -997,20 +1018,27 @@ function updateAttackPreview(elements, mode) {
   renderSpectrum(preview, elements, mode);
 }
 
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function() { toast.classList.remove('show'); }, 2500);
+}
+
 async function submitAttack() {
   var elements = window._attackSelected;
   var mode = window._attackMode;
-  if (!elements || elements.length === 0 || !mode) return;
+  if (!mode) { showToast('방출/흡수 스펙트럼을 먼저 선택해주세요!'); return; }
+  var needed = state.currentMatchData ? state.currentMatchData.turn.elementCount : 1;
+  if (!elements || elements.length < needed) { showToast('원소 ' + needed + '개를 선택해주세요!'); return; }
   document.getElementById('btnAttack').disabled = true;
-
-  var timeLimit = elements.length * 12;
 
   await db.collection('spectrum_battle').doc(state.roomCode)
     .collection('matches').doc(state.matchId).update({
       'turn.elements': elements,
       'turn.mode': mode,
       'turn.elementCount': elements.length,
-      'turn.timeLimit': timeLimit,
+      'turn.timeLimit': 60,
       'turn.phase': 'defend',
       'turn.attackedAt': firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -1038,7 +1066,7 @@ function renderDefendPhase(data, container) {
   var grid = document.getElementById('defendGrid');
   var selected = [];
 
-  ALL_ELEMENTS.forEach(function(el) {
+  BATTLE_ELEMENTS.forEach(function(el) {
     var card = document.createElement('div');
     card.className = 'element-card';
     card.dataset.el = el;
@@ -1448,15 +1476,19 @@ var AIPlayer = {
   isAI: function(id) { return id && id.startsWith('ai_'); },
   doAttack: async function(data, roomCode, matchId) {
     var count = data.turn.elementCount;
-    var elements = pickRandomElements(count);
+    var pool = BATTLE_ELEMENTS.slice();
+    var elements = [];
+    while (elements.length < count && pool.length > 0) {
+      var idx = Math.floor(Math.random() * pool.length);
+      elements.push(pool.splice(idx, 1)[0]);
+    }
     var mode = Math.random() < 0.5 ? 'emission' : 'absorption';
-    var timeLimit = elements.length * 12;
     await db.collection('spectrum_battle').doc(roomCode)
       .collection('matches').doc(matchId).update({
         'turn.elements': elements,
         'turn.mode': mode,
         'turn.elementCount': elements.length,
-        'turn.timeLimit': timeLimit,
+        'turn.timeLimit': 60,
         'turn.phase': 'defend',
         'turn.attackedAt': firebase.firestore.FieldValue.serverTimestamp()
       });
@@ -1466,7 +1498,12 @@ var AIPlayer = {
     var r = Math.random();
     var answer;
     if (r < 0.2) {
-      answer = pickRandomElements(expected.length);
+      var pool = BATTLE_ELEMENTS.slice();
+      answer = [];
+      while (answer.length < expected.length && pool.length > 0) {
+        var idx = Math.floor(Math.random() * pool.length);
+        answer.push(pool.splice(idx, 1)[0]);
+      }
     } else {
       answer = expected.slice();
     }
