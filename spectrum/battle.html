@@ -447,7 +447,7 @@ function generateQR(code) {
   qr.addData(url);
   qr.make();
   var container = document.getElementById('lobbyQR');
-  container.innerHTML = qr.createImgTag(4, 8);
+  container.innerHTML = qr.createImgTag(8, 8);
 }
 
 function buildRefGrid() {
