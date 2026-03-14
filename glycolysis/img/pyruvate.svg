@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
+  <g transform="translate(90,30)">
+    <text x="15" y="15" font-size="12" fill="#333" font-family="Arial">COO&#x207B;</text>
+    <line x1="25" y1="20" x2="25" y2="50" stroke="#333" stroke-width="2.5"/>
+    <text x="20" y="65" font-size="12" fill="#333" font-family="Arial">C</text>
+    <line x1="33" y1="55" x2="50" y2="55" stroke="#333" stroke-width="2"/>
+    <line x1="33" y1="59" x2="50" y2="59" stroke="#333" stroke-width="2"/>
+    <text x="53" y="62" font-size="12" fill="#333" font-family="Arial">O</text>
+    <line x1="25" y1="70" x2="25" y2="100" stroke="#333" stroke-width="2.5"/>
+    <text x="15" y="115" font-size="12" fill="#333" font-family="Arial">CH&#x2083;</text>
+  </g>
+  <text x="120" y="190" text-anchor="middle" font-family="'Noto Sans KR', Arial, sans-serif" font-size="13" fill="#555">&#xD53C;&#xB8E8;&#xBE0C;&#xC0B0;</text>
+</svg>

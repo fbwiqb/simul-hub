@@ -1,4 +1,4 @@
-<!-- 최종 확인일: 2026-03-10 -->
+<!-- 최종 확인일: 2026-03-14 -->
 
 # CNSA Simulation Platform
 
@@ -29,6 +29,7 @@
 ├── neuronsimul/        # Neuron action potential (생명과학)
 ├── musclesimul/        # Muscle contraction (생명과학)
 ├── Evosnail/           # Natural selection evolution (생명과학)
+├── glycolysis/         # Cellular respiration: glycolysis + TCA (생명과학, 26 SVG images)
 └── acid-base/          # Acid-base titration (화학)
 ```
 
@@ -60,6 +61,7 @@
 | 뉴런 | `/neuronsimul/` | Action potential propagation |
 | 근수축 | `/musclesimul/` | Sliding filament theory |
 | 진화 | `/Evosnail/` | Snail shell color natural selection |
+| 세포 호흡 | `/glycolysis/` | Glycolysis + TCA cycle step-by-step (26 SVG images) |
 
 ### 화학 (Chemistry)
 | Simulation | Path | Description |

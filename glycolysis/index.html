@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>세포 호흡 시뮬레이션</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --atp: #FFC107;
+  --adp: #9E9E9E;
+  --nadh: #1565C0;
+  --fadh2: #7B1FA2;
+  --phosphate: #E65100;
+  --enzyme: #2E7D32;
+  --co2: #5D4037;
+  --gtp: #00897B;
+  --bg-dark: #f0f2f5;
+  --bg-card: rgba(255,255,255,0.85);
+  --border: rgba(0,0,0,0.1);
+  --text: #1a1a2e;
+  --text-dim: rgba(0,0,0,0.5);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Noto Sans KR',-apple-system,sans-serif;
+  background:linear-gradient(135deg,#f0f2f5 0%,#e8edf2 50%,#dfe5ec 100%);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+.app {
+  max-width:1400px;
+  margin:0 auto;
+  padding:20px;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+.header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+  margin-bottom:12px;
+  flex-shrink:0;
+}
+.header h1 {
+  font-size:1.6rem;
+  font-weight:700;
+  color:#1a1a2e;
+}
+.tabs {
+  display:flex;
+  gap:4px;
+}
+.tab {
+  padding:10px 22px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text-dim);
+  border-radius:8px;
+  cursor:pointer;
+  font-size:1rem;
+  font-family:inherit;
+  font-weight:500;
+  transition:all 0.2s;
+}
+.tab.active {
+  background:rgba(58,123,213,0.15);
+  color:#2a5db0;
+  border-color:rgba(58,123,213,0.4);
+}
+.tab:hover:not(.active) {
+  background:rgba(0,0,0,0.04);
+  color:var(--text);
+}
+.header-btns {
+  display:flex;
+  gap:8px;
+}
+.icon-btn {
+  width:36px;height:36px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text-dim);
+  border-radius:8px;
+  cursor:pointer;
+  font-size:1.1rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+}
+.icon-btn:hover { background:rgba(0,0,0,0.06); color:var(--text); }
+
+.progress-bar {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:10px 0;
+  justify-content:center;
+  flex-shrink:0;
+}
+.dot {
+  width:16px;height:16px;
+  border-radius:50%;
+  background:rgba(0,0,0,0.08);
+  border:2px solid rgba(0,0,0,0.12);
+  transition:all 0.3s;
+  cursor:pointer;
+}
+.dot.done {
+  background:rgba(58,123,213,0.5);
+  border-color:rgba(58,123,213,0.7);
+}
+.dot.current {
+  background:#3a7bd5;
+  border-color:#5a9be5;
+  box-shadow:0 0 8px rgba(58,123,213,0.6);
+  transform:scale(1.2);
+}
+
+.main-area {
+  display:grid;
+  grid-template-columns:160px 1fr 160px;
+  gap:12px;
+  flex:1;
+  min-height:0;
+}
+
+.side-panel {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.counter-block { text-align:center; }
+.counter-label {
+  font-size:0.85rem;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--text-dim);
+  margin-bottom:6px;
+}
+.counter-value {
+  font-size:2.5rem;
+  font-weight:700;
+  line-height:1;
+}
+.counter-sub {
+  font-size:0.8rem;
+  color:var(--text-dim);
+  margin-top:4px;
+}
+.atp-color { color:var(--atp); }
+.nadh-color { color:var(--nadh); }
+.fadh2-color { color:var(--fadh2); }
+.gtp-color { color:var(--gtp); }
+.co2-color { color:var(--co2); }
+
+.center-stage {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+  padding:20px;
+}
+.reaction-display {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+  width:100%;
+  min-height:200px;
+}
+.molecule-box {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  transition:opacity 0.4s, transform 0.4s;
+}
+.molecule-box img {
+  width:200px;
+  height:160px;
+  object-fit:contain;
+  filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+}
+.molecule-name {
+  font-size:1.05rem;
+  font-weight:600;
+  color:var(--text);
+}
+.molecule-carbon {
+  font-size:0.85rem;
+  color:var(--text-dim);
+}
+.arrow-area {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  min-width:80px;
+}
+.arrow-line {
+  font-size:2.5rem;
+  color:rgba(0,0,0,0.3);
+}
+.enzyme-label {
+  font-size:0.9rem;
+  font-weight:600;
+  color:var(--enzyme);
+  background:rgba(46,125,50,0.15);
+  padding:3px 10px;
+  border-radius:12px;
+  white-space:nowrap;
+}
+.byproducts {
+  display:flex;
+  gap:6px;
+  margin-top:4px;
+}
+.byproduct-badge {
+  font-size:0.8rem;
+  font-weight:600;
+  padding:2px 8px;
+  border-radius:8px;
+  white-space:nowrap;
+}
+.bp-atp { background:rgba(255,193,7,0.2); color:var(--atp); }
+.bp-adp { background:rgba(158,158,158,0.2); color:var(--adp); }
+.bp-nadh { background:rgba(21,101,192,0.2); color:var(--nadh); }
+.bp-nad { background:rgba(66,165,245,0.2); color:#42A5F5; }
+.bp-fadh2 { background:rgba(123,31,162,0.2); color:var(--fadh2); }
+.bp-co2 { background:rgba(93,64,55,0.2); color:#8D6E63; }
+.bp-gtp { background:rgba(0,137,123,0.2); color:var(--gtp); }
+
+.cofactor-flow {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  margin-top:6px;
+}
+.cofactor-row {
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.cofactor-row img {
+  width:44px;
+  height:22px;
+  object-fit:contain;
+}
+.cofactor-arrow-in {
+  color:#2E7D32;
+  font-size:0.85rem;
+  font-weight:700;
+}
+.cofactor-arrow-out {
+  color:#C62828;
+  font-size:0.85rem;
+  font-weight:700;
+}
+.cofactor-label {
+  font-size:0.75rem;
+  font-weight:600;
+  color:var(--text-dim);
+}
+.cofactor-text-badge {
+  display:inline-flex;
+  align-items:center;
+  padding:2px 10px;
+  border-radius:10px;
+  font-size:0.8rem;
+  font-weight:600;
+  background:rgba(0,0,0,0.06);
+  color:var(--text-dim);
+}
+
+.times2-badge {
+  position:absolute;
+  top:12px;
+  right:16px;
+  background:rgba(255,193,7,0.2);
+  color:var(--atp);
+  font-size:0.8rem;
+  font-weight:700;
+  padding:4px 12px;
+  border-radius:8px;
+  border:1px solid rgba(255,193,7,0.3);
+}
+
+.coin-container {
+  position:absolute;
+  pointer-events:none;
+}
+.coin {
+  position:absolute;
+  width:28px;height:28px;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.55rem;font-weight:700;color:#fff;
+  opacity:0;
+  transition:none;
+}
+
+.split-display {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  width:100%;
+  min-height:200px;
+}
+.split-product {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+}
+.split-product img {
+  width:120px;height:100px;object-fit:contain;
+  filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+}
+.plus-sign {
+  font-size:1.5rem;
+  color:rgba(0,0,0,0.25);
+  font-weight:300;
+}
+
+.info-panel {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px 20px;
+  margin-top:12px;
+  flex-shrink:0;
+}
+.info-step {
+  font-size:0.9rem;
+  color:var(--text-dim);
+  margin-bottom:4px;
+}
+.info-title {
+  font-size:1.2rem;
+  font-weight:600;
+  margin-bottom:6px;
+}
+.info-desc {
+  font-size:1rem;
+  color:rgba(0,0,0,0.6);
+  line-height:1.6;
+}
+
+.nav-bar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 0;
+  flex-shrink:0;
+}
+.nav-btn {
+  padding:12px 36px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text);
+  border-radius:10px;
+  cursor:pointer;
+  font-size:1rem;
+  font-family:inherit;
+  font-weight:500;
+  transition:all 0.2s;
+}
+.nav-btn:hover { background:rgba(0,0,0,0.05); }
+.nav-btn:disabled { opacity:0.3; cursor:default; }
+.nav-btn.primary {
+  background:rgba(58,123,213,0.25);
+  border-color:rgba(58,123,213,0.5);
+}
+.nav-btn.primary:hover { background:rgba(58,123,213,0.35); }
+.nav-counter {
+  font-size:0.85rem;
+  color:var(--text-dim);
+}
+
+.tab-content { display:none; flex:1; flex-direction:column; min-height:0; }
+.tab-content.active { display:flex; }
+
+.tca-stage {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  flex:1;
+  position:relative;
+  padding:20px;
+}
+.tca-circle-container {
+  position:relative;
+  width:500px;
+  height:500px;
+}
+.tca-node {
+  position:absolute;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  cursor:pointer;
+  transition:all 0.3s;
+}
+.tca-node img {
+  width:70px;height:56px;object-fit:contain;
+  filter:drop-shadow(0 1px 4px rgba(0,0,0,0.3));
+  transition:all 0.3s;
+}
+.tca-node.active img {
+  transform:scale(1.15);
+  filter:drop-shadow(0 2px 12px rgba(58,123,213,0.5));
+}
+.tca-node-label {
+  font-size:0.65rem;
+  color:var(--text-dim);
+  font-weight:500;
+  text-align:center;
+  max-width:80px;
+  transition:color 0.3s;
+}
+.tca-node.active .tca-node-label { color:#1a1a2e; font-weight:700; }
+.tca-arrow {
+  position:absolute;
+  font-size:0.9rem;
+  color:rgba(0,0,0,0.2);
+  transition:color 0.3s;
+}
+.tca-arrow.active { color:rgba(58,123,213,0.7); }
+.tca-reaction-info {
+  position:absolute;
+  bottom:0;left:0;right:0;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px 20px;
+}
+.tca-counters {
+  display:flex;
+  gap:20px;
+  justify-content:center;
+  margin-bottom:12px;
+}
+.tca-counter {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:0.8rem;
+  font-weight:600;
+}
+.tca-counter-dot {
+  width:10px;height:10px;
+  border-radius:50%;
+}
+.pyruvate-ox-banner {
+  background:rgba(255,193,7,0.1);
+  border:1px solid rgba(255,193,7,0.2);
+  border-radius:10px;
+  padding:10px 16px;
+  text-align:center;
+  margin-bottom:12px;
+  font-size:0.8rem;
+  color:var(--atp);
+}
+
+.summary-content {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:20px;
+  overflow-y:auto;
+  gap:16px;
+}
+.summary-flow {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0;
+  width:100%;
+  max-width:700px;
+}
+.summary-stage {
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:20px 28px;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  transition:all 0.3s;
+}
+.summary-stage:hover {
+  background:rgba(255,255,255,0.95);
+  border-color:rgba(0,0,0,0.15);
+}
+.summary-stage-left {
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.summary-stage-title {
+  font-size:1rem;
+  font-weight:600;
+}
+.summary-stage-location {
+  font-size:0.75rem;
+  color:var(--text-dim);
+}
+.summary-stage-right {
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.summary-yield {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+}
+.summary-yield-val {
+  font-size:1.3rem;
+  font-weight:700;
+}
+.summary-yield-label {
+  font-size:0.6rem;
+  color:var(--text-dim);
+  text-transform:uppercase;
+}
+.summary-arrow-down {
+  text-align:center;
+  padding:6px 0;
+  color:rgba(0,0,0,0.2);
+  font-size:1.2rem;
+}
+.summary-total {
+  background:linear-gradient(135deg,rgba(58,123,213,0.2),rgba(0,210,255,0.15));
+  border:1px solid rgba(58,123,213,0.4);
+  border-radius:14px;
+  padding:24px 28px;
+  width:100%;
+  text-align:center;
+}
+.summary-total-label {
+  font-size:0.85rem;
+  color:var(--text-dim);
+  margin-bottom:8px;
+}
+.summary-total-value {
+  font-size:2.5rem;
+  font-weight:700;
+  background:linear-gradient(90deg,var(--atp),#FFD54F);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.summary-total-sub {
+  font-size:0.8rem;
+  color:var(--text-dim);
+  margin-top:4px;
+}
+.summary-table {
+  width:100%;
+  max-width:700px;
+  border-collapse:separate;
+  border-spacing:0;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+}
+.summary-table th, .summary-table td {
+  padding:10px 14px;
+  text-align:center;
+  border-bottom:1px solid var(--border);
+  font-size:0.8rem;
+}
+.summary-table th {
+  background:rgba(0,0,0,0.03);
+  color:var(--text-dim);
+  font-weight:600;
+  font-size:0.7rem;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+}
+.summary-table tr:last-child td { border-bottom:none; }
+.summary-table tr:last-child {
+  background:rgba(58,123,213,0.1);
+  font-weight:700;
+}
+
+.help-modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  z-index:100;
+  align-items:center;
+  justify-content:center;
+}
+.help-modal.open { display:flex; }
+.help-content {
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:32px;
+  max-width:480px;
+  width:90%;
+  position:relative;
+  box-shadow:0 20px 60px rgba(0,0,0,0.2);
+}
+.help-content h2 { margin-bottom:16px; font-size:1.2rem; color:var(--text); }
+.help-content p { font-size:0.85rem; color:rgba(0,0,0,0.6); line-height:1.8; margin-bottom:8px; }
+.help-close {
+  position:absolute;
+  top:12px;right:16px;
+  background:none;border:none;
+  color:var(--text-dim);font-size:1.5rem;cursor:pointer;
+}
+kbd {
+  background:rgba(0,0,0,0.06);
+  border:1px solid rgba(0,0,0,0.12);
+  border-radius:4px;
+  padding:2px 6px;
+  font-size:0.75rem;
+  font-family:inherit;
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>세포 호흡 시뮬레이션</h1>
+    <div class="tabs">
+      <button class="tab active" data-tab="glycolysis">해당과정</button>
+      <button class="tab" data-tab="tca">TCA 회로</button>
+      <button class="tab" data-tab="summary">전체 연결</button>
+    </div>
+    <div class="header-btns">
+      <button class="icon-btn" id="helpBtn" title="도움말">?</button>
+      <button class="icon-btn" id="resetBtn" title="처음으로">↺</button>
+    </div>
+  </div>
+
+  <!-- TAB 1: GLYCOLYSIS -->
+  <div class="tab-content active" id="tab-glycolysis">
+    <div class="progress-bar" id="glycolysis-progress"></div>
+    <div class="main-area">
+      <div class="side-panel">
+        <div class="counter-block">
+          <div class="counter-label">ATP</div>
+          <div class="counter-value atp-color" id="g-atp-val">0</div>
+          <div class="counter-sub">소모: <span id="g-atp-used">0</span></div>
+          <div class="counter-sub">생성: <span id="g-atp-made">0</span></div>
+        </div>
+        <div class="counter-block" style="border-top:1px solid var(--border);padding-top:14px;">
+          <div class="counter-label">순이익</div>
+          <div class="counter-value atp-color" id="g-atp-net">0</div>
+          <div class="counter-sub">ATP</div>
+        </div>
+      </div>
+
+      <div class="center-stage" id="glycolysis-stage">
+        <div class="reaction-display" id="glycolysis-reaction"></div>
+      </div>
+
+      <div class="side-panel">
+        <div class="counter-block">
+          <div class="counter-label">NADH</div>
+          <div class="counter-value nadh-color" id="g-nadh-val">0</div>
+          <div class="counter-sub">생성: <span id="g-nadh-made">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel" id="glycolysis-info">
+      <div class="info-step" id="g-info-step"></div>
+      <div class="info-title" id="g-info-title"></div>
+      <div class="info-desc" id="g-info-desc"></div>
+    </div>
+
+    <div class="nav-bar">
+      <button class="nav-btn" id="g-prev" disabled>◀ 이전</button>
+      <span class="nav-counter" id="g-nav-counter"></span>
+      <button class="nav-btn primary" id="g-next">다음 ▶</button>
+    </div>
+  </div>
+
+  <!-- TAB 2: TCA -->
+  <div class="tab-content" id="tab-tca">
+    <div class="progress-bar" id="tca-progress"></div>
+    <div class="main-area" style="grid-template-columns:1fr;">
+      <div class="center-stage" style="min-height:500px;position:relative;">
+        <div class="tca-counters" id="tca-counters">
+          <div class="tca-counter"><div class="tca-counter-dot" style="background:var(--nadh)"></div><span>NADH: <b id="t-nadh">0</b></span></div>
+          <div class="tca-counter"><div class="tca-counter-dot" style="background:var(--fadh2)"></div><span>FADH₂: <b id="t-fadh2">0</b></span></div>
+          <div class="tca-counter"><div class="tca-counter-dot" style="background:var(--gtp)"></div><span>GTP: <b id="t-gtp">0</b></span></div>
+          <div class="tca-counter"><div class="tca-counter-dot" style="background:var(--co2)"></div><span>CO₂: <b id="t-co2">0</b></span></div>
+          <div class="tca-counter"><div class="tca-counter-dot" style="background:var(--atp)"></div><span>회전: <b id="t-turn">1</b>/2</span></div>
+        </div>
+        <div id="tca-visual" style="position:relative;width:100%;flex:1;display:flex;align-items:center;justify-content:center;"></div>
+      </div>
+    </div>
+
+    <div class="info-panel" id="tca-info">
+      <div class="info-step" id="t-info-step"></div>
+      <div class="info-title" id="t-info-title"></div>
+      <div class="info-desc" id="t-info-desc"></div>
+    </div>
+
+    <div class="nav-bar">
+      <button class="nav-btn" id="t-prev" disabled>◀ 이전</button>
+      <span class="nav-counter" id="t-nav-counter"></span>
+      <button class="nav-btn primary" id="t-next">다음 ▶</button>
+    </div>
+  </div>
+
+  <!-- TAB 3: SUMMARY -->
+  <div class="tab-content" id="tab-summary">
+    <div class="summary-content">
+      <div class="summary-flow">
+        <div class="summary-stage">
+          <div class="summary-stage-left">
+            <div class="summary-stage-title">해당과정</div>
+            <div class="summary-stage-location">세포질</div>
+          </div>
+          <div class="summary-stage-right">
+            <div class="summary-yield"><div class="summary-yield-val atp-color">2</div><div class="summary-yield-label">ATP</div></div>
+            <div class="summary-yield"><div class="summary-yield-val nadh-color">2</div><div class="summary-yield-label">NADH</div></div>
+          </div>
+        </div>
+        <div class="summary-arrow-down">▼</div>
+        <div class="summary-stage">
+          <div class="summary-stage-left">
+            <div class="summary-stage-title">피루브산 산화</div>
+            <div class="summary-stage-location">미토콘드리아 기질</div>
+          </div>
+          <div class="summary-stage-right">
+            <div class="summary-yield"><div class="summary-yield-val nadh-color">2</div><div class="summary-yield-label">NADH</div></div>
+            <div class="summary-yield"><div class="summary-yield-val co2-color">2</div><div class="summary-yield-label">CO₂</div></div>
+          </div>
+        </div>
+        <div class="summary-arrow-down">▼</div>
+        <div class="summary-stage">
+          <div class="summary-stage-left">
+            <div class="summary-stage-title">TCA 회로 (×2)</div>
+            <div class="summary-stage-location">미토콘드리아 기질</div>
+          </div>
+          <div class="summary-stage-right">
+            <div class="summary-yield"><div class="summary-yield-val gtp-color">2</div><div class="summary-yield-label">GTP</div></div>
+            <div class="summary-yield"><div class="summary-yield-val nadh-color">6</div><div class="summary-yield-label">NADH</div></div>
+            <div class="summary-yield"><div class="summary-yield-val fadh2-color">2</div><div class="summary-yield-label">FADH₂</div></div>
+            <div class="summary-yield"><div class="summary-yield-val co2-color">4</div><div class="summary-yield-label">CO₂</div></div>
+          </div>
+        </div>
+        <div class="summary-arrow-down">▼</div>
+        <div class="summary-stage">
+          <div class="summary-stage-left">
+            <div class="summary-stage-title">산화적 인산화</div>
+            <div class="summary-stage-location">미토콘드리아 내막</div>
+          </div>
+          <div class="summary-stage-right">
+            <div class="summary-yield"><div class="summary-yield-val atp-color">26~28</div><div class="summary-yield-label">ATP</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-total">
+        <div class="summary-total-label">포도당 1분자당 총 ATP 수율</div>
+        <div class="summary-total-value">30~32 ATP</div>
+        <div class="summary-total-sub">2 ATP (해당) + 2 GTP (TCA) + 26~28 ATP (산화적 인산화)</div>
+      </div>
+
+      <table class="summary-table">
+        <thead>
+          <tr><th>단계</th><th>ATP</th><th>NADH</th><th>FADH₂</th><th>GTP</th><th>CO₂</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>해당과정</td><td class="atp-color">2</td><td class="nadh-color">2</td><td>-</td><td>-</td><td>-</td></tr>
+          <tr><td>피루브산 산화 (×2)</td><td>-</td><td class="nadh-color">2</td><td>-</td><td>-</td><td class="co2-color">2</td></tr>
+          <tr><td>TCA 회로 (×2)</td><td>-</td><td class="nadh-color">6</td><td class="fadh2-color">2</td><td class="gtp-color">2</td><td class="co2-color">4</td></tr>
+          <tr><td>산화적 인산화</td><td class="atp-color">26~28</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+          <tr><td>합계</td><td class="atp-color">30~32</td><td class="nadh-color">10</td><td class="fadh2-color">2</td><td class="gtp-color">2</td><td class="co2-color">6</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="help-modal" id="helpModal">
+  <div class="help-content">
+    <button class="help-close" id="helpClose">&times;</button>
+    <h2>사용법</h2>
+    <p><kbd>→</kbd> 또는 <kbd>Space</kbd> : 다음 단계</p>
+    <p><kbd>←</kbd> : 이전 단계</p>
+    <p><kbd>R</kbd> : 처음으로</p>
+    <p><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> : 탭 전환</p>
+    <p>각 단계마다 ATP, NADH, FADH₂ 생성/소모를 확인할 수 있습니다.</p>
+    <p>TCA 회로는 피루브산 2분자 기준 2회전합니다.</p>
+  </div>
+</div>
+
+<script>
+const IMG = './img/';
+
+const GLYCOLYSIS_STEPS = [
+  {
+    substrate:'glucose', product:'g6p',
+    subName:'포도당', prodName:'포도당-6-인산',
+    subCarbon:'C₆', prodCarbon:'C₆',
+    enzyme:'헥소키나아제',
+    atpChange:-1, nadhChange:0,
+    inputs:[{img:'atp',label:'ATP'}],
+    outputs:[{img:'adp',label:'ADP'}],
+    desc:'ATP 1분자가 소모되어 포도당의 C6에 인산기가 결합합니다. 이 반응은 비가역적이며, 포도당을 세포 안에 가두는 역할을 합니다.',
+    times2:false
+  },
+  {
+    substrate:'g6p', product:'f6p',
+    subName:'포도당-6-인산', prodName:'과당-6-인산',
+    subCarbon:'C₆', prodCarbon:'C₆',
+    enzyme:'포스포글루코스 이성질화효소',
+    atpChange:0, nadhChange:0,
+    inputs:[], outputs:[],
+    desc:'6각 고리(포도당)가 5각 고리(과당)로 이성질화됩니다. 다음 단계의 인산화를 위한 구조적 준비 과정입니다.',
+    times2:false
+  },
+  {
+    substrate:'f6p', product:'fbp',
+    subName:'과당-6-인산', prodName:'과당-1,6-이인산',
+    subCarbon:'C₆', prodCarbon:'C₆',
+    enzyme:'포스포프럭토키나아제(PFK)',
+    atpChange:-1, nadhChange:0,
+    inputs:[{img:'atp',label:'ATP'}],
+    outputs:[{img:'adp',label:'ADP'}],
+    desc:'ATP 1분자가 추가로 소모되어 C1에도 인산기가 결합합니다. PFK는 해당과정의 핵심 조절 효소입니다.',
+    times2:false
+  },
+  {
+    substrate:'fbp', product:null,
+    products:['dhap','g3p'],
+    subName:'과당-1,6-이인산', prodNames:['DHAP','G3P'],
+    subCarbon:'C₆', prodCarbons:['C₃','C₃'],
+    enzyme:'알돌레이스',
+    atpChange:0, nadhChange:0,
+    inputs:[], outputs:[],
+    desc:'6탄소 분자가 3탄소 분자 2개(DHAP와 G3P)로 분해됩니다. 이것이 "해당(糖을 쪼갬)"의 핵심 단계입니다.',
+    times2:false, split:true
+  },
+  {
+    substrate:'dhap', product:'g3p',
+    subName:'DHAP', prodName:'G3P',
+    subCarbon:'C₃', prodCarbon:'C₃',
+    enzyme:'트라이오스인산 이성질화효소',
+    atpChange:0, nadhChange:0,
+    inputs:[], outputs:[],
+    desc:'DHAP가 G3P로 전환됩니다. 이후 반응은 G3P만 진행하므로, 이 단계부터 모든 반응이 ×2로 일어납니다.',
+    times2:false
+  },
+  {
+    substrate:'g3p', product:'bpg13',
+    subName:'G3P', prodName:'1,3-BPG',
+    subCarbon:'C₃', prodCarbon:'C₃',
+    enzyme:'G3P 탈수소효소',
+    atpChange:0, nadhChange:1,
+    inputs:[{img:'nad',label:'NAD⁺'},{img:null,label:'Pᵢ'}],
+    outputs:[{img:'nadh',label:'NADH'}],
+    desc:'G3P가 산화되면서 NAD⁺가 NADH로 환원됩니다. 동시에 무기인산(Pᵢ)이 결합하여 고에너지 인산 결합이 형성됩니다.',
+    times2:true
+  },
+  {
+    substrate:'bpg13', product:'pg3',
+    subName:'1,3-BPG', prodName:'3-PG',
+    subCarbon:'C₃', prodCarbon:'C₃',
+    enzyme:'포스포글리세르산 키나아제(PGK)',
+    atpChange:1, nadhChange:0,
+    inputs:[{img:'adp',label:'ADP'}],
+    outputs:[{img:'atp',label:'ATP'}],
+    desc:'기질 수준 인산화로 ATP가 생성됩니다. 1,3-BPG의 고에너지 인산기가 ADP로 전달됩니다. (×2 = ATP 2분자)',
+    times2:true
+  },
+  {
+    substrate:'pg3', product:'pg2',
+    subName:'3-PG', prodName:'2-PG',
+    subCarbon:'C₃', prodCarbon:'C₃',
+    enzyme:'포스포글리세르산 뮤테이스',
+    atpChange:0, nadhChange:0,
+    inputs:[], outputs:[],
+    desc:'인산기의 위치가 C3에서 C2로 이동합니다. 다음 단계에서 고에너지 결합을 만들기 위한 재배열입니다.',
+    times2:true
+  },
+  {
+    substrate:'pg2', product:'pep',
+    subName:'2-PG', prodName:'PEP',
+    subCarbon:'C₃', prodCarbon:'C₃',
+    enzyme:'에놀레이스',
+    atpChange:0, nadhChange:0,
+    inputs:[], outputs:[{img:null,label:'H₂O'}],
+    desc:'탈수 반응으로 물이 빠지면서 고에너지 인산 결합을 가진 PEP(포스포에놀피루브산)가 만들어집니다.',
+    times2:true
+  },
+  {
+    substrate:'pep', product:'pyruvate',
+    subName:'PEP', prodName:'피루브산',
+    subCarbon:'C₃', prodCarbon:'C₃',
+    enzyme:'피루브산 키나아제',
+    atpChange:1, nadhChange:0,
+    inputs:[{img:'adp',label:'ADP'}],
+    outputs:[{img:'atp',label:'ATP'}],
+    desc:'두 번째 기질 수준 인산화입니다. PEP의 인산기가 ADP로 전달되어 ATP가 생성됩니다. (×2 = ATP 2분자)',
+    times2:true
+  }
+];
+
+const TCA_STEPS = [
+  {
+    from:'pyruvate', to:'acetyl-coa',
+    fromName:'피루브산', toName:'아세틸CoA',
+    enzyme:'피루브산 탈수소효소 복합체',
+    nadh:1, fadh2:0, gtp:0, co2:1,
+    inputs:[{img:'nad',label:'NAD⁺'},{img:null,label:'CoA'}],
+    outputs:[{img:'nadh',label:'NADH'},{img:'co2',label:'CO₂'}],
+    desc:'피루브산이 미토콘드리아로 들어가 탈탄산·산화되어 아세틸CoA가 됩니다. CO₂ 1분자가 방출되고 NADH 1분자가 생성됩니다.',
+    isPyrOx:true
+  },
+  {
+    from:'acetyl-coa', to:'citrate',
+    fromName:'아세틸CoA', toName:'시트르산',
+    fromAux:'oxaloacetate', fromAuxName:'옥살아세트산',
+    enzyme:'시트르산 합성효소',
+    nadh:0, fadh2:0, gtp:0, co2:0,
+    inputs:[{img:null,label:'H₂O'}],
+    outputs:[{img:null,label:'CoA-SH'}],
+    desc:'아세틸CoA(C₂)가 옥살아세트산(C₄)과 결합하여 시트르산(C₆)이 생성됩니다. CoA가 유리됩니다.',
+    isPyrOx:false
+  },
+  {
+    from:'citrate', to:'isocitrate',
+    fromName:'시트르산', toName:'아이소시트르산',
+    enzyme:'아코니테이스',
+    nadh:0, fadh2:0, gtp:0, co2:0,
+    inputs:[], outputs:[],
+    desc:'시트르산이 아이소시트르산으로 이성질화됩니다. 하이드록시기의 위치가 이동합니다.',
+    isPyrOx:false
+  },
+  {
+    from:'isocitrate', to:'alpha-kg',
+    fromName:'아이소시트르산', toName:'α-케토글루타르산',
+    enzyme:'아이소시트르산 탈수소효소',
+    nadh:1, fadh2:0, gtp:0, co2:1,
+    inputs:[{img:'nad',label:'NAD⁺'}],
+    outputs:[{img:'nadh',label:'NADH'},{img:'co2',label:'CO₂'}],
+    desc:'산화적 탈탄산 반응입니다. CO₂가 방출되면서 C₆→C₅가 되고, NADH가 생성됩니다.',
+    isPyrOx:false
+  },
+  {
+    from:'alpha-kg', to:'succinyl-coa',
+    fromName:'α-케토글루타르산', toName:'숙시닐CoA',
+    enzyme:'α-케토글루타르산 탈수소효소',
+    nadh:1, fadh2:0, gtp:0, co2:1,
+    inputs:[{img:'nad',label:'NAD⁺'},{img:null,label:'CoA'}],
+    outputs:[{img:'nadh',label:'NADH'},{img:'co2',label:'CO₂'}],
+    desc:'두 번째 산화적 탈탄산입니다. C₅→C₄가 되고 CoA가 결합합니다. NADH와 CO₂가 각 1분자씩 생성됩니다.',
+    isPyrOx:false
+  },
+  {
+    from:'succinyl-coa', to:'succinate',
+    fromName:'숙시닐CoA', toName:'숙신산',
+    enzyme:'숙시닐CoA 합성효소',
+    nadh:0, fadh2:0, gtp:1, co2:0,
+    inputs:[{img:null,label:'GDP'},{img:null,label:'Pᵢ'}],
+    outputs:[{img:null,label:'GTP'},{img:null,label:'CoA-SH'}],
+    desc:'기질 수준 인산화로 GTP가 생성됩니다. 고에너지 티오에스테르 결합이 끊어지면서 에너지가 방출됩니다.',
+    isPyrOx:false
+  },
+  {
+    from:'succinate', to:'fumarate',
+    fromName:'숙신산', toName:'푸마르산',
+    enzyme:'숙신산 탈수소효소',
+    nadh:0, fadh2:1, gtp:0, co2:0,
+    inputs:[{img:null,label:'FAD'}],
+    outputs:[{img:'fadh2',label:'FADH₂'}],
+    desc:'숙신산이 산화되어 푸마르산이 됩니다. 이 효소는 미토콘드리아 내막에 결합되어 있으며 FADH₂를 직접 전자전달계에 전달합니다.',
+    isPyrOx:false
+  },
+  {
+    from:'fumarate', to:'malate',
+    fromName:'푸마르산', toName:'말산',
+    enzyme:'푸마레이스',
+    nadh:0, fadh2:0, gtp:0, co2:0,
+    inputs:[{img:null,label:'H₂O'}],
+    outputs:[],
+    desc:'물(H₂O)이 푸마르산의 이중결합에 첨가되어 말산이 생성됩니다.',
+    isPyrOx:false
+  },
+  {
+    from:'malate', to:'oxaloacetate',
+    fromName:'말산', toName:'옥살아세트산',
+    enzyme:'말산 탈수소효소',
+    nadh:1, fadh2:0, gtp:0, co2:0,
+    inputs:[{img:'nad',label:'NAD⁺'}],
+    outputs:[{img:'nadh',label:'NADH'}],
+    desc:'말산이 산화되어 옥살아세트산이 재생됩니다. NADH가 생성됩니다. 옥살아세트산은 다시 아세틸CoA와 결합하여 회로를 반복합니다.',
+    isPyrOx:false
+  }
+];
+
+const TCA_CYCLE_MOLECULES = [
+  {id:'citrate', name:'시트르산', carbon:'C₆'},
+  {id:'isocitrate', name:'아이소시트르산', carbon:'C₆'},
+  {id:'alpha-kg', name:'α-케토글루타르산', carbon:'C₅'},
+  {id:'succinyl-coa', name:'숙시닐CoA', carbon:'C₄'},
+  {id:'succinate', name:'숙신산', carbon:'C₄'},
+  {id:'fumarate', name:'푸마르산', carbon:'C₄'},
+  {id:'malate', name:'말산', carbon:'C₄'},
+  {id:'oxaloacetate', name:'옥살아세트산', carbon:'C₄'}
+];
+
+let gStep = 0;
+let gAtpUsed = 0, gAtpMade = 0, gNadhMade = 0;
+let tStep = 0;
+let tNadh = 0, tFadh2 = 0, tGtp = 0, tCo2 = 0, tTurn = 1;
+let activeTab = 'glycolysis';
+
+function init() {
+  setupTabs();
+  setupNav();
+  setupKeyboard();
+  setupHelp();
+  jumpGlycolysis(0);
+  buildTCAVisual();
+  renderTCA();
+}
+
+function setupTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeTab = tab.dataset.tab;
+      document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+      document.getElementById('tab-' + activeTab).classList.add('active');
+    });
+  });
+}
+
+function setupNav() {
+  document.getElementById('g-prev').addEventListener('click', () => glyStep(-1));
+  document.getElementById('g-next').addEventListener('click', () => glyStep(1));
+  document.getElementById('t-prev').addEventListener('click', () => tcaStep(-1));
+  document.getElementById('t-next').addEventListener('click', () => tcaStep(1));
+  document.getElementById('resetBtn').addEventListener('click', resetAll);
+}
+
+function setupKeyboard() {
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      if (activeTab === 'glycolysis') glyStep(1);
+      else if (activeTab === 'tca') tcaStep(1);
+    }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      if (activeTab === 'glycolysis') glyStep(-1);
+      else if (activeTab === 'tca') tcaStep(-1);
+    }
+    if (e.key === 'r' || e.key === 'R') resetAll();
+    if (e.key === '1') document.querySelector('[data-tab="glycolysis"]').click();
+    if (e.key === '2') document.querySelector('[data-tab="tca"]').click();
+    if (e.key === '3') document.querySelector('[data-tab="summary"]').click();
+  });
+}
+
+function setupHelp() {
+  document.getElementById('helpBtn').addEventListener('click', () => {
+    document.getElementById('helpModal').classList.add('open');
+  });
+  document.getElementById('helpClose').addEventListener('click', () => {
+    document.getElementById('helpModal').classList.remove('open');
+  });
+  document.getElementById('helpModal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+  });
+}
+
+function resetAll() {
+  tStep = 0; tNadh = 0; tFadh2 = 0; tGtp = 0; tCo2 = 0; tTurn = 1;
+  jumpGlycolysis(0);
+  renderTCA();
+}
+
+function glyStep(dir) {
+  const next = gStep + dir;
+  if (next < 0 || next >= GLYCOLYSIS_STEPS.length) return;
+  jumpGlycolysis(next);
+}
+
+function renderCofactorFlow(inputs, outputs) {
+  let html = '<div class="cofactor-flow">';
+  if (inputs.length > 0) {
+    html += '<div class="cofactor-row">';
+    inputs.forEach(cf => {
+      if (cf.img) {
+        html += `<img src="${IMG}${cf.img}.svg" alt="${cf.label}" title="${cf.label}">`;
+      } else {
+        html += `<span class="cofactor-text-badge">${cf.label}</span>`;
+      }
+    });
+    html += '<span class="cofactor-arrow-in">↘</span>';
+    html += '</div>';
+  }
+  if (outputs.length > 0) {
+    html += '<div class="cofactor-row">';
+    html += '<span class="cofactor-arrow-out">↗</span>';
+    outputs.forEach(cf => {
+      if (cf.img) {
+        html += `<img src="${IMG}${cf.img}.svg" alt="${cf.label}" title="${cf.label}">`;
+      } else {
+        html += `<span class="cofactor-text-badge">${cf.label}</span>`;
+      }
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+  return (inputs.length > 0 || outputs.length > 0) ? html : '';
+}
+
+function renderGlycolysis() {
+  const s = GLYCOLYSIS_STEPS[gStep];
+  const container = document.getElementById('glycolysis-reaction');
+  const cofactorHtml = renderCofactorFlow(s.inputs, s.outputs);
+
+  const times2El = document.getElementById('glycolysis-stage').querySelector('.times2-badge');
+  if (times2El) times2El.remove();
+  if (s.times2) {
+    const badge = document.createElement('div');
+    badge.className = 'times2-badge';
+    badge.textContent = '×2 (G3P 2분자)';
+    document.getElementById('glycolysis-stage').appendChild(badge);
+  }
+
+  if (s.split) {
+    container.innerHTML = `
+      <div class="molecule-box">
+        <img src="${IMG}${s.substrate}.svg" alt="${s.subName}">
+        <div class="molecule-name">${s.subName}</div>
+        <div class="molecule-carbon">${s.subCarbon}</div>
+      </div>
+      <div class="arrow-area">
+        ${cofactorHtml}
+        <div class="arrow-line">→</div>
+        <div class="enzyme-label">${s.enzyme}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div class="split-product">
+          <img src="${IMG}${s.products[0]}.svg" alt="${s.prodNames[0]}">
+          <div class="molecule-name">${s.prodNames[0]}</div>
+          <div class="molecule-carbon">${s.prodCarbons[0]}</div>
+        </div>
+        <div class="plus-sign">+</div>
+        <div class="split-product">
+          <img src="${IMG}${s.products[1]}.svg" alt="${s.prodNames[1]}">
+          <div class="molecule-name">${s.prodNames[1]}</div>
+          <div class="molecule-carbon">${s.prodCarbons[1]}</div>
+        </div>
+      </div>`;
+  } else {
+    container.innerHTML = `
+      <div class="molecule-box">
+        <img src="${IMG}${s.substrate}.svg" alt="${s.subName}">
+        <div class="molecule-name">${s.subName}</div>
+        <div class="molecule-carbon">${s.subCarbon}</div>
+      </div>
+      <div class="arrow-area">
+        ${cofactorHtml}
+        <div class="arrow-line">→</div>
+        <div class="enzyme-label">${s.enzyme}</div>
+      </div>
+      <div class="molecule-box">
+        <img src="${IMG}${s.product}.svg" alt="${s.prodName}">
+        <div class="molecule-name">${s.prodName}</div>
+        <div class="molecule-carbon">${s.prodCarbon}</div>
+      </div>`;
+  }
+
+  document.getElementById('g-atp-used').textContent = gAtpUsed;
+  document.getElementById('g-atp-made').textContent = gAtpMade;
+  document.getElementById('g-atp-val').textContent = gAtpMade - gAtpUsed;
+  document.getElementById('g-atp-net').textContent = gAtpMade - gAtpUsed;
+  document.getElementById('g-nadh-val').textContent = gNadhMade;
+  document.getElementById('g-nadh-made').textContent = gNadhMade;
+
+  document.getElementById('g-info-step').textContent = `단계 ${gStep+1}/${GLYCOLYSIS_STEPS.length}`;
+  document.getElementById('g-info-title').textContent = s.split
+    ? `${s.subName} → ${s.prodNames.join(' + ')}`
+    : `${s.subName} → ${s.prodName}`;
+  document.getElementById('g-info-desc').textContent = s.desc;
+
+  document.getElementById('g-prev').disabled = gStep === 0;
+  document.getElementById('g-next').disabled = gStep === GLYCOLYSIS_STEPS.length - 1;
+  document.getElementById('g-nav-counter').textContent = `${gStep+1} / ${GLYCOLYSIS_STEPS.length}`;
+
+  renderProgressDots('glycolysis-progress', GLYCOLYSIS_STEPS.length, gStep);
+}
+
+function renderProgressDots(containerId, total, current) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < current ? ' done' : '') + (i === current ? ' current' : '');
+    d.addEventListener('click', () => {
+      if (containerId.startsWith('gly')) jumpGlycolysis(i);
+      else jumpTCA(i);
+    });
+    c.appendChild(d);
+  }
+}
+
+function jumpGlycolysis(target) {
+  gStep = 0; gAtpUsed = 0; gAtpMade = 0; gNadhMade = 0;
+  for (let i = 0; i <= target; i++) {
+    const s = GLYCOLYSIS_STEPS[i];
+    const mult = s.times2 ? 2 : 1;
+    if (s.atpChange < 0) gAtpUsed += Math.abs(s.atpChange) * mult;
+    if (s.atpChange > 0) gAtpMade += s.atpChange * mult;
+    gNadhMade += s.nadhChange * mult;
+  }
+  gStep = target;
+  renderGlycolysis();
+}
+
+function jumpTCA(target) {
+  tStep = 0; tNadh = 0; tFadh2 = 0; tGtp = 0; tCo2 = 0; tTurn = 1;
+  for (let i = 0; i <= target; i++) {
+    const totalIdx = i;
+    const s = TCA_STEPS[totalIdx % TCA_STEPS.length];
+    if (totalIdx >= TCA_STEPS.length && i === TCA_STEPS.length) tTurn = 2;
+    tNadh += s.nadh;
+    tFadh2 += s.fadh2;
+    tGtp += s.gtp;
+    tCo2 += s.co2;
+  }
+  tStep = target;
+  renderTCA();
+}
+
+function buildTCAVisual() {
+  const container = document.getElementById('tca-visual');
+  const cx = 250, cy = 220, r = 170;
+
+  let html = '<svg viewBox="0 0 500 440" style="width:100%;max-width:500px;">';
+
+  TCA_CYCLE_MOLECULES.forEach((mol, i) => {
+    const angle = (i / TCA_CYCLE_MOLECULES.length) * Math.PI * 2 - Math.PI / 2;
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+
+    const nextAngle = ((i + 1) / TCA_CYCLE_MOLECULES.length) * Math.PI * 2 - Math.PI / 2;
+    const nx = cx + r * Math.cos(nextAngle);
+    const ny = cy + r * Math.sin(nextAngle);
+    const midAngle = ((i + 0.5) / TCA_CYCLE_MOLECULES.length) * Math.PI * 2 - Math.PI / 2;
+    const ax = cx + (r + 5) * Math.cos(midAngle);
+    const ay = cy + (r + 5) * Math.sin(midAngle);
+
+    html += `<line x1="${x}" y1="${y}" x2="${nx}" y2="${ny}" stroke="rgba(0,0,0,0.12)" stroke-width="2" id="tca-line-${i}"/>`;
+    html += `<text x="${ax}" y="${ay}" text-anchor="middle" dominant-baseline="middle" font-size="14" fill="rgba(0,0,0,0.2)" id="tca-arr-${i}">▸</text>`;
+  });
+
+  TCA_CYCLE_MOLECULES.forEach((mol, i) => {
+    const angle = (i / TCA_CYCLE_MOLECULES.length) * Math.PI * 2 - Math.PI / 2;
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    const lx = cx + (r + 40) * Math.cos(angle);
+    const ly = cy + (r + 40) * Math.sin(angle);
+
+    html += `<image href="${IMG}${mol.id}.svg" x="${x-28}" y="${y-22}" width="56" height="44" id="tca-img-${i}" style="cursor:pointer;transition:all 0.3s;"/>`;
+    html += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="rgba(0,0,0,0.4)" font-family="'Noto Sans KR',sans-serif" id="tca-label-${i}">${mol.name}</text>`;
+  });
+
+  html += `<image href="${IMG}acetyl-coa.svg" x="${cx-30}" y="${cy-25}" width="60" height="50" id="tca-center-img"/>`;
+  html += `<text x="${cx}" y="${cy+35}" text-anchor="middle" font-size="10" fill="rgba(0,0,0,0.45)" font-family="'Noto Sans KR',sans-serif" id="tca-center-label">아세틸CoA</text>`;
+  html += `<image href="${IMG}pyruvate.svg" x="${cx-30}" y="5" width="60" height="44" id="tca-pyr-img" style="opacity:0.5"/>`;
+  html += `<text x="${cx}" y="58" text-anchor="middle" font-size="9" fill="rgba(0,0,0,0.4)" font-family="'Noto Sans KR',sans-serif">피루브산</text>`;
+  html += `<line x1="${cx}" y1="52" x2="${cx}" y2="${cy-30}" stroke="rgba(0,0,0,0.12)" stroke-width="1.5" stroke-dasharray="4,4"/>`;
+
+  html += '</svg>';
+  container.innerHTML = html;
+}
+
+function tcaStep(dir) {
+  const totalSteps = TCA_STEPS.length * 2;
+  const next = tStep + dir;
+  if (next < 0 || next >= totalSteps) return;
+
+  if (dir > 0) {
+    const s = TCA_STEPS[next % TCA_STEPS.length];
+    tNadh += s.nadh;
+    tFadh2 += s.fadh2;
+    tGtp += s.gtp;
+    tCo2 += s.co2;
+    if (next === TCA_STEPS.length) tTurn = 2;
+  } else {
+    const s = TCA_STEPS[tStep % TCA_STEPS.length];
+    tNadh -= s.nadh;
+    tFadh2 -= s.fadh2;
+    tGtp -= s.gtp;
+    tCo2 -= s.co2;
+    if (tStep === TCA_STEPS.length) tTurn = 1;
+  }
+
+  tStep = next;
+  renderTCA();
+}
+
+function renderTCA() {
+  const totalSteps = TCA_STEPS.length * 2;
+  const sIdx = tStep % TCA_STEPS.length;
+  const s = TCA_STEPS[sIdx];
+
+  document.getElementById('t-nadh').textContent = tNadh;
+  document.getElementById('t-fadh2').textContent = tFadh2;
+  document.getElementById('t-gtp').textContent = tGtp;
+  document.getElementById('t-co2').textContent = tCo2;
+  document.getElementById('t-turn').textContent = tStep < TCA_STEPS.length ? 1 : 2;
+
+  TCA_CYCLE_MOLECULES.forEach((mol, i) => {
+    const img = document.getElementById('tca-img-' + i);
+    const label = document.getElementById('tca-label-' + i);
+    const line = document.getElementById('tca-line-' + i);
+    const arr = document.getElementById('tca-arr-' + i);
+
+    if (img) img.style.opacity = '0.5';
+    if (img) img.style.transform = '';
+    if (label) label.setAttribute('fill', 'rgba(0,0,0,0.4)');
+    if (line) line.setAttribute('stroke', 'rgba(0,0,0,0.12)');
+    if (arr) arr.setAttribute('fill', 'rgba(0,0,0,0.2)');
+  });
+
+  if (sIdx === 0 && !s.isPyrOx) {
+    const img0 = document.getElementById('tca-img-0');
+    if (img0) { img0.style.opacity = '1'; }
+    const lbl0 = document.getElementById('tca-label-0');
+    if (lbl0) lbl0.setAttribute('fill', '#1a1a2e');
+  } else if (!s.isPyrOx) {
+    const fromIdx = TCA_CYCLE_MOLECULES.findIndex(m => m.id === s.from);
+    const toIdx = TCA_CYCLE_MOLECULES.findIndex(m => m.id === s.to);
+
+    if (fromIdx >= 0) {
+      const fImg = document.getElementById('tca-img-' + fromIdx);
+      if (fImg) fImg.style.opacity = '0.8';
+      const fLbl = document.getElementById('tca-label-' + fromIdx);
+      if (fLbl) fLbl.setAttribute('fill', 'rgba(0,0,0,0.6)');
+    }
+    if (toIdx >= 0) {
+      const tImg = document.getElementById('tca-img-' + toIdx);
+      if (tImg) { tImg.style.opacity = '1'; }
+      const tLbl = document.getElementById('tca-label-' + toIdx);
+      if (tLbl) tLbl.setAttribute('fill', '#1a1a2e');
+    }
+    if (fromIdx >= 0) {
+      const line = document.getElementById('tca-line-' + fromIdx);
+      if (line) line.setAttribute('stroke', 'rgba(58,123,213,0.6)');
+      const arr = document.getElementById('tca-arr-' + fromIdx);
+      if (arr) arr.setAttribute('fill', 'rgba(58,123,213,0.8)');
+    }
+  }
+
+  const pyrImg = document.getElementById('tca-pyr-img');
+  const centerImg = document.getElementById('tca-center-img');
+  if (pyrImg) pyrImg.style.opacity = s.isPyrOx ? '1' : '0.3';
+  if (centerImg) centerImg.style.opacity = (sIdx <= 1) ? '1' : '0.4';
+
+  const stepLabel = s.isPyrOx ? '피루브산 산화' : `TCA 단계 ${sIdx}/${TCA_STEPS.length - 1}`;
+  const turnLabel = tStep < TCA_STEPS.length ? '(1회전)' : '(2회전)';
+
+  document.getElementById('t-info-step').textContent = `${stepLabel} ${turnLabel}`;
+  document.getElementById('t-info-title').innerHTML = `${s.fromName} → ${s.toName}`;
+  const cofactorHtml = renderCofactorFlow(s.inputs || [], s.outputs || []);
+  document.getElementById('t-info-desc').innerHTML = s.desc + (cofactorHtml ? '<div style="margin-top:8px;">' + cofactorHtml + '</div>' : '');
+
+  document.getElementById('t-prev').disabled = tStep === 0;
+  document.getElementById('t-next').disabled = tStep === totalSteps - 1;
+  document.getElementById('t-nav-counter').textContent = `${tStep+1} / ${totalSteps}`;
+
+  renderProgressDots('tca-progress', totalSteps, tStep);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

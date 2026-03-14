@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
+  <g transform="translate(15,100)">
+    <text x="0" y="0" font-size="13" fill="#E53935" font-family="Arial, sans-serif">⁻OOC</text>
+    <line x1="40" y1="-5" x2="58" y2="-5" stroke="#333" stroke-width="2.5"/>
+    <text x="62" y="0" font-size="13" fill="#333" font-family="Arial, sans-serif">C</text>
+    <line x1="68" y1="-10" x2="68" y2="-30" stroke="#333" stroke-width="2.5"/>
+    <line x1="72" y1="-10" x2="72" y2="-30" stroke="#333" stroke-width="2.5"/>
+    <text x="62" y="-35" font-size="12" fill="#E53935" font-family="Arial, sans-serif">O</text>
+    <line x1="78" y1="-5" x2="110" y2="-5" stroke="#333" stroke-width="2.5"/>
+    <text x="114" y="0" font-size="13" fill="#333" font-family="Arial, sans-serif">CH₂</text>
+    <line x1="148" y1="-5" x2="170" y2="-5" stroke="#333" stroke-width="2.5"/>
+    <text x="174" y="0" font-size="13" fill="#E53935" font-family="Arial, sans-serif">COO⁻</text>
+  </g>
+  <text x="120" y="190" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-size="13" fill="#555">옥살아세트산 (C₄)</text>
+</svg>

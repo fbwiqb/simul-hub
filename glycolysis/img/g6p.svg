@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
+  <g transform="translate(120,85)">
+    <polygon points="-50,-30 -50,30 0,50 50,30 50,-30 0,-50" fill="none" stroke="#333" stroke-width="2.5"/>
+    <text x="2" y="-38" font-size="13" fill="#333" font-family="Arial" text-anchor="middle">O</text>
+    <line x1="-50" y1="30" x2="-70" y2="55" stroke="#333" stroke-width="2"/>
+    <text x="-82" y="65" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
+    <line x1="0" y1="50" x2="0" y2="75" stroke="#333" stroke-width="2"/>
+    <text x="-8" y="88" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
+    <line x1="50" y1="30" x2="70" y2="55" stroke="#333" stroke-width="2"/>
+    <text x="65" y="68" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
+    <line x1="50" y1="-30" x2="70" y2="-50" stroke="#333" stroke-width="2"/>
+    <text x="65" y="-52" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
+    <line x1="-50" y1="-30" x2="-80" y2="-50" stroke="#333" stroke-width="2"/>
+    <text x="-80" y="-55" font-size="10" fill="#333" font-family="Arial" text-anchor="middle">CH&#x2082;O</text>
+    <line x1="-95" y1="-55" x2="-108" y2="-60" stroke="#333" stroke-width="2"/>
+    <circle cx="-120" cy="-65" r="12" fill="#E65100"/>
+    <text x="-120" y="-61" text-anchor="middle" font-size="11" fill="white" font-family="Arial" font-weight="bold">P</text>
+  </g>
+  <text x="120" y="195" text-anchor="middle" font-family="'Noto Sans KR', Arial, sans-serif" font-size="13" fill="#555">&#xD3EC;&#xB3C4;&#xB2F9;-6-&#xC778;&#xC0B0; (G6P)</text>
+</svg>

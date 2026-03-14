@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
+  <g transform="translate(10,95)">
+    <text x="0" y="0" font-size="12" fill="#E53935" font-family="Arial, sans-serif">⁻OOC</text>
+    <line x1="36" y1="-5" x2="50" y2="-5" stroke="#333" stroke-width="2"/>
+    <text x="52" y="0" font-size="12" fill="#333" font-family="Arial, sans-serif">CH₂</text>
+    <line x1="78" y1="-5" x2="92" y2="-5" stroke="#333" stroke-width="2"/>
+    <text x="94" y="0" font-size="12" fill="#333" font-family="Arial, sans-serif">CH₂</text>
+    <line x1="120" y1="-5" x2="134" y2="-5" stroke="#333" stroke-width="2"/>
+    <text x="136" y="0" font-size="12" fill="#333" font-family="Arial, sans-serif">C</text>
+    <line x1="142" y1="-10" x2="142" y2="-30" stroke="#333" stroke-width="2"/>
+    <line x1="146" y1="-10" x2="146" y2="-30" stroke="#333" stroke-width="2"/>
+    <text x="136" y="-35" font-size="12" fill="#E53935" font-family="Arial, sans-serif">O</text>
+    <line x1="150" y1="-5" x2="162" y2="-5" stroke="#333" stroke-width="2"/>
+    <text x="164" y="0" font-size="12" fill="#FF8F00" font-family="Arial, sans-serif">S</text>
+    <line x1="176" y1="-5" x2="186" y2="-5" stroke="#333" stroke-width="2"/>
+    <path d="M186,-5 Q194,-15 202,-5 Q210,5 218,-5" fill="none" stroke="#7B1FA2" stroke-width="2.5"/>
+    <text x="180" y="18" font-size="11" fill="#7B1FA2" font-family="Arial, sans-serif">CoA</text>
+  </g>
+  <text x="120" y="190" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-size="13" fill="#555">숙시닐CoA (C₄)</text>
+</svg>
