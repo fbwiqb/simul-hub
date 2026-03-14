@@ -1,17 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
-  <g transform="translate(120,80)">
-    <polygon points="-50,-30 -50,30 0,50 50,30 50,-30 0,-50" fill="none" stroke="#333" stroke-width="2.5"/>
-    <text x="2" y="-38" font-size="13" fill="#333" font-family="Arial" text-anchor="middle">O</text>
-    <line x1="-50" y1="30" x2="-70" y2="55" stroke="#333" stroke-width="2"/>
-    <text x="-82" y="65" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
-    <line x1="0" y1="50" x2="0" y2="75" stroke="#333" stroke-width="2"/>
-    <text x="-8" y="88" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
-    <line x1="50" y1="30" x2="70" y2="55" stroke="#333" stroke-width="2"/>
-    <text x="65" y="68" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
-    <line x1="50" y1="-30" x2="70" y2="-50" stroke="#333" stroke-width="2"/>
-    <text x="65" y="-52" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
-    <line x1="-50" y1="-30" x2="-80" y2="-50" stroke="#333" stroke-width="2"/>
-    <text x="-80" y="-55" font-size="10" fill="#333" font-family="Arial" text-anchor="middle">CH&#x2082;OH</text>
-  </g>
-  <text x="120" y="190" text-anchor="middle" font-family="'Noto Sans KR', Arial, sans-serif" font-size="13" fill="#555">&#xD3EC;&#xB3C4;&#xB2F9; (C&#x2086;H&#x2081;&#x2082;O&#x2086;)</text>
+  <!-- Haworth projection of alpha-D-glucopyranose -->
+
+  <!-- Ring structure (hexagon with thick bottom edge) -->
+  <path d="M 85 100 L 175 100 L 195 75 L 175 50 L 85 50 L 70 75 Z"
+        fill="none" stroke="#333" stroke-width="2.5"/>
+
+  <!-- Thick bottom edge -->
+  <line x1="85" y1="100" x2="175" y2="100" stroke="#333" stroke-width="4.5"/>
+
+  <!-- Oxygen in ring (top right vertex, red) -->
+  <circle cx="195" cy="75" r="9" fill="#C62828"/>
+  <text x="195" y="79" font-family="Arial" font-size="13" fill="white" text-anchor="middle" font-weight="bold">O</text>
+
+  <!-- CH2OH group (C5, extending up-left) -->
+  <line x1="70" y1="75" x2="45" y2="35" stroke="#333" stroke-width="2.5"/>
+  <text x="35" y="28" font-family="Arial" font-size="14" fill="#333" text-anchor="middle" font-weight="bold">CH&#x2082;OH</text>
+
+  <!-- OH groups -->
+  <!-- C4-OH (left, below) -->
+  <line x1="85" y1="100" x2="85" y2="130" stroke="#333" stroke-width="2.5"/>
+  <text x="85" y="147" font-family="Arial" font-size="14" fill="#1565C0" text-anchor="middle" font-weight="bold">OH</text>
+
+  <!-- C3-OH (middle, above) -->
+  <line x1="130" y1="100" x2="130" y2="70" stroke="#333" stroke-width="2.5"/>
+  <text x="130" y="62" font-family="Arial" font-size="14" fill="#1565C0" text-anchor="middle" font-weight="bold">OH</text>
+
+  <!-- C2-OH (right, below) -->
+  <line x1="175" y1="100" x2="175" y2="130" stroke="#333" stroke-width="2.5"/>
+  <text x="175" y="147" font-family="Arial" font-size="14" fill="#1565C0" text-anchor="middle" font-weight="bold">OH</text>
+
+  <!-- C1-OH (right side, extending out) -->
+  <line x1="175" y1="50" x2="210" y2="40" stroke="#333" stroke-width="2.5"/>
+  <text x="225" y="45" font-family="Arial" font-size="14" fill="#1565C0" text-anchor="middle" font-weight="bold">OH</text>
+
+  <!-- Korean label -->
+  <text x="120" y="185" font-family="Noto Sans KR, Arial" font-size="14" fill="#555" text-anchor="middle">포도당 (C&#x2086;H&#x2081;&#x2082;O&#x2086;)</text>
 </svg>

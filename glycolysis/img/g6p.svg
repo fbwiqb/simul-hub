@@ -1,20 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
-  <g transform="translate(120,85)">
-    <polygon points="-50,-30 -50,30 0,50 50,30 50,-30 0,-50" fill="none" stroke="#333" stroke-width="2.5"/>
-    <text x="2" y="-38" font-size="13" fill="#333" font-family="Arial" text-anchor="middle">O</text>
-    <line x1="-50" y1="30" x2="-70" y2="55" stroke="#333" stroke-width="2"/>
-    <text x="-82" y="65" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
-    <line x1="0" y1="50" x2="0" y2="75" stroke="#333" stroke-width="2"/>
-    <text x="-8" y="88" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
-    <line x1="50" y1="30" x2="70" y2="55" stroke="#333" stroke-width="2"/>
-    <text x="65" y="68" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
-    <line x1="50" y1="-30" x2="70" y2="-50" stroke="#333" stroke-width="2"/>
-    <text x="65" y="-52" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
-    <line x1="-50" y1="-30" x2="-80" y2="-50" stroke="#333" stroke-width="2"/>
-    <text x="-80" y="-55" font-size="10" fill="#333" font-family="Arial" text-anchor="middle">CH&#x2082;O</text>
-    <line x1="-95" y1="-55" x2="-108" y2="-60" stroke="#333" stroke-width="2"/>
-    <circle cx="-120" cy="-65" r="12" fill="#E65100"/>
-    <text x="-120" y="-61" text-anchor="middle" font-size="11" fill="white" font-family="Arial" font-weight="bold">P</text>
-  </g>
-  <text x="120" y="195" text-anchor="middle" font-family="'Noto Sans KR', Arial, sans-serif" font-size="13" fill="#555">&#xD3EC;&#xB3C4;&#xB2F9;-6-&#xC778;&#xC0B0; (G6P)</text>
+  <!-- Haworth projection of glucose-6-phosphate -->
+
+  <!-- Ring structure -->
+  <path d="M 100 100 L 190 100 L 210 75 L 190 50 L 100 50 L 85 75 Z"
+        fill="none" stroke="#333" stroke-width="2.5"/>
+
+  <!-- Thick bottom edge -->
+  <line x1="100" y1="100" x2="190" y2="100" stroke="#333" stroke-width="4.5"/>
+
+  <!-- Oxygen in ring (red) -->
+  <circle cx="210" cy="75" r="9" fill="#C62828"/>
+  <text x="210" y="79" font-family="Arial" font-size="13" fill="white" text-anchor="middle" font-weight="bold">O</text>
+
+  <!-- CH2O-P group (C6 phosphorylated) -->
+  <line x1="85" y1="75" x2="60" y2="35" stroke="#333" stroke-width="2.5"/>
+  <text x="52" y="28" font-family="Arial" font-size="14" fill="#333" text-anchor="middle" font-weight="bold">CH&#x2082;O</text>
+  <line x1="35" y1="24" x2="30" y2="22" stroke="#333" stroke-width="2.5"/>
+  <circle cx="17" cy="18" r="14" fill="#E65100"/>
+  <text x="17" y="23" text-anchor="middle" font-size="14" fill="white" font-family="Arial" font-weight="bold">P</text>
+
+  <!-- OH groups -->
+  <line x1="100" y1="100" x2="100" y2="130" stroke="#333" stroke-width="2.5"/>
+  <text x="100" y="147" font-family="Arial" font-size="14" fill="#1565C0" text-anchor="middle" font-weight="bold">OH</text>
+
+  <line x1="145" y1="100" x2="145" y2="70" stroke="#333" stroke-width="2.5"/>
+  <text x="145" y="62" font-family="Arial" font-size="14" fill="#1565C0" text-anchor="middle" font-weight="bold">OH</text>
+
+  <line x1="190" y1="100" x2="190" y2="130" stroke="#333" stroke-width="2.5"/>
+  <text x="190" y="147" font-family="Arial" font-size="14" fill="#1565C0" text-anchor="middle" font-weight="bold">OH</text>
+
+  <line x1="190" y1="50" x2="218" y2="40" stroke="#333" stroke-width="2.5"/>
+  <text x="228" y="45" font-family="Arial" font-size="14" fill="#1565C0" text-anchor="middle" font-weight="bold">OH</text>
+
+  <!-- Korean label -->
+  <text x="120" y="185" font-family="Noto Sans KR, Arial" font-size="14" fill="#555" text-anchor="middle">포도당-6-인산 (G6P)</text>
 </svg>

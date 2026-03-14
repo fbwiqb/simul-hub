@@ -1,13 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
-  <g transform="translate(90,30)">
-    <text x="15" y="15" font-size="12" fill="#333" font-family="Arial">COO&#x207B;</text>
-    <line x1="25" y1="20" x2="25" y2="50" stroke="#333" stroke-width="2.5"/>
-    <text x="20" y="65" font-size="12" fill="#333" font-family="Arial">C</text>
-    <line x1="33" y1="55" x2="50" y2="55" stroke="#333" stroke-width="2"/>
-    <line x1="33" y1="59" x2="50" y2="59" stroke="#333" stroke-width="2"/>
-    <text x="53" y="62" font-size="12" fill="#333" font-family="Arial">O</text>
-    <line x1="25" y1="70" x2="25" y2="100" stroke="#333" stroke-width="2.5"/>
-    <text x="15" y="115" font-size="12" fill="#333" font-family="Arial">CH&#x2083;</text>
+  <!-- Pyruvate (pyruvic acid) -->
+  <g transform="translate(120,40)">
+
+    <!-- Top: COO- -->
+    <text x="0" y="0" font-size="16" fill="#C62828" font-family="Arial" text-anchor="middle" font-weight="bold">COO&#x207B;</text>
+
+    <!-- Vertical bond -->
+    <line x1="0" y1="6" x2="0" y2="40" stroke="#333" stroke-width="3"/>
+
+    <!-- Middle: C=O (ketone) -->
+    <text x="-15" y="56" font-size="16" fill="#333" font-family="Arial" text-anchor="middle" font-weight="bold">C</text>
+    <line x1="0" y1="50" x2="25" y2="50" stroke="#333" stroke-width="2.5"/>
+    <line x1="0" y1="54" x2="25" y2="54" stroke="#333" stroke-width="2.5"/>
+    <text x="40" y="58" font-size="16" fill="#C62828" font-family="Arial" text-anchor="middle" font-weight="bold">O</text>
+
+    <!-- Vertical bond -->
+    <line x1="-8" y1="62" x2="-8" y2="96" stroke="#333" stroke-width="3"/>
+
+    <!-- Bottom: CH3 -->
+    <text x="-8" y="112" font-size="16" fill="#333" font-family="Arial" text-anchor="middle" font-weight="bold">CH&#x2083;</text>
+
   </g>
-  <text x="120" y="190" text-anchor="middle" font-family="'Noto Sans KR', Arial, sans-serif" font-size="13" fill="#555">&#xD53C;&#xB8E8;&#xBE0C;&#xC0B0;</text>
+
+  <!-- Korean label -->
+  <text x="120" y="185" font-family="Noto Sans KR, Arial" font-size="14" fill="#555" text-anchor="middle">피루브산</text>
 </svg>

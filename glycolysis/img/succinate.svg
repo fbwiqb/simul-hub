@@ -1,12 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
-  <g transform="translate(20,100)">
-    <text x="0" y="0" font-size="13" fill="#E53935" font-family="Arial, sans-serif">⁻OOC</text>
-    <line x1="40" y1="-5" x2="62" y2="-5" stroke="#333" stroke-width="2.5"/>
-    <text x="66" y="0" font-size="13" fill="#333" font-family="Arial, sans-serif">CH₂</text>
-    <line x1="98" y1="-5" x2="120" y2="-5" stroke="#333" stroke-width="2.5"/>
-    <text x="124" y="0" font-size="13" fill="#333" font-family="Arial, sans-serif">CH₂</text>
-    <line x1="156" y1="-5" x2="178" y2="-5" stroke="#333" stroke-width="2.5"/>
-    <text x="182" y="0" font-size="13" fill="#E53935" font-family="Arial, sans-serif">COO⁻</text>
+  <!-- Succinate (succinic acid) - simple 4-carbon dicarboxylic acid -->
+  <g transform="translate(120,45)">
+
+    <!-- Top: COO- -->
+    <text x="0" y="0" font-size="16" fill="#C62828" font-family="Arial" text-anchor="middle" font-weight="bold">COO&#x207B;</text>
+    <line x1="0" y1="6" x2="0" y2="36" stroke="#333" stroke-width="3.5"/>
+
+    <!-- CH2 -->
+    <text x="0" y="52" font-size="16" fill="#333" font-family="Arial" text-anchor="middle" font-weight="bold">CH&#x2082;</text>
+    <line x1="0" y1="58" x2="0" y2="88" stroke="#333" stroke-width="3.5"/>
+
+    <!-- CH2 -->
+    <text x="0" y="104" font-size="16" fill="#333" font-family="Arial" text-anchor="middle" font-weight="bold">CH&#x2082;</text>
+    <line x1="0" y1="110" x2="0" y2="140" stroke="#333" stroke-width="3.5"/>
+
+    <!-- Bottom: COO- -->
+    <text x="0" y="156" font-size="16" fill="#C62828" font-family="Arial" text-anchor="middle" font-weight="bold">COO&#x207B;</text>
+
   </g>
-  <text x="120" y="190" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-size="13" fill="#555">숙신산 (C₄)</text>
+
+  <!-- Korean label -->
+  <text x="120" y="185" font-family="Noto Sans KR, Arial" font-size="14" fill="#555" text-anchor="middle">숙신산 (C&#x2084;)</text>
 </svg>

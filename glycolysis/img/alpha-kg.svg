@@ -1,17 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
-  <g transform="translate(20,95)">
-    <text x="0" y="0" font-size="12" fill="#E53935" font-family="Arial, sans-serif">⁻OOC</text>
-    <line x1="36" y1="-5" x2="55" y2="-5" stroke="#333" stroke-width="2"/>
-    <text x="58" y="0" font-size="12" fill="#333" font-family="Arial, sans-serif">C</text>
-    <line x1="64" y1="-10" x2="64" y2="-30" stroke="#333" stroke-width="2"/>
-    <line x1="68" y1="-10" x2="68" y2="-30" stroke="#333" stroke-width="2"/>
-    <text x="58" y="-35" font-size="12" fill="#E53935" font-family="Arial, sans-serif">O</text>
-    <line x1="72" y1="-5" x2="90" y2="-5" stroke="#333" stroke-width="2"/>
-    <text x="93" y="0" font-size="12" fill="#333" font-family="Arial, sans-serif">CH₂</text>
-    <line x1="120" y1="-5" x2="138" y2="-5" stroke="#333" stroke-width="2"/>
-    <text x="141" y="0" font-size="12" fill="#333" font-family="Arial, sans-serif">CH₂</text>
-    <line x1="168" y1="-5" x2="184" y2="-5" stroke="#333" stroke-width="2"/>
-    <text x="186" y="0" font-size="12" fill="#E53935" font-family="Arial, sans-serif">COO⁻</text>
+  <!-- Alpha-ketoglutarate (2-oxoglutarate) - 5-carbon with ketone -->
+  <g transform="translate(120,30)">
+
+    <!-- Top: COO- -->
+    <text x="0" y="0" font-size="15" fill="#C62828" font-family="Arial" text-anchor="middle" font-weight="bold">COO&#x207B;</text>
+    <line x1="0" y1="6" x2="0" y2="30" stroke="#333" stroke-width="3"/>
+
+    <!-- C=O (ketone) -->
+    <text x="-15" y="46" font-size="15" fill="#333" font-family="Arial" text-anchor="middle" font-weight="bold">C</text>
+    <line x1="0" y1="40" x2="25" y2="40" stroke="#333" stroke-width="2.5"/>
+    <line x1="0" y1="44" x2="25" y2="44" stroke="#333" stroke-width="2.5"/>
+    <text x="40" y="48" font-size="15" fill="#C62828" font-family="Arial" text-anchor="middle" font-weight="bold">O</text>
+
+    <line x1="-8" y1="52" x2="-8" y2="76" stroke="#333" stroke-width="3"/>
+
+    <!-- CH2 -->
+    <text x="-8" y="92" font-size="15" fill="#333" font-family="Arial" text-anchor="middle" font-weight="bold">CH&#x2082;</text>
+    <line x1="-8" y1="98" x2="-8" y2="122" stroke="#333" stroke-width="3"/>
+
+    <!-- CH2 -->
+    <text x="-8" y="138" font-size="15" fill="#333" font-family="Arial" text-anchor="middle" font-weight="bold">CH&#x2082;</text>
+    <line x1="-8" y1="144" x2="-8" y2="168" stroke="#333" stroke-width="3"/>
+
+    <!-- Bottom: COO- -->
+    <text x="-8" y="184" font-size="15" fill="#C62828" font-family="Arial" text-anchor="middle" font-weight="bold">COO&#x207B;</text>
+
   </g>
-  <text x="120" y="190" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-size="13" fill="#555">α-케토글루타르산 (C₅)</text>
+
+  <!-- Korean label -->
+  <text x="120" y="195" font-family="Noto Sans KR, Arial" font-size="13" fill="#555" text-anchor="middle">α-케토글루타르산 (C&#x2085;)</text>
 </svg>

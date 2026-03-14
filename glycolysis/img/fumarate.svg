@@ -1,14 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
-  <g transform="translate(20,100)">
-    <text x="0" y="0" font-size="13" fill="#E53935" font-family="Arial, sans-serif">⁻OOC</text>
-    <line x1="40" y1="-5" x2="62" y2="-5" stroke="#333" stroke-width="2.5"/>
-    <text x="66" y="0" font-size="13" fill="#333" font-family="Arial, sans-serif">CH</text>
-    <line x1="90" y1="-5" x2="130" y2="-5" stroke="#333" stroke-width="2.5"/>
-    <line x1="90" y1="-10" x2="130" y2="-10" stroke="#333" stroke-width="2.5"/>
-    <text x="134" y="0" font-size="13" fill="#333" font-family="Arial, sans-serif">CH</text>
-    <line x1="158" y1="-5" x2="178" y2="-5" stroke="#333" stroke-width="2.5"/>
-    <text x="182" y="0" font-size="13" fill="#E53935" font-family="Arial, sans-serif">COO⁻</text>
+  <!-- Fumarate - 4-carbon with trans C=C double bond -->
+  <g transform="translate(120,75)">
+
+    <!-- Left COO- -->
+    <text x="-60" y="0" font-size="15" fill="#C62828" font-family="Arial" text-anchor="middle" font-weight="bold">COO&#x207B;</text>
+    <line x1="-40" y1="-4" x2="-25" y2="-4" stroke="#333" stroke-width="3"/>
+
+    <!-- Left CH (with H below) -->
+    <text x="-15" y="-2" font-size="15" fill="#333" font-family="Arial" text-anchor="middle" font-weight="bold">CH</text>
+    <text x="-15" y="16" font-size="13" fill="#888" font-family="Arial" text-anchor="middle">H</text>
+
+    <!-- Trans C=C double bond (prominent) -->
+    <line x1="-7" y1="-6" x2="7" y2="-6" stroke="#333" stroke-width="3.5"/>
+    <line x1="-7" y1="-2" x2="7" y2="-2" stroke="#333" stroke-width="3.5"/>
+
+    <!-- Right CH (with H above) -->
+    <text x="15" y="-2" font-size="15" fill="#333" font-family="Arial" text-anchor="middle" font-weight="bold">CH</text>
+    <text x="15" y="-16" font-size="13" fill="#888" font-family="Arial" text-anchor="middle">H</text>
+
+    <!-- Right COO- -->
+    <line x1="25" y1="-4" x2="40" y2="-4" stroke="#333" stroke-width="3"/>
+    <text x="60" y="0" font-size="15" fill="#C62828" font-family="Arial" text-anchor="middle" font-weight="bold">COO&#x207B;</text>
+
+    <!-- "trans" label below -->
+    <text x="0" y="35" font-size="12" fill="#888" font-family="Arial" text-anchor="middle" font-style="italic">trans</text>
+
   </g>
-  <text x="120" y="145" text-anchor="middle" font-size="11" fill="#888" font-family="Arial, sans-serif">trans</text>
-  <text x="120" y="190" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-size="13" fill="#555">푸마르산 (C₄)</text>
+
+  <!-- Korean label -->
+  <text x="120" y="185" font-family="Noto Sans KR, Arial" font-size="14" fill="#555" text-anchor="middle">푸마르산 (C&#x2084;)</text>
 </svg>

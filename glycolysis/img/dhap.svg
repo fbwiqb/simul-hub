@@ -1,20 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
-  <g transform="translate(120,30)">
-    <line x1="0" y1="10" x2="-20" y2="10" stroke="#333" stroke-width="2"/>
-    <circle cx="-34" cy="10" r="12" fill="#E65100"/>
-    <text x="-34" y="14" text-anchor="middle" font-size="11" fill="white" font-family="Arial" font-weight="bold">P</text>
-    <text x="5" y="14" font-size="12" fill="#333" font-family="Arial">O</text>
-    <line x1="15" y1="14" x2="30" y2="14" stroke="#333" stroke-width="2"/>
-    <text x="32" y="18" font-size="12" fill="#333" font-family="Arial">CH&#x2082;</text>
-    <line x1="45" y1="20" x2="45" y2="55" stroke="#333" stroke-width="2.5"/>
-    <text x="52" y="70" font-size="12" fill="#333" font-family="Arial">C</text>
-    <line x1="52" y1="55" x2="52" y2="45" stroke="#333" stroke-width="2"/>
-    <line x1="55" y1="55" x2="55" y2="45" stroke="#333" stroke-width="2"/>
-    <text x="60" y="48" font-size="12" fill="#333" font-family="Arial">O</text>
-    <line x1="45" y1="80" x2="45" y2="115" stroke="#333" stroke-width="2.5"/>
-    <text x="32" y="130" font-size="12" fill="#333" font-family="Arial">CH&#x2082;</text>
-    <line x1="55" y1="125" x2="70" y2="125" stroke="#333" stroke-width="2"/>
-    <text x="72" y="129" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
+  <!-- DHAP (dihydroxyacetone phosphate) - linear 3-carbon with ketone -->
+  <g transform="translate(120,35)">
+
+    <!-- Top: CH2O-P -->
+    <text x="0" y="0" font-size="15" fill="#333" font-family="Arial" text-anchor="middle" font-weight="bold">CH&#x2082;O</text>
+    <line x1="20" y1="-4" x2="38" y2="-8" stroke="#333" stroke-width="2.5"/>
+    <circle cx="51" cy="-12" r="14" fill="#E65100"/>
+    <text x="51" y="-7" text-anchor="middle" font-size="14" fill="white" font-family="Arial" font-weight="bold">P</text>
+
+    <!-- Vertical bond -->
+    <line x1="0" y1="6" x2="0" y2="40" stroke="#333" stroke-width="3"/>
+
+    <!-- Middle: C=O (ketone, show double bond) -->
+    <text x="-15" y="55" font-size="15" fill="#333" font-family="Arial" text-anchor="middle" font-weight="bold">C</text>
+    <line x1="0" y1="50" x2="25" y2="50" stroke="#333" stroke-width="2.5"/>
+    <line x1="0" y1="54" x2="25" y2="54" stroke="#333" stroke-width="2.5"/>
+    <text x="40" y="58" font-size="15" fill="#C62828" font-family="Arial" text-anchor="middle" font-weight="bold">O</text>
+
+    <!-- Vertical bond -->
+    <line x1="-8" y1="62" x2="-8" y2="96" stroke="#333" stroke-width="3"/>
+
+    <!-- Bottom: CH2OH -->
+    <text x="-8" y="112" font-size="15" fill="#333" font-family="Arial" text-anchor="middle" font-weight="bold">CH&#x2082;OH</text>
+
   </g>
-  <text x="120" y="190" text-anchor="middle" font-family="'Noto Sans KR', Arial, sans-serif" font-size="13" fill="#555">DHAP</text>
+
+  <!-- Korean label -->
+  <text x="120" y="185" font-family="Noto Sans KR, Arial" font-size="14" fill="#555" text-anchor="middle">DHAP</text>
 </svg>

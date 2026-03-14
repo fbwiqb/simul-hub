@@ -1,21 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
-  <g transform="translate(120,85)">
-    <polygon points="-40,-25 -40,25 0,40 40,25 40,-25" fill="none" stroke="#333" stroke-width="2.5"/>
-    <text x="0" y="-15" font-size="13" fill="#333" font-family="Arial" text-anchor="middle">O</text>
-    <line x1="-40" y1="25" x2="-60" y2="50" stroke="#333" stroke-width="2"/>
-    <text x="-72" y="60" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
-    <line x1="0" y1="40" x2="0" y2="65" stroke="#333" stroke-width="2"/>
-    <text x="-8" y="78" font-size="11" fill="#1565C0" font-family="Arial">OH</text>
-    <line x1="40" y1="-25" x2="65" y2="-40" stroke="#333" stroke-width="2"/>
-    <text x="68" y="-43" font-size="10" fill="#333" font-family="Arial" text-anchor="middle">CH&#x2082;O</text>
-    <line x1="82" y1="-48" x2="95" y2="-53" stroke="#333" stroke-width="2"/>
-    <circle cx="107" cy="-57" r="12" fill="#E65100"/>
-    <text x="107" y="-53" text-anchor="middle" font-size="11" fill="white" font-family="Arial" font-weight="bold">P</text>
-    <line x1="-40" y1="-25" x2="-65" y2="-45" stroke="#333" stroke-width="2"/>
-    <text x="-68" y="-48" font-size="10" fill="#333" font-family="Arial" text-anchor="middle">CH&#x2082;O</text>
-    <line x1="-83" y1="-52" x2="-96" y2="-57" stroke="#333" stroke-width="2"/>
-    <circle cx="-108" cy="-61" r="12" fill="#E65100"/>
-    <text x="-108" y="-57" text-anchor="middle" font-size="11" fill="white" font-family="Arial" font-weight="bold">P</text>
-  </g>
-  <text x="120" y="195" text-anchor="middle" font-family="'Noto Sans KR', Arial, sans-serif" font-size="13" fill="#555">&#xACFC;&#xB2F9;-1,6-&#xC774;&#xC778;&#xC0B0; (FBP)</text>
+  <!-- Haworth projection of fructose-1,6-bisphosphate (PENTAGON with 2 phosphates) -->
+
+  <!-- Pentagon ring -->
+  <path d="M 105 115 L 175 115 L 190 85 L 140 60 L 90 85 Z"
+        fill="none" stroke="#333" stroke-width="2.5"/>
+
+  <!-- Thick bottom edge -->
+  <line x1="105" y1="115" x2="175" y2="115" stroke="#333" stroke-width="4.5"/>
+
+  <!-- Oxygen in ring (red) -->
+  <circle cx="190" cy="85" r="9" fill="#C62828"/>
+  <text x="190" y="89" font-family="Arial" font-size="13" fill="white" text-anchor="middle" font-weight="bold">O</text>
+
+  <!-- CH2O-P branch (C6, left with phosphate) -->
+  <line x1="90" y1="85" x2="60" y2="60" stroke="#333" stroke-width="2.5"/>
+  <text x="55" y="50" font-family="Arial" font-size="14" fill="#333" text-anchor="middle" font-weight="bold">CH&#x2082;O</text>
+  <line x1="40" y1="45" x2="30" y2="42" stroke="#333" stroke-width="2.5"/>
+  <circle cx="17" cy="38" r="14" fill="#E65100"/>
+  <text x="17" y="43" text-anchor="middle" font-size="14" fill="white" font-family="Arial" font-weight="bold">P</text>
+
+  <!-- CH2O-P branch (C1, top with phosphate) -->
+  <line x1="140" y1="60" x2="140" y2="38" stroke="#333" stroke-width="2.5"/>
+  <text x="140" y="32" font-family="Arial" font-size="14" fill="#333" text-anchor="middle" font-weight="bold">CH&#x2082;O</text>
+  <line x1="140" y1="22" x2="140" y2="18" stroke="#333" stroke-width="2.5"/>
+  <circle cx="140" cy="18" r="14" fill="#E65100"/>
+  <text x="140" y="23" text-anchor="middle" font-size="14" fill="white" font-family="Arial" font-weight="bold">P</text>
+
+  <!-- OH groups below ring -->
+  <line x1="105" y1="115" x2="105" y2="140" stroke="#333" stroke-width="2.5"/>
+  <text x="105" y="155" font-family="Arial" font-size="14" fill="#1565C0" text-anchor="middle" font-weight="bold">OH</text>
+
+  <line x1="140" y1="115" x2="140" y2="140" stroke="#333" stroke-width="2.5"/>
+  <text x="140" y="155" font-family="Arial" font-size="14" fill="#1565C0" text-anchor="middle" font-weight="bold">OH</text>
+
+  <!-- Korean label -->
+  <text x="120" y="185" font-family="Noto Sans KR, Arial" font-size="14" fill="#555" text-anchor="middle">과당-1,6-이인산 (FBP)</text>
 </svg>
