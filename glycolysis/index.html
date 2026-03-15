@@ -151,6 +151,7 @@ body {
   font-size:2.5rem;
   font-weight:700;
   line-height:1;
+  transition:transform 0.3s, color 0.3s;
 }
 .counter-sub {
   font-size:0.8rem;
@@ -162,6 +163,30 @@ body {
 .fadh2-color { color:var(--fadh2); }
 .gtp-color { color:var(--gtp); }
 .co2-color { color:var(--co2); }
+
+@keyframes pulseRed {
+  0% { transform:scale(1); }
+  50% { transform:scale(1.3); color:#EF5350; }
+  100% { transform:scale(1); }
+}
+@keyframes pulseGold {
+  0% { transform:scale(1); }
+  50% { transform:scale(1.3); color:#FFD54F; text-shadow:0 0 20px rgba(255,193,7,0.6); }
+  100% { transform:scale(1); }
+}
+@keyframes pulseBlue {
+  0% { transform:scale(1); }
+  50% { transform:scale(1.3); color:#42A5F5; }
+  100% { transform:scale(1); }
+}
+.pulse-red { animation:pulseRed 0.5s ease; }
+.pulse-gold { animation:pulseGold 0.5s ease; }
+.pulse-blue { animation:pulseBlue 0.5s ease; }
+.net-glow {
+  border:2px solid rgba(255,193,7,0.5);
+  border-radius:8px;
+  box-shadow:0 0 12px rgba(255,193,7,0.3);
+}
 
 .center-stage {
   background:var(--bg-card);
@@ -179,114 +204,325 @@ body {
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:20px;
+  gap:16px;
   width:100%;
-  min-height:200px;
+  min-height:220px;
 }
-.molecule-box {
+
+.molecule {
   display:flex;
   flex-direction:column;
   align-items:center;
   gap:8px;
   transition:opacity 0.4s, transform 0.4s;
 }
-.molecule-box img {
-  width:200px;
-  height:160px;
-  object-fit:contain;
-  filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+.mol-shape {
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:120px;
+  height:120px;
 }
-.molecule-name {
-  font-size:1.05rem;
+.mol-hexagon .mol-shape-bg {
+  width:110px;
+  height:96px;
+  background:var(--mol-color);
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  opacity:0.2;
+  position:absolute;
+}
+.mol-hexagon .mol-shape-border {
+  width:110px;
+  height:96px;
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  border:3px solid var(--mol-color);
+  position:absolute;
+  background:transparent;
+}
+.mol-hexagon .mol-shape-outline {
+  width:110px;
+  height:96px;
+  position:absolute;
+}
+.mol-hexagon .mol-shape-outline::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  background:var(--mol-color);
+  opacity:0.25;
+}
+.mol-hexagon .mol-shape-outline::after {
+  content:'';
+  position:absolute;
+  inset:3px;
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  background:rgba(255,255,255,0.7);
+}
+
+.mol-rect .mol-shape-bg {
+  width:100px;
+  height:70px;
+  background:var(--mol-color);
+  opacity:0.2;
+  border-radius:14px;
+  position:absolute;
+}
+.mol-rect .mol-shape-border-line {
+  width:100px;
+  height:70px;
+  border:3px solid var(--mol-color);
+  border-radius:14px;
+  position:absolute;
+}
+
+.mol-pentagon .mol-shape-bg {
+  width:100px;
+  height:95px;
+  background:var(--mol-color);
+  clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);
+  opacity:0.15;
+  position:absolute;
+}
+.mol-pentagon .mol-shape-border-line {
+  width:100px;
+  height:95px;
+  position:absolute;
+}
+.mol-pentagon .mol-shape-border-line::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);
+  background:var(--mol-color);
+  opacity:0.25;
+}
+.mol-pentagon .mol-shape-border-line::after {
+  content:'';
+  position:absolute;
+  inset:3px;
+  clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);
+  background:var(--bg-card);
+}
+
+.mol-circle .mol-shape-bg {
+  width:80px;
+  height:80px;
+  background:var(--mol-color);
+  opacity:0.2;
+  border-radius:50%;
+  position:absolute;
+}
+.mol-circle .mol-shape-border-line {
+  width:80px;
+  height:80px;
+  border:3px solid var(--mol-color);
+  border-radius:50%;
+  position:absolute;
+}
+
+.mol-carbon {
+  position:absolute;
+  top:6px;
+  right:6px;
+  font-size:0.75rem;
+  font-weight:700;
+  color:var(--mol-color);
+  background:rgba(255,255,255,0.9);
+  padding:1px 6px;
+  border-radius:6px;
+  border:1.5px solid var(--mol-color);
+  z-index:2;
+  line-height:1.2;
+}
+.mol-name-inner {
+  font-size:0.85rem;
+  font-weight:700;
+  color:var(--mol-color);
+  z-index:2;
+  text-align:center;
+  line-height:1.2;
+  max-width:100px;
+  word-break:keep-all;
+}
+.mol-name {
+  font-size:0.95rem;
   font-weight:600;
   color:var(--text);
 }
-.molecule-carbon {
-  font-size:0.85rem;
-  color:var(--text-dim);
+.mol-structure {
+  width:180px;
+  height:140px;
+  object-fit:contain;
+  opacity:0.85;
+  border:1px solid rgba(0,0,0,0.12);
+  border-radius:8px;
+  background:#fff;
+  padding:6px;
+  margin-top:6px;
+  transition:opacity 0.2s, transform 0.2s;
+  cursor:pointer;
 }
-.arrow-area {
+.mol-structure:hover {
+  opacity:1;
+  transform:scale(1.8);
+  z-index:10;
+  box-shadow:0 4px 16px rgba(0,0,0,0.15);
+}
+.mol-source {
+  font-size:0.55rem;
+  color:rgba(0,0,0,0.3);
+  text-decoration:none;
+}
+.mol-source:hover {
+  color:rgba(0,0,0,0.6);
+}
+
+.mol-p {
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  background:var(--phosphate);
+  color:#fff;
+  font-size:0.75rem;
+  font-weight:800;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:2px solid #BF360C;
+  box-shadow:0 2px 4px rgba(0,0,0,0.2);
+  position:absolute;
+  z-index:3;
+}
+.mol-p-bottom { bottom:-10px; left:50%; transform:translateX(-50%); }
+.mol-p-top { top:-10px; left:50%; transform:translateX(-50%); }
+.mol-p-right { right:-10px; top:50%; transform:translateY(-50%); }
+.mol-p-left { left:-10px; top:50%; transform:translateY(-50%); }
+.mol-p-bottom-left { bottom:-6px; left:8px; }
+.mol-p-bottom-right { bottom:-6px; right:8px; }
+
+.reaction-panel {
   display:flex;
   flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-width:200px;
+  max-width:240px;
+  padding:16px 12px;
+  border-radius:14px;
+  gap:8px;
+  position:relative;
+}
+.reaction-panel.atp-consume {
+  background:linear-gradient(135deg,rgba(239,83,80,0.12),rgba(239,83,80,0.06));
+  border:2px solid rgba(239,83,80,0.3);
+}
+.reaction-panel.atp-produce {
+  background:linear-gradient(135deg,rgba(102,187,106,0.12),rgba(102,187,106,0.06));
+  border:2px solid rgba(102,187,106,0.3);
+}
+.reaction-panel.nadh-produce {
+  background:linear-gradient(135deg,rgba(21,101,192,0.12),rgba(21,101,192,0.06));
+  border:2px solid rgba(21,101,192,0.3);
+}
+.reaction-panel.fadh2-produce {
+  background:linear-gradient(135deg,rgba(123,31,162,0.12),rgba(123,31,162,0.06));
+  border:2px solid rgba(123,31,162,0.3);
+}
+.reaction-panel.gtp-produce {
+  background:linear-gradient(135deg,rgba(0,137,123,0.12),rgba(0,137,123,0.06));
+  border:2px solid rgba(0,137,123,0.3);
+}
+.reaction-panel.co2-release {
+  background:linear-gradient(135deg,rgba(93,64,55,0.12),rgba(93,64,55,0.06));
+  border:2px solid rgba(93,64,55,0.3);
+}
+.reaction-panel.neutral {
+  background:linear-gradient(135deg,rgba(46,125,50,0.08),rgba(46,125,50,0.03));
+  border:2px solid rgba(46,125,50,0.25);
+}
+
+.cofactor-change {
+  display:flex;
   align-items:center;
   gap:8px;
-  min-width:80px;
+  font-size:1rem;
+  font-weight:700;
 }
-.arrow-line {
-  font-size:2.5rem;
-  color:rgba(0,0,0,0.3);
-}
-.enzyme-label {
-  font-size:0.9rem;
-  font-weight:600;
-  color:var(--enzyme);
-  background:rgba(46,125,50,0.15);
-  padding:3px 10px;
-  border-radius:12px;
-  white-space:nowrap;
-}
-.byproducts {
-  display:flex;
-  gap:6px;
-  margin-top:4px;
-}
-.byproduct-badge {
-  font-size:0.8rem;
-  font-weight:600;
-  padding:2px 8px;
-  border-radius:8px;
-  white-space:nowrap;
-}
-.bp-atp { background:rgba(255,193,7,0.2); color:var(--atp); }
-.bp-adp { background:rgba(158,158,158,0.2); color:var(--adp); }
-.bp-nadh { background:rgba(21,101,192,0.2); color:var(--nadh); }
-.bp-nad { background:rgba(66,165,245,0.2); color:#42A5F5; }
-.bp-fadh2 { background:rgba(123,31,162,0.2); color:var(--fadh2); }
-.bp-co2 { background:rgba(93,64,55,0.2); color:#8D6E63; }
-.bp-gtp { background:rgba(0,137,123,0.2); color:var(--gtp); }
-
-.cofactor-flow {
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:4px;
-  margin-top:6px;
-}
-.cofactor-row {
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-.cofactor-row img {
-  width:64px;
-  height:30px;
+.cofactor-icon {
+  width:48px;
+  height:28px;
   object-fit:contain;
 }
-.cofactor-arrow-in {
-  color:#2E7D32;
+.cofactor-change-arrow {
+  font-size:1.8rem;
+  font-weight:400;
+  line-height:1;
+}
+.cofactor-change .atp-consume-arrow { color:#EF5350; }
+.cofactor-change .atp-produce-arrow { color:#66BB6A; }
+.cofactor-change .nadh-produce-arrow { color:#1565C0; }
+.cofactor-change .fadh2-produce-arrow { color:#7B1FA2; }
+.cofactor-change .gtp-produce-arrow { color:#00897B; }
+
+.energy-label {
   font-size:1.1rem;
   font-weight:700;
+  padding:4px 14px;
+  border-radius:8px;
 }
-.cofactor-arrow-out {
+.energy-label.consume {
   color:#C62828;
-  font-size:1.1rem;
-  font-weight:700;
+  background:rgba(198,40,40,0.1);
 }
-.cofactor-label {
-  font-size:0.75rem;
+.energy-label.produce {
+  color:#2E7D32;
+  background:rgba(46,125,50,0.1);
+}
+.energy-label.nadh-label {
+  color:#1565C0;
+  background:rgba(21,101,192,0.1);
+}
+.energy-label.fadh2-label {
+  color:#7B1FA2;
+  background:rgba(123,31,162,0.1);
+}
+.energy-label.gtp-label {
+  color:#00897B;
+  background:rgba(0,137,123,0.1);
+}
+.energy-label.co2-label {
+  color:#5D4037;
+  background:rgba(93,64,55,0.1);
+}
+
+.enzyme-name {
+  font-size:0.85rem;
   font-weight:600;
-  color:var(--text-dim);
-}
-.cofactor-text-badge {
-  display:inline-flex;
-  align-items:center;
-  padding:4px 12px;
+  color:var(--enzyme);
+  background:rgba(46,125,50,0.12);
+  padding:3px 10px;
   border-radius:10px;
-  font-size:0.95rem;
-  font-weight:600;
-  background:rgba(0,0,0,0.06);
-  color:var(--text-dim);
+  text-align:center;
+  white-space:nowrap;
 }
+
+@keyframes panelPulseRed {
+  0%,100% { box-shadow:0 0 0 rgba(239,83,80,0); }
+  50% { box-shadow:0 0 20px rgba(239,83,80,0.4); }
+}
+@keyframes panelPulseGreen {
+  0%,100% { box-shadow:0 0 0 rgba(102,187,106,0); }
+  50% { box-shadow:0 0 20px rgba(102,187,106,0.4); }
+}
+@keyframes panelPulseBlue {
+  0%,100% { box-shadow:0 0 0 rgba(21,101,192,0); }
+  50% { box-shadow:0 0 20px rgba(21,101,192,0.4); }
+}
+.panel-pulse-red { animation:panelPulseRed 0.8s ease; }
+.panel-pulse-green { animation:panelPulseGreen 0.8s ease; }
+.panel-pulse-blue { animation:panelPulseBlue 0.8s ease; }
 
 .times2-badge {
   position:absolute;
@@ -300,39 +536,37 @@ body {
   border-radius:8px;
   border:1px solid rgba(255,193,7,0.3);
 }
-
-.coin-container {
+.tca-turn-badge {
   position:absolute;
-  pointer-events:none;
+  top:12px;
+  right:16px;
+  background:rgba(58,123,213,0.15);
+  color:#3a7bd5;
+  font-size:0.8rem;
+  font-weight:700;
+  padding:4px 12px;
+  border-radius:8px;
+  border:1px solid rgba(58,123,213,0.3);
 }
-.coin {
+.pyruvate-ox-badge {
   position:absolute;
-  width:28px;height:28px;
-  border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:0.55rem;font-weight:700;color:#fff;
-  opacity:0;
-  transition:none;
+  top:12px;
+  left:16px;
+  background:rgba(255,152,0,0.15);
+  color:#E65100;
+  font-size:0.8rem;
+  font-weight:700;
+  padding:4px 12px;
+  border-radius:8px;
+  border:1px solid rgba(255,152,0,0.3);
 }
 
-.split-display {
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:12px;
-  width:100%;
-  min-height:200px;
-}
-.split-product {
+.multi-cofactor {
   display:flex;
   flex-direction:column;
-  align-items:center;
   gap:6px;
 }
-.split-product img {
-  width:120px;height:100px;object-fit:contain;
-  filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));
-}
+
 .plus-sign {
   font-size:1.5rem;
   color:rgba(0,0,0,0.25);
@@ -396,31 +630,6 @@ body {
 
 .tab-content { display:none; flex:1; flex-direction:column; min-height:0; }
 .tab-content.active { display:flex; }
-
-.tca-turn-badge {
-  position:absolute;
-  top:12px;
-  right:16px;
-  background:rgba(58,123,213,0.15);
-  color:#3a7bd5;
-  font-size:0.8rem;
-  font-weight:700;
-  padding:4px 12px;
-  border-radius:8px;
-  border:1px solid rgba(58,123,213,0.3);
-}
-.pyruvate-ox-badge {
-  position:absolute;
-  top:12px;
-  left:16px;
-  background:rgba(255,152,0,0.15);
-  color:#E65100;
-  font-size:0.8rem;
-  font-weight:700;
-  padding:4px 12px;
-  border-radius:8px;
-  border:1px solid rgba(255,152,0,0.3);
-}
 
 .summary-content {
   flex:1;
@@ -586,6 +795,14 @@ kbd {
   font-size:0.75rem;
   font-family:inherit;
 }
+
+.aux-molecule {
+  position:absolute;
+  top:16px;
+  left:40px;
+  transform:scale(0.6);
+  opacity:0.7;
+}
 </style>
 </head>
 <body>
@@ -603,7 +820,6 @@ kbd {
     </div>
   </div>
 
-  <!-- TAB 1: GLYCOLYSIS -->
   <div class="tab-content active" id="tab-glycolysis">
     <div class="progress-bar" id="glycolysis-progress"></div>
     <div class="main-area">
@@ -647,7 +863,6 @@ kbd {
     </div>
   </div>
 
-  <!-- TAB 2: TCA -->
   <div class="tab-content" id="tab-tca">
     <div class="progress-bar" id="tca-progress"></div>
     <div class="main-area">
@@ -700,7 +915,6 @@ kbd {
     </div>
   </div>
 
-  <!-- TAB 3: SUMMARY -->
   <div class="tab-content" id="tab-summary">
     <div class="summary-content">
       <div class="summary-flow">
@@ -788,110 +1002,315 @@ kbd {
 <script>
 const IMG = './img/';
 
+const MOL_SHAPES = {
+  glucose:     { shape:'hexagon', color:'#FF9800', name:'포도당', carbon:'C₆', ppos:[], img:'glucose' },
+  g6p:         { shape:'hexagon', color:'#FF9800', name:'포도당-6-인산', carbon:'C₆', ppos:['top'], img:'g6p' },
+  f6p:         { shape:'hexagon', color:'#FF9800', name:'과당-6-인산', carbon:'C₆', ppos:['top'], img:'f6p' },
+  fbp:         { shape:'hexagon', color:'#FF9800', name:'과당-1,6-이인산', carbon:'C₆', ppos:['top','bottom'], img:'fbp' },
+  dhap:        { shape:'rect', color:'#42A5F5', name:'DHAP', carbon:'C₃', ppos:['bottom'], img:'dhap' },
+  g3p:         { shape:'rect', color:'#42A5F5', name:'G3P', carbon:'C₃', ppos:['bottom'], img:'g3p' },
+  bpg13:       { shape:'rect', color:'#42A5F5', name:'1,3-BPG', carbon:'C₃', ppos:['top','bottom'], img:'bpg13' },
+  pg3:         { shape:'rect', color:'#42A5F5', name:'3-PG', carbon:'C₃', ppos:['bottom'], img:'pg3' },
+  pg2:         { shape:'rect', color:'#42A5F5', name:'2-PG', carbon:'C₃', ppos:['right'], img:'pg2' },
+  pep:         { shape:'rect', color:'#42A5F5', name:'PEP', carbon:'C₃', ppos:['right'], img:'pep' },
+  pyruvate:    { shape:'rect', color:'#42A5F5', name:'피루브산', carbon:'C₃', ppos:[], img:'pyruvate' },
+  'acetyl-coa':{ shape:'circle', color:'#26A69A', name:'아세틸CoA', carbon:'C₂', ppos:[], img:'acetyl-coa' },
+  citrate:     { shape:'hexagon', color:'#66BB6A', name:'시트르산', carbon:'C₆', ppos:[], img:'citrate' },
+  isocitrate:  { shape:'hexagon', color:'#66BB6A', name:'아이소시트르산', carbon:'C₆', ppos:[], img:'isocitrate' },
+  'alpha-kg':  { shape:'pentagon', color:'#AB47BC', name:'α-케토글루타르산', carbon:'C₅', ppos:[], img:'alpha-kg' },
+  'succinyl-coa':{ shape:'rect', color:'#EF5350', name:'숙시닐CoA', carbon:'C₄', ppos:[], img:'succinyl-coa' },
+  succinate:   { shape:'rect', color:'#EF5350', name:'숙신산', carbon:'C₄', ppos:[], img:'succinate' },
+  fumarate:    { shape:'rect', color:'#EF5350', name:'푸마르산', carbon:'C₄', ppos:[], img:'fumarate' },
+  malate:      { shape:'rect', color:'#EF5350', name:'말산', carbon:'C₄', ppos:[], img:'malate' },
+  oxaloacetate:{ shape:'rect', color:'#EF5350', name:'옥살아세트산', carbon:'C₄', ppos:[], img:'oxaloacetate' }
+};
+
+function renderMoleculeHTML(key, opts) {
+  const m = MOL_SHAPES[key];
+  if (!m) return '';
+  const scale = opts && opts.scale ? opts.scale : 1;
+  const sizeStyle = scale !== 1 ? `transform:scale(${scale});` : '';
+
+  let shapeInner = '';
+  if (m.shape === 'hexagon') {
+    shapeInner = `
+      <div class="mol-shape-outline"></div>`;
+  } else if (m.shape === 'rect') {
+    shapeInner = `
+      <div class="mol-shape-bg" style="background:${m.color};"></div>
+      <div class="mol-shape-border-line" style="border-color:${m.color};"></div>`;
+  } else if (m.shape === 'pentagon') {
+    shapeInner = `
+      <div class="mol-shape-border-line"></div>`;
+  } else if (m.shape === 'circle') {
+    shapeInner = `
+      <div class="mol-shape-bg" style="background:${m.color};"></div>
+      <div class="mol-shape-border-line" style="border-color:${m.color};"></div>`;
+  }
+
+  let phosphateHtml = '';
+  if (m.ppos && m.ppos.length > 0) {
+    m.ppos.forEach(pos => {
+      phosphateHtml += `<div class="mol-p mol-p-${pos}">P</div>`;
+    });
+  }
+
+  const imgTag = m.img ? `<img class="mol-structure" src="${IMG}${m.img}.png" alt="${m.name} 구조식">` : '';
+
+  return `
+    <div class="molecule mol-${m.shape}" style="--mol-color:${m.color};${sizeStyle}">
+      <div class="mol-shape">
+        ${shapeInner}
+        <span class="mol-carbon">${m.carbon}</span>
+        <span class="mol-name-inner" style="color:${m.color};">${m.name}</span>
+        ${phosphateHtml}
+      </div>
+      ${imgTag}
+    </div>`;
+}
+
+function renderReactionPanel(step) {
+  const panels = [];
+
+  if (step.atpChange && step.atpChange < 0) {
+    panels.push({
+      type: 'atp-consume',
+      from: { img:'atp', label:'ATP' },
+      to: { img:'adp', label:'ADP' },
+      arrowClass: 'atp-consume-arrow',
+      energyText: `ATP ${step.atpChange}`,
+      energyClass: 'consume'
+    });
+  }
+  if (step.atpChange && step.atpChange > 0) {
+    panels.push({
+      type: 'atp-produce',
+      from: { img:'adp', label:'ADP' },
+      to: { img:'atp', label:'ATP' },
+      arrowClass: 'atp-produce-arrow',
+      energyText: `ATP +${step.atpChange}`,
+      energyClass: 'produce'
+    });
+  }
+  if (step.nadhChange && step.nadhChange > 0) {
+    panels.push({
+      type: 'nadh-produce',
+      from: { img:'nad', label:'NAD⁺' },
+      to: { img:'nadh', label:'NADH' },
+      arrowClass: 'nadh-produce-arrow',
+      energyText: `NADH +${step.nadhChange}`,
+      energyClass: 'nadh-label'
+    });
+  }
+
+  if (panels.length === 0) {
+    return `
+      <div class="reaction-panel neutral">
+        <div class="enzyme-name">${step.enzyme}</div>
+      </div>`;
+  }
+
+  let html = '<div class="reaction-panel ' + panels[0].type + '">';
+  if (panels.length > 1) {
+    html = '<div class="multi-cofactor">';
+    panels.forEach(p => {
+      html += `
+        <div class="reaction-panel ${p.type}">
+          <div class="cofactor-change">
+            <img src="${IMG}${p.from.img}.svg" class="cofactor-icon" alt="${p.from.label}">
+            <span class="cofactor-change-arrow ${p.arrowClass}">→</span>
+            <img src="${IMG}${p.to.img}.svg" class="cofactor-icon" alt="${p.to.label}">
+          </div>
+          <div class="energy-label ${p.energyClass}">${p.energyText}</div>
+        </div>`;
+    });
+    html += `<div class="enzyme-name">${step.enzyme}</div></div>`;
+    return html;
+  }
+
+  const p = panels[0];
+  html += `
+    <div class="cofactor-change">
+      <img src="${IMG}${p.from.img}.svg" class="cofactor-icon" alt="${p.from.label}">
+      <span class="cofactor-change-arrow ${p.arrowClass}">→</span>
+      <img src="${IMG}${p.to.img}.svg" class="cofactor-icon" alt="${p.to.label}">
+    </div>
+    <div class="energy-label ${p.energyClass}">${p.energyText}</div>
+    <div class="enzyme-name">${step.enzyme}</div>
+  </div>`;
+  return html;
+}
+
+function renderTCAPanel(step) {
+  const panels = [];
+
+  if (step.nadh > 0) {
+    panels.push({
+      type: 'nadh-produce',
+      from: { img:'nad', label:'NAD⁺' },
+      to: { img:'nadh', label:'NADH' },
+      arrowClass: 'nadh-produce-arrow',
+      energyText: `NADH +${step.nadh}`,
+      energyClass: 'nadh-label'
+    });
+  }
+  if (step.fadh2 > 0) {
+    panels.push({
+      type: 'fadh2-produce',
+      from: null,
+      to: { img:'fadh2', label:'FADH₂' },
+      arrowClass: 'fadh2-produce-arrow',
+      energyText: `FADH₂ +${step.fadh2}`,
+      energyClass: 'fadh2-label'
+    });
+  }
+  if (step.gtp > 0) {
+    panels.push({
+      type: 'gtp-produce',
+      from: null,
+      to: null,
+      arrowClass: 'gtp-produce-arrow',
+      energyText: `GTP +${step.gtp}`,
+      energyClass: 'gtp-label'
+    });
+  }
+  if (step.co2 > 0) {
+    panels.push({
+      type: 'co2-release',
+      from: null,
+      to: { img:'co2', label:'CO₂' },
+      arrowClass: '',
+      energyText: `CO₂ -${step.co2}`,
+      energyClass: 'co2-label'
+    });
+  }
+
+  if (panels.length === 0) {
+    return `
+      <div class="reaction-panel neutral">
+        <div class="enzyme-name">${step.enzyme}</div>
+      </div>`;
+  }
+
+  if (panels.length === 1) {
+    const p = panels[0];
+    let cofactorHtml = '';
+    if (p.from && p.to) {
+      cofactorHtml = `
+        <div class="cofactor-change">
+          <img src="${IMG}${p.from.img}.svg" class="cofactor-icon" alt="${p.from.label}">
+          <span class="cofactor-change-arrow ${p.arrowClass}">→</span>
+          <img src="${IMG}${p.to.img}.svg" class="cofactor-icon" alt="${p.to.label}">
+        </div>`;
+    } else if (p.to) {
+      cofactorHtml = `
+        <div class="cofactor-change">
+          <img src="${IMG}${p.to.img}.svg" class="cofactor-icon" alt="${p.to.label}">
+        </div>`;
+    }
+    return `
+      <div class="reaction-panel ${p.type}">
+        ${cofactorHtml}
+        <div class="energy-label ${p.energyClass}">${p.energyText}</div>
+        <div class="enzyme-name">${step.enzyme}</div>
+      </div>`;
+  }
+
+  let html = '<div class="multi-cofactor">';
+  panels.forEach(p => {
+    let cofactorHtml = '';
+    if (p.from && p.to) {
+      cofactorHtml = `
+        <div class="cofactor-change">
+          <img src="${IMG}${p.from.img}.svg" class="cofactor-icon" alt="${p.from.label}">
+          <span class="cofactor-change-arrow ${p.arrowClass}">→</span>
+          <img src="${IMG}${p.to.img}.svg" class="cofactor-icon" alt="${p.to.label}">
+        </div>`;
+    } else if (p.to) {
+      cofactorHtml = `
+        <div class="cofactor-change">
+          <img src="${IMG}${p.to.img}.svg" class="cofactor-icon" alt="${p.to.label}">
+        </div>`;
+    }
+    html += `
+      <div class="reaction-panel ${p.type}">
+        ${cofactorHtml}
+        <div class="energy-label ${p.energyClass}">${p.energyText}</div>
+      </div>`;
+  });
+  html += `<div class="enzyme-name">${step.enzyme}</div></div>`;
+  return html;
+}
+
 const GLYCOLYSIS_STEPS = [
   {
     substrate:'glucose', product:'g6p',
-    subName:'포도당', prodName:'포도당-6-인산',
-    subCarbon:'C₆', prodCarbon:'C₆',
     enzyme:'헥소키나아제',
     atpChange:-1, nadhChange:0,
-    inputs:[{img:'atp',label:'ATP'}],
-    outputs:[{img:'adp',label:'ADP'}],
     desc:'ATP 1분자가 소모되어 포도당의 C6에 인산기가 결합합니다. 이 반응은 비가역적이며, 포도당을 세포 안에 가두는 역할을 합니다.',
     times2:false
   },
   {
     substrate:'g6p', product:'f6p',
-    subName:'포도당-6-인산', prodName:'과당-6-인산',
-    subCarbon:'C₆', prodCarbon:'C₆',
     enzyme:'포스포글루코스 이성질화효소',
     atpChange:0, nadhChange:0,
-    inputs:[], outputs:[],
     desc:'6각 고리(포도당)가 5각 고리(과당)로 이성질화됩니다. 다음 단계의 인산화를 위한 구조적 준비 과정입니다.',
     times2:false
   },
   {
     substrate:'f6p', product:'fbp',
-    subName:'과당-6-인산', prodName:'과당-1,6-이인산',
-    subCarbon:'C₆', prodCarbon:'C₆',
     enzyme:'포스포프럭토키나아제(PFK)',
     atpChange:-1, nadhChange:0,
-    inputs:[{img:'atp',label:'ATP'}],
-    outputs:[{img:'adp',label:'ADP'}],
     desc:'ATP 1분자가 추가로 소모되어 C1에도 인산기가 결합합니다. PFK는 해당과정의 핵심 조절 효소입니다.',
     times2:false
   },
   {
     substrate:'fbp', product:null,
     products:['dhap','g3p'],
-    subName:'과당-1,6-이인산', prodNames:['DHAP','G3P'],
-    subCarbon:'C₆', prodCarbons:['C₃','C₃'],
     enzyme:'알돌레이스',
     atpChange:0, nadhChange:0,
-    inputs:[], outputs:[],
     desc:'6탄소 분자가 3탄소 분자 2개(DHAP와 G3P)로 분해됩니다. 이것이 "해당(糖을 쪼갬)"의 핵심 단계입니다.',
     times2:false, split:true
   },
   {
     substrate:'dhap', product:'g3p',
-    subName:'DHAP', prodName:'G3P',
-    subCarbon:'C₃', prodCarbon:'C₃',
     enzyme:'트라이오스인산 이성질화효소',
     atpChange:0, nadhChange:0,
-    inputs:[], outputs:[],
     desc:'DHAP가 G3P로 전환됩니다. 이후 반응은 G3P만 진행하므로, 이 단계부터 모든 반응이 ×2로 일어납니다.',
     times2:false
   },
   {
     substrate:'g3p', product:'bpg13',
-    subName:'G3P', prodName:'1,3-BPG',
-    subCarbon:'C₃', prodCarbon:'C₃',
     enzyme:'G3P 탈수소효소',
     atpChange:0, nadhChange:1,
-    inputs:[{img:'nad',label:'NAD⁺'},{img:null,label:'Pᵢ'}],
-    outputs:[{img:'nadh',label:'NADH'}],
     desc:'G3P가 산화되면서 NAD⁺가 NADH로 환원됩니다. 동시에 무기인산(Pᵢ)이 결합하여 고에너지 인산 결합이 형성됩니다.',
     times2:true
   },
   {
     substrate:'bpg13', product:'pg3',
-    subName:'1,3-BPG', prodName:'3-PG',
-    subCarbon:'C₃', prodCarbon:'C₃',
     enzyme:'포스포글리세르산 키나아제(PGK)',
     atpChange:1, nadhChange:0,
-    inputs:[{img:'adp',label:'ADP'}],
-    outputs:[{img:'atp',label:'ATP'}],
     desc:'기질 수준 인산화로 ATP가 생성됩니다. 1,3-BPG의 고에너지 인산기가 ADP로 전달됩니다. (×2 = ATP 2분자)',
     times2:true
   },
   {
     substrate:'pg3', product:'pg2',
-    subName:'3-PG', prodName:'2-PG',
-    subCarbon:'C₃', prodCarbon:'C₃',
     enzyme:'포스포글리세르산 뮤테이스',
     atpChange:0, nadhChange:0,
-    inputs:[], outputs:[],
     desc:'인산기의 위치가 C3에서 C2로 이동합니다. 다음 단계에서 고에너지 결합을 만들기 위한 재배열입니다.',
     times2:true
   },
   {
     substrate:'pg2', product:'pep',
-    subName:'2-PG', prodName:'PEP',
-    subCarbon:'C₃', prodCarbon:'C₃',
     enzyme:'에놀레이스',
     atpChange:0, nadhChange:0,
-    inputs:[], outputs:[{img:null,label:'H₂O'}],
     desc:'탈수 반응으로 물이 빠지면서 고에너지 인산 결합을 가진 PEP(포스포에놀피루브산)가 만들어집니다.',
     times2:true
   },
   {
     substrate:'pep', product:'pyruvate',
-    subName:'PEP', prodName:'피루브산',
-    subCarbon:'C₃', prodCarbon:'C₃',
     enzyme:'피루브산 키나아제',
     atpChange:1, nadhChange:0,
-    inputs:[{img:'adp',label:'ADP'}],
-    outputs:[{img:'atp',label:'ATP'}],
     desc:'두 번째 기질 수준 인산화입니다. PEP의 인산기가 ADP로 전달되어 ATP가 생성됩니다. (×2 = ATP 2분자)',
     times2:true
   }
@@ -900,107 +1319,77 @@ const GLYCOLYSIS_STEPS = [
 const TCA_STEPS = [
   {
     from:'pyruvate', to:'acetyl-coa',
-    fromName:'피루브산', toName:'아세틸CoA',
     enzyme:'피루브산 탈수소효소 복합체',
     nadh:1, fadh2:0, gtp:0, co2:1,
-    inputs:[{img:'nad',label:'NAD⁺'},{img:null,label:'CoA'}],
-    outputs:[{img:'nadh',label:'NADH'},{img:'co2',label:'CO₂'}],
     desc:'피루브산이 미토콘드리아로 들어가 탈탄산·산화되어 아세틸CoA가 됩니다. CO₂ 1분자가 방출되고 NADH 1분자가 생성됩니다.',
     isPyrOx:true
   },
   {
     from:'acetyl-coa', to:'citrate',
-    fromName:'아세틸CoA', toName:'시트르산',
-    fromAux:'oxaloacetate', fromAuxName:'옥살아세트산',
+    fromAux:'oxaloacetate',
     enzyme:'시트르산 합성효소',
     nadh:0, fadh2:0, gtp:0, co2:0,
-    inputs:[{img:null,label:'H₂O'}],
-    outputs:[{img:null,label:'CoA-SH'}],
     desc:'아세틸CoA(C₂)가 옥살아세트산(C₄)과 결합하여 시트르산(C₆)이 생성됩니다. CoA가 유리됩니다.',
     isPyrOx:false
   },
   {
     from:'citrate', to:'isocitrate',
-    fromName:'시트르산', toName:'아이소시트르산',
     enzyme:'아코니테이스',
     nadh:0, fadh2:0, gtp:0, co2:0,
-    inputs:[], outputs:[],
     desc:'시트르산이 아이소시트르산으로 이성질화됩니다. 하이드록시기의 위치가 이동합니다.',
     isPyrOx:false
   },
   {
     from:'isocitrate', to:'alpha-kg',
-    fromName:'아이소시트르산', toName:'α-케토글루타르산',
     enzyme:'아이소시트르산 탈수소효소',
     nadh:1, fadh2:0, gtp:0, co2:1,
-    inputs:[{img:'nad',label:'NAD⁺'}],
-    outputs:[{img:'nadh',label:'NADH'},{img:'co2',label:'CO₂'}],
     desc:'산화적 탈탄산 반응입니다. CO₂가 방출되면서 C₆→C₅가 되고, NADH가 생성됩니다.',
     isPyrOx:false
   },
   {
     from:'alpha-kg', to:'succinyl-coa',
-    fromName:'α-케토글루타르산', toName:'숙시닐CoA',
     enzyme:'α-케토글루타르산 탈수소효소',
     nadh:1, fadh2:0, gtp:0, co2:1,
-    inputs:[{img:'nad',label:'NAD⁺'},{img:null,label:'CoA'}],
-    outputs:[{img:'nadh',label:'NADH'},{img:'co2',label:'CO₂'}],
     desc:'두 번째 산화적 탈탄산입니다. C₅→C₄가 되고 CoA가 결합합니다. NADH와 CO₂가 각 1분자씩 생성됩니다.',
     isPyrOx:false
   },
   {
     from:'succinyl-coa', to:'succinate',
-    fromName:'숙시닐CoA', toName:'숙신산',
     enzyme:'숙시닐CoA 합성효소',
     nadh:0, fadh2:0, gtp:1, co2:0,
-    inputs:[{img:null,label:'GDP'},{img:null,label:'Pᵢ'}],
-    outputs:[{img:null,label:'GTP'},{img:null,label:'CoA-SH'}],
     desc:'기질 수준 인산화로 GTP가 생성됩니다. 고에너지 티오에스테르 결합이 끊어지면서 에너지가 방출됩니다.',
     isPyrOx:false
   },
   {
     from:'succinate', to:'fumarate',
-    fromName:'숙신산', toName:'푸마르산',
     enzyme:'숙신산 탈수소효소',
     nadh:0, fadh2:1, gtp:0, co2:0,
-    inputs:[{img:null,label:'FAD'}],
-    outputs:[{img:'fadh2',label:'FADH₂'}],
     desc:'숙신산이 산화되어 푸마르산이 됩니다. 이 효소는 미토콘드리아 내막에 결합되어 있으며 FADH₂를 직접 전자전달계에 전달합니다.',
     isPyrOx:false
   },
   {
     from:'fumarate', to:'malate',
-    fromName:'푸마르산', toName:'말산',
     enzyme:'푸마레이스',
     nadh:0, fadh2:0, gtp:0, co2:0,
-    inputs:[{img:null,label:'H₂O'}],
-    outputs:[],
     desc:'물(H₂O)이 푸마르산의 이중결합에 첨가되어 말산이 생성됩니다.',
     isPyrOx:false
   },
   {
     from:'malate', to:'oxaloacetate',
-    fromName:'말산', toName:'옥살아세트산',
     enzyme:'말산 탈수소효소',
     nadh:1, fadh2:0, gtp:0, co2:0,
-    inputs:[{img:'nad',label:'NAD⁺'}],
-    outputs:[{img:'nadh',label:'NADH'}],
     desc:'말산이 산화되어 옥살아세트산이 재생됩니다. NADH가 생성됩니다. 옥살아세트산은 다시 아세틸CoA와 결합하여 회로를 반복합니다.',
     isPyrOx:false
   }
 ];
-
-const TCA_CARBONS = {
-  'pyruvate':'C₃','acetyl-coa':'C₂','citrate':'C₆','isocitrate':'C₆',
-  'alpha-kg':'C₅','succinyl-coa':'C₄','succinate':'C₄','fumarate':'C₄',
-  'malate':'C₄','oxaloacetate':'C₄'
-};
 
 let gStep = 0;
 let gAtpUsed = 0, gAtpMade = 0, gNadhMade = 0;
 let tStep = 0;
 let tNadh = 0, tFadh2 = 0, tGtp = 0, tCo2 = 0, tTurn = 1;
 let activeTab = 'glycolysis';
+let prevGAtpUsed = 0, prevGAtpMade = 0, prevGNadhMade = 0;
+let prevTNadh = 0, prevTFadh2 = 0, prevTGtp = 0, prevTCo2 = 0;
 
 function init() {
   setupTabs();
@@ -1065,115 +1454,96 @@ function setupHelp() {
 
 function resetAll() {
   tStep = 0; tNadh = 0; tFadh2 = 0; tGtp = 0; tCo2 = 0; tTurn = 1;
+  prevTNadh = 0; prevTFadh2 = 0; prevTGtp = 0; prevTCo2 = 0;
   jumpGlycolysis(0);
   jumpTCA(0);
+}
+
+function pulseElement(el, className) {
+  el.classList.remove(className);
+  void el.offsetWidth;
+  el.classList.add(className);
+  setTimeout(() => el.classList.remove(className), 600);
 }
 
 function glyStep(dir) {
   const next = gStep + dir;
   if (next < 0 || next >= GLYCOLYSIS_STEPS.length) return;
+  prevGAtpUsed = gAtpUsed;
+  prevGAtpMade = gAtpMade;
+  prevGNadhMade = gNadhMade;
   jumpGlycolysis(next);
-}
-
-function renderCofactorFlow(inputs, outputs) {
-  let html = '<div class="cofactor-flow">';
-  if (inputs.length > 0) {
-    html += '<div class="cofactor-row">';
-    inputs.forEach(cf => {
-      if (cf.img) {
-        html += `<img src="${IMG}${cf.img}.svg" alt="${cf.label}" title="${cf.label}">`;
-      } else {
-        html += `<span class="cofactor-text-badge">${cf.label}</span>`;
-      }
-    });
-    html += '<span class="cofactor-arrow-in">↘</span>';
-    html += '</div>';
-  }
-  if (outputs.length > 0) {
-    html += '<div class="cofactor-row">';
-    html += '<span class="cofactor-arrow-out">↗</span>';
-    outputs.forEach(cf => {
-      if (cf.img) {
-        html += `<img src="${IMG}${cf.img}.svg" alt="${cf.label}" title="${cf.label}">`;
-      } else {
-        html += `<span class="cofactor-text-badge">${cf.label}</span>`;
-      }
-    });
-    html += '</div>';
-  }
-  html += '</div>';
-  return (inputs.length > 0 || outputs.length > 0) ? html : '';
 }
 
 function renderGlycolysis() {
   const s = GLYCOLYSIS_STEPS[gStep];
   const container = document.getElementById('glycolysis-reaction');
-  const cofactorHtml = renderCofactorFlow(s.inputs, s.outputs);
+  const stage = document.getElementById('glycolysis-stage');
 
-  const times2El = document.getElementById('glycolysis-stage').querySelector('.times2-badge');
-  if (times2El) times2El.remove();
+  const oldBadge = stage.querySelector('.times2-badge');
+  if (oldBadge) oldBadge.remove();
   if (s.times2) {
     const badge = document.createElement('div');
     badge.className = 'times2-badge';
     badge.textContent = '×2 (G3P 2분자)';
-    document.getElementById('glycolysis-stage').appendChild(badge);
+    stage.appendChild(badge);
   }
+
+  const panelHtml = renderReactionPanel(s);
 
   if (s.split) {
     container.innerHTML = `
-      <div class="molecule-box">
-        <img src="${IMG}${s.substrate}.svg" alt="${s.subName}">
-        <div class="molecule-name">${s.subName}</div>
-        <div class="molecule-carbon">${s.subCarbon}</div>
-      </div>
-      <div class="arrow-area">
-        ${cofactorHtml}
-        <div class="arrow-line">→</div>
-        <div class="enzyme-label">${s.enzyme}</div>
-      </div>
+      ${renderMoleculeHTML(s.substrate)}
+      ${panelHtml}
       <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-        <div class="split-product">
-          <img src="${IMG}${s.products[0]}.svg" alt="${s.prodNames[0]}">
-          <div class="molecule-name">${s.prodNames[0]}</div>
-          <div class="molecule-carbon">${s.prodCarbons[0]}</div>
-        </div>
+        ${renderMoleculeHTML(s.products[0])}
         <div class="plus-sign">+</div>
-        <div class="split-product">
-          <img src="${IMG}${s.products[1]}.svg" alt="${s.prodNames[1]}">
-          <div class="molecule-name">${s.prodNames[1]}</div>
-          <div class="molecule-carbon">${s.prodCarbons[1]}</div>
-        </div>
+        ${renderMoleculeHTML(s.products[1])}
       </div>`;
   } else {
     container.innerHTML = `
-      <div class="molecule-box">
-        <img src="${IMG}${s.substrate}.svg" alt="${s.subName}">
-        <div class="molecule-name">${s.subName}</div>
-        <div class="molecule-carbon">${s.subCarbon}</div>
-      </div>
-      <div class="arrow-area">
-        ${cofactorHtml}
-        <div class="arrow-line">→</div>
-        <div class="enzyme-label">${s.enzyme}</div>
-      </div>
-      <div class="molecule-box">
-        <img src="${IMG}${s.product}.svg" alt="${s.prodName}">
-        <div class="molecule-name">${s.prodName}</div>
-        <div class="molecule-carbon">${s.prodCarbon}</div>
-      </div>`;
+      ${renderMoleculeHTML(s.substrate)}
+      ${panelHtml}
+      ${renderMoleculeHTML(s.product)}`;
   }
 
+  const atpVal = gAtpMade - gAtpUsed;
   document.getElementById('g-atp-used').textContent = gAtpUsed;
   document.getElementById('g-atp-made').textContent = gAtpMade;
-  document.getElementById('g-atp-val').textContent = gAtpMade - gAtpUsed;
-  document.getElementById('g-atp-net').textContent = gAtpMade - gAtpUsed;
+  document.getElementById('g-atp-val').textContent = atpVal;
+  document.getElementById('g-atp-net').textContent = atpVal;
   document.getElementById('g-nadh-val').textContent = gNadhMade;
   document.getElementById('g-nadh-made').textContent = gNadhMade;
 
+  if (gAtpUsed > prevGAtpUsed) {
+    pulseElement(document.getElementById('g-atp-val'), 'pulse-red');
+    pulseElement(document.getElementById('g-atp-net'), 'pulse-red');
+  }
+  if (gAtpMade > prevGAtpMade) {
+    pulseElement(document.getElementById('g-atp-val'), 'pulse-gold');
+    pulseElement(document.getElementById('g-atp-net'), 'pulse-gold');
+  }
+  if (gNadhMade > prevGNadhMade) {
+    pulseElement(document.getElementById('g-nadh-val'), 'pulse-blue');
+  }
+
+  const netBlock = document.getElementById('g-atp-net').parentElement;
+  if (atpVal > 0) {
+    netBlock.classList.add('net-glow');
+  } else {
+    netBlock.classList.remove('net-glow');
+  }
+
+  const subName = MOL_SHAPES[s.substrate] ? MOL_SHAPES[s.substrate].name : s.substrate;
+  let prodName;
+  if (s.split) {
+    prodName = s.products.map(p => MOL_SHAPES[p] ? MOL_SHAPES[p].name : p).join(' + ');
+  } else {
+    prodName = MOL_SHAPES[s.product] ? MOL_SHAPES[s.product].name : s.product;
+  }
+
   document.getElementById('g-info-step').textContent = `단계 ${gStep+1}/${GLYCOLYSIS_STEPS.length}`;
-  document.getElementById('g-info-title').textContent = s.split
-    ? `${s.subName} → ${s.prodNames.join(' + ')}`
-    : `${s.subName} → ${s.prodName}`;
+  document.getElementById('g-info-title').textContent = `${subName} → ${prodName}`;
   document.getElementById('g-info-desc').textContent = s.desc;
 
   document.getElementById('g-prev').disabled = gStep === 0;
@@ -1213,9 +1583,8 @@ function jumpGlycolysis(target) {
 function jumpTCA(target) {
   tStep = 0; tNadh = 0; tFadh2 = 0; tGtp = 0; tCo2 = 0; tTurn = 1;
   for (let i = 0; i <= target; i++) {
-    const totalIdx = i;
-    const s = TCA_STEPS[totalIdx % TCA_STEPS.length];
-    if (totalIdx >= TCA_STEPS.length && i === TCA_STEPS.length) tTurn = 2;
+    const s = TCA_STEPS[i % TCA_STEPS.length];
+    if (i >= TCA_STEPS.length && i === TCA_STEPS.length) tTurn = 2;
     tNadh += s.nadh;
     tFadh2 += s.fadh2;
     tGtp += s.gtp;
@@ -1226,12 +1595,10 @@ function jumpTCA(target) {
 }
 
 function renderTCAReaction() {
-  const totalSteps = TCA_STEPS.length * 2;
   const sIdx = tStep % TCA_STEPS.length;
   const s = TCA_STEPS[sIdx];
   const container = document.getElementById('tca-reaction');
   const stage = document.getElementById('tca-stage');
-  const cofactorHtml = renderCofactorFlow(s.inputs || [], s.outputs || []);
 
   const oldTurnBadge = stage.querySelector('.tca-turn-badge');
   if (oldTurnBadge) oldTurnBadge.remove();
@@ -1250,35 +1617,18 @@ function renderTCAReaction() {
     stage.appendChild(pyrBadge);
   }
 
-  const fromCarbon = TCA_CARBONS[s.from] || '';
-  const toCarbon = TCA_CARBONS[s.to] || '';
+  const panelHtml = renderTCAPanel(s);
 
   container.innerHTML = `
-    <div class="molecule-box">
-      <img src="${IMG}${s.from}.svg" alt="${s.fromName}">
-      <div class="molecule-name">${s.fromName}</div>
-      <div class="molecule-carbon">${fromCarbon}</div>
-    </div>
-    <div class="arrow-area">
-      ${cofactorHtml}
-      <div class="arrow-line">→</div>
-      <div class="enzyme-label">${s.enzyme}</div>
-    </div>
-    <div class="molecule-box">
-      <img src="${IMG}${s.to}.svg" alt="${s.toName}">
-      <div class="molecule-name">${s.toName}</div>
-      <div class="molecule-carbon">${toCarbon}</div>
-    </div>`;
+    ${renderMoleculeHTML(s.from)}
+    ${panelHtml}
+    ${renderMoleculeHTML(s.to)}`;
 
   if (s.fromAux) {
-    const auxCarbon = TCA_CARBONS[s.fromAux] || '';
-    const auxHtml = `
-      <div class="molecule-box" style="position:absolute;top:16px;left:60px;transform:scale(0.7);opacity:0.7;">
-        <img src="${IMG}${s.fromAux}.svg" alt="${s.fromAuxName}" style="width:120px;height:96px;">
-        <div class="molecule-name" style="font-size:0.8rem;">${s.fromAuxName}</div>
-        <div class="molecule-carbon" style="font-size:0.7rem;">${auxCarbon}</div>
-      </div>`;
-    container.insertAdjacentHTML('beforeend', auxHtml);
+    container.insertAdjacentHTML('beforeend', `
+      <div class="aux-molecule">
+        ${renderMoleculeHTML(s.fromAux, { scale: 0.6 })}
+      </div>`);
   }
 }
 
@@ -1286,6 +1636,11 @@ function tcaStep(dir) {
   const totalSteps = TCA_STEPS.length * 2;
   const next = tStep + dir;
   if (next < 0 || next >= totalSteps) return;
+
+  prevTNadh = tNadh;
+  prevTFadh2 = tFadh2;
+  prevTGtp = tGtp;
+  prevTCo2 = tCo2;
 
   if (dir > 0) {
     const s = TCA_STEPS[next % TCA_STEPS.length];
@@ -1322,13 +1677,20 @@ function renderTCA() {
   document.getElementById('t-co2-made').textContent = tCo2;
   document.getElementById('t-turn').textContent = tStep < TCA_STEPS.length ? 1 : 2;
 
+  if (tNadh > prevTNadh) pulseElement(document.getElementById('t-nadh'), 'pulse-blue');
+  if (tFadh2 > prevTFadh2) pulseElement(document.getElementById('t-fadh2'), 'pulse-blue');
+  if (tGtp > prevTGtp) pulseElement(document.getElementById('t-gtp'), 'pulse-gold');
+  if (tCo2 > prevTCo2) pulseElement(document.getElementById('t-co2'), 'pulse-red');
+
   renderTCAReaction();
 
+  const fromName = MOL_SHAPES[s.from] ? MOL_SHAPES[s.from].name : s.from;
+  const toName = MOL_SHAPES[s.to] ? MOL_SHAPES[s.to].name : s.to;
   const stepLabel = s.isPyrOx ? '피루브산 산화' : `TCA 단계 ${sIdx}/${TCA_STEPS.length - 1}`;
   const turnLabel = tStep < TCA_STEPS.length ? '(1회전)' : '(2회전)';
 
   document.getElementById('t-info-step').textContent = `${stepLabel} ${turnLabel}`;
-  document.getElementById('t-info-title').textContent = `${s.fromName} → ${s.toName}`;
+  document.getElementById('t-info-title').textContent = `${fromName} → ${toName}`;
   document.getElementById('t-info-desc').textContent = s.desc;
 
   document.getElementById('t-prev').disabled = tStep === 0;
