@@ -959,27 +959,27 @@ kbd {
             <div class="summary-stage-location">미토콘드리아 내막</div>
           </div>
           <div class="summary-stage-right">
-            <div class="summary-yield"><div class="summary-yield-val atp-color">26~28</div><div class="summary-yield-label">ATP</div></div>
+            <div class="summary-yield"><div class="summary-yield-val atp-color">34</div><div class="summary-yield-label">ATP</div></div>
           </div>
         </div>
       </div>
 
       <div class="summary-total">
         <div class="summary-total-label">포도당 1분자당 총 ATP 수율</div>
-        <div class="summary-total-value">30~32 ATP</div>
-        <div class="summary-total-sub">2 ATP (해당) + 2 GTP (TCA) + 26~28 ATP (산화적 인산화)</div>
+        <div class="summary-total-value">38 ATP</div>
+        <div class="summary-total-sub">2 ATP (해당) + 2 GTP (TCA) + 34 ATP (산화적 인산화)</div>
       </div>
 
       <table class="summary-table">
         <thead>
-          <tr><th>단계</th><th>ATP</th><th>NADH</th><th>FADH₂</th><th>GTP</th><th>CO₂</th></tr>
+          <tr><th>단계</th><th>ATP</th><th>NADH</th><th>FADH₂</th><th>GTP</th><th>CO₂</th><th>ATP 환산</th></tr>
         </thead>
         <tbody>
-          <tr><td>해당과정</td><td class="atp-color">2</td><td class="nadh-color">2</td><td>-</td><td>-</td><td>-</td></tr>
-          <tr><td>피루브산 산화 (×2)</td><td>-</td><td class="nadh-color">2</td><td>-</td><td>-</td><td class="co2-color">2</td></tr>
-          <tr><td>TCA 회로 (×2)</td><td>-</td><td class="nadh-color">6</td><td class="fadh2-color">2</td><td class="gtp-color">2</td><td class="co2-color">4</td></tr>
-          <tr><td>산화적 인산화</td><td class="atp-color">26~28</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-          <tr><td>합계</td><td class="atp-color">30~32</td><td class="nadh-color">10</td><td class="fadh2-color">2</td><td class="gtp-color">2</td><td class="co2-color">6</td></tr>
+          <tr><td>해당과정</td><td class="atp-color">2</td><td class="nadh-color">2</td><td>-</td><td>-</td><td>-</td><td class="atp-color">2 + 6 = 8</td></tr>
+          <tr><td>피루브산 산화 (×2)</td><td>-</td><td class="nadh-color">2</td><td>-</td><td>-</td><td class="co2-color">2</td><td class="atp-color">6</td></tr>
+          <tr><td>TCA 회로 (×2)</td><td>-</td><td class="nadh-color">6</td><td class="fadh2-color">2</td><td class="gtp-color">2</td><td class="co2-color">4</td><td class="atp-color">24</td></tr>
+          <tr><td colspan="6" style="text-align:right;font-size:0.7rem;color:var(--text-dim)">NADH × 3 ATP, FADH₂ × 2 ATP</td><td></td></tr>
+          <tr><td>합계</td><td class="atp-color">2</td><td class="nadh-color">10</td><td class="fadh2-color">2</td><td class="gtp-color">2</td><td class="co2-color">6</td><td class="atp-color" style="font-size:1.1rem;font-weight:700">38</td></tr>
         </tbody>
       </table>
     </div>
