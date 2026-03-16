@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 60">
+  <!-- FADH2 badge - purple -->
+  <rect x="5" y="10" width="110" height="40" rx="20" fill="#7B1FA2"/>
+
+  <!-- FADH2 text -->
+  <text x="60" y="36" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="white">FADH&#x2082;</text>
+</svg>
