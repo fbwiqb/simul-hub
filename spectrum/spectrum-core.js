@@ -88,11 +88,11 @@ function renderSpectrum(container, elements, mode) {
       });
     });
   } else {
-    for (let wl = 380; wl <= 750; wl++) {
-      const px = document.createElement('div');
-      px.style.cssText = 'position:absolute;top:0;bottom:0;width:1px;left:' + wlToPercent(wl) + '%;background:' + wavelengthToRgb(wl);
-      bar.appendChild(px);
+    const stops = [];
+    for (let wl = 380; wl <= 750; wl += 5) {
+      stops.push(wavelengthToRgb(wl) + ' ' + wlToPercent(wl) + '%');
     }
+    bar.style.background = 'linear-gradient(to right, ' + stops.join(', ') + ')';
     elements.forEach(function(el) {
       ELEMENTS[el].forEach(function(wl) {
         if (wl >= 380 && wl <= 750) {
