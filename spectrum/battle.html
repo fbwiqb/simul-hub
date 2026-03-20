@@ -375,6 +375,7 @@ var state = {
   viewingBracketRound: 1
 };
 
+var _processing = false;
 var BATTLE_ELEMENTS = ['H', 'He', 'Ne', 'Na', 'Hg'];
 
 function getElementCount(round) {
@@ -532,14 +533,18 @@ function escapeHtml(str) {
 }
 
 async function startBattle() {
-  var hp = getSelectedHP();
-  state.roomSettings = { hp: hp };
-  state.viewingBracketRound = 1;
-  await db.collection('spectrum_battle').doc(state.roomCode).update({ hp: hp });
-  await matchPlayers(state.roomCode, 1);
-  showScreen('screenTeacherOverview');
-  buildRefGrid();
-  listenMatches();
+  if (_processing) return;
+  _processing = true;
+  try {
+    var hp = getSelectedHP();
+    state.roomSettings = { hp: hp };
+    state.viewingBracketRound = 1;
+    await db.collection('spectrum_battle').doc(state.roomCode).update({ hp: hp });
+    await matchPlayers(state.roomCode, 1);
+    showScreen('screenTeacherOverview');
+    buildRefGrid();
+    listenMatches();
+  } finally { _processing = false; }
 }
 
 async function matchPlayers(roomCode, bracketRound, playerList) {
@@ -1393,58 +1398,64 @@ function listenForNextRound() {
 }
 
 async function nextBracketRound() {
-  var roomCode = state.roomCode;
-  var roomRef = db.collection('spectrum_battle').doc(roomCode);
-  var roomSnap = await roomRef.get();
-  var roomData = roomSnap.data();
-  var currentBracket = roomData.bracketRound || 1;
+  if (_processing) return;
+  _processing = true;
+  try {
+    var roomCode = state.roomCode;
+    var roomRef = db.collection('spectrum_battle').doc(roomCode);
+    var roomSnap = await roomRef.get();
+    var roomData = roomSnap.data();
+    var currentBracket = roomData.bracketRound || 1;
 
-  var matchSnap = await roomRef.collection('matches')
-    .where('bracket', '==', currentBracket).get();
+    var matchSnap = await roomRef.collection('matches')
+      .where('bracket', '==', currentBracket).get();
 
-  var allFinished = true;
-  var winners = [];
-  var losers = [];
-  matchSnap.forEach(function(doc) {
-    var m = doc.data();
-    if (m.status !== 'finished') { allFinished = false; return; }
-    var winnerId = m.winner;
-    var loserId = m.p1.id === winnerId ? m.p2.id : m.p1.id;
-    var winnerName = m.p1.id === winnerId ? m.p1.name : m.p2.name;
-    var winnerIsAI = m.p1.id === winnerId ? m.p1.isAI : m.p2.isAI;
-    winners.push({ id: winnerId, name: winnerName, isAI: winnerIsAI || false });
-    losers.push(loserId);
-  });
+    var allFinished = true;
+    var winners = [];
+    var losers = [];
+    matchSnap.forEach(function(doc) {
+      var m = doc.data();
+      if (m.status !== 'finished') { allFinished = false; return; }
+      var winnerId = m.winner;
+      var loserId = m.p1.id === winnerId ? m.p2.id : m.p1.id;
+      var winnerName = m.p1.id === winnerId ? m.p1.name : m.p2.name;
+      var winnerIsAI = m.p1.id === winnerId ? m.p1.isAI : m.p2.isAI;
+      winners.push({ id: winnerId, name: winnerName, isAI: winnerIsAI || false });
+      losers.push(loserId);
+    });
 
-  if (!allFinished) return;
+    if (!allFinished) return;
 
-  var batch = db.batch();
+    var realWinners = winners.filter(function(w) { return !w.isAI; });
 
-  losers.forEach(function(lid) {
-    if (!lid.startsWith('ai_')) {
-      batch.update(roomRef.collection('players').doc(lid), {
-        eliminated: true, status: 'eliminated'
-      });
+    var batch = db.batch();
+
+    losers.forEach(function(lid) {
+      if (!lid.startsWith('ai_')) {
+        batch.update(roomRef.collection('players').doc(lid), {
+          eliminated: true, status: 'eliminated'
+        });
+      }
+    });
+
+    if (realWinners.length <= 1) {
+      batch.update(roomRef, { bracketStatus: 'champion' });
+      if (realWinners.length === 1) {
+        batch.update(roomRef.collection('players').doc(realWinners[0].id), {
+          champion: true
+        });
+      }
+      await batch.commit();
+      renderTeacherOverview();
+      return;
     }
-  });
 
-  if (winners.length === 1) {
-    batch.update(roomRef, { bracketStatus: 'champion' });
-    if (!winners[0].isAI) {
-      batch.update(roomRef.collection('players').doc(winners[0].id), {
-        champion: true
-      });
-    }
+    var nextRound = currentBracket + 1;
     await batch.commit();
+    await matchPlayers(roomCode, nextRound, realWinners);
+    state.viewingBracketRound = nextRound;
     renderTeacherOverview();
-    return;
-  }
-
-  var nextRound = currentBracket + 1;
-  await batch.commit();
-  await matchPlayers(roomCode, nextRound, winners);
-  state.viewingBracketRound = nextRound;
-  renderTeacherOverview();
+  } finally { _processing = false; }
 }
 
 function backToRole() {
