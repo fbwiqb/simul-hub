@@ -60,7 +60,9 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
 .select-field{background:var(--surface2);border:2px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:0.9em;outline:none;cursor:pointer;}
 .select-field option{background:var(--surface);color:var(--text);}
 .player-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;min-height:40px;}
-.player-chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:0.85em;color:var(--text);display:flex;align-items:center;gap:6px;}
+.player-chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:0.85em;color:var(--text);display:flex;align-items:center;gap:6px;cursor:pointer;transition:all 0.2s;}
+.player-chip:hover{background:var(--wrong);color:#fff;border-color:var(--wrong);}
+.player-chip:hover .dot{background:#fff;}
 .player-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--correct);flex-shrink:0;}
 .hp-bar-container{width:100%;height:28px;background:var(--surface2);border-radius:14px;overflow:hidden;position:relative;border:1px solid var(--border);}
 .hp-bar-fill{height:100%;border-radius:14px;transition:width 0.6s ease;position:relative;}
@@ -376,8 +378,9 @@ var state = {
 var BATTLE_ELEMENTS = ['H', 'He', 'Ne', 'Na', 'Hg'];
 
 function getElementCount(round) {
-  if (round <= 4) return 1;
-  return 2;
+  if (round <= 2) return 1;
+  if (round <= 4) return 2;
+  return 3;
 }
 
 function showScreen(id) {
@@ -506,6 +509,15 @@ function listenPlayers() {
         var chip = document.createElement('div');
         chip.className = 'player-chip';
         chip.innerHTML = '<span class="dot"></span>' + escapeHtml(d.name);
+        chip.title = '클릭하여 강퇴';
+        chip.onclick = (function(pid, pname) {
+          return function() {
+            if (confirm(pname + ' 학생을 강퇴하시겠습니까?')) {
+              db.collection('spectrum_battle').doc(state.roomCode)
+                .collection('players').doc(pid).delete();
+            }
+          };
+        })(doc.id, d.name);
         list.appendChild(chip);
       });
       count.textContent = n;
