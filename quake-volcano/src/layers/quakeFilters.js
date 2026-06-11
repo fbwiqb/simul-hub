@@ -20,6 +20,10 @@ function featureTime(feature) {
   return Number(feature?.properties?.time ?? 0);
 }
 
+function featureKey(feature) {
+  return feature?.id || `${feature?.properties?.time}-${feature?.properties?.place}`;
+}
+
 export function filterQuakes(features = [], filter = {}, options = {}) {
   const { magMin = 0, days = 30, depth = 'all' } = filter;
   const now = Number.isFinite(options.now) ? options.now : Date.now();
@@ -35,12 +39,13 @@ export function filterQuakes(features = [], filter = {}, options = {}) {
     return within;
   }
 
-  const seen = new Set(within);
+  const seen = new Set(within.map(featureKey));
   for (const feature of options.deepHistoryFeatures) {
-    if (seen.has(feature)) continue;
+    const key = featureKey(feature);
+    if (seen.has(key)) continue;
     if (featureMag(feature) < magMin) continue;
     if (!matchesDepthFilter(feature, 'deep')) continue;
-    seen.add(feature);
+    seen.add(key);
     within.push(feature);
   }
   return within;

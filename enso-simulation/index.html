@@ -3,187 +3,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="cnsa-sim" content="엘니뇨|통합과학2">
+    <link rel="stylesheet" href="/assets/sim-ui.css">
     <title>ENSO 시뮬레이션 - 엘니뇨와 라니냐</title>
-    
-    <!-- jQuery and jQuery UI -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-    
-    <!-- Phaser 2 CE -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser-ce/2.19.2/phaser.min.js"></script>
-    
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" integrity="sha384-4D3G3GikQs6hLlLZGdz5wLFzuqE9v4yVGAcOH86y23JqBDPzj9viv0EqyfIa6YUL" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" integrity="sha384-vIQIPaHJRqkO8xhnLxSZ0rHF6LyiWXbLF3grsa9pv9yDFyOPGrE1teHOuRNMJoZs" crossorigin="anonymous">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser-ce/2.19.2/phaser.min.js" integrity="sha384-jl6napkDH5ZmdoTecOFam6xUgSzAhUwGf3hub250OJN4EuXzLJ3NwZ7VKtraj2tl" crossorigin="anonymous"></script>
+
     <style>
         body {
             margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Segoe UI', 'Malgun Gothic', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 0;
+            background: var(--cnsa-bg);
+            background-attachment: fixed;
+            font-family: var(--cnsa-font);
+            color: var(--cnsa-text);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
-        
+
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 25px 70px rgba(0,0,0,0.35);
-            padding: 40px;
-            max-width: 1140px;
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            padding: 28px 24px 48px;
         }
-        
+
         h1 {
             text-align: center;
-            color: #2c3e50;
-            margin-bottom: 25px;
-            font-size: 2em;
-            font-weight: 600;
-            letter-spacing: -0.5px;
+            color: var(--cnsa-text);
+            margin: 8px 0 24px;
+            font-size: clamp(1.4rem, 4vw, 2rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
-        
+
         #interactive-container {
-            width: 1080px;
-            height: 700px;
+            width: 100%;
+            max-width: 1080px;
+            aspect-ratio: 1080 / 700;
             margin: 0 auto 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
+            border: 1px solid var(--cnsa-border);
+            border-radius: var(--cnsa-radius);
             overflow: hidden;
             position: relative;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: var(--cnsa-shadow-lg);
+            background: #A2E4FF;
         }
-        
+
+        #interactive-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
         .controls {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 12px;
+            background: var(--cnsa-surface);
+            backdrop-filter: var(--cnsa-blur);
+            -webkit-backdrop-filter: var(--cnsa-blur);
+            border: 1px solid var(--cnsa-border);
+            padding: 24px;
+            border-radius: var(--cnsa-radius);
             margin-top: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: var(--cnsa-shadow);
         }
-        
+
+        .preset-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 22px;
+            align-items: center;
+        }
+
+        .preset-row .preset-legend {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--cnsa-text-dim);
+            margin-right: 4px;
+        }
+
+        .preset-btn {
+            font-family: var(--cnsa-font);
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: var(--cnsa-text-dim);
+            min-height: 40px;
+            padding: 9px 16px;
+            border: 1px solid var(--cnsa-border);
+            border-radius: var(--cnsa-radius-sm);
+            background: var(--cnsa-surface);
+            cursor: pointer;
+            transition: transform 0.18s var(--cnsa-ease), background 0.18s var(--cnsa-ease), color 0.18s var(--cnsa-ease), border-color 0.18s var(--cnsa-ease);
+        }
+
+        .preset-btn:hover {
+            color: #fff;
+            background: var(--cnsa-surface-strong);
+            border-color: var(--cnsa-border-strong);
+            transform: translateY(-1px);
+        }
+
+        .preset-btn[aria-pressed="true"] {
+            color: #fff;
+            background: var(--cnsa-accent);
+            border-color: transparent;
+            box-shadow: 0 4px 14px rgba(0, 130, 200, 0.32);
+        }
+
         .slider-container {
-            margin: 20px 0;
+            margin: 14px 0 20px;
         }
-        
+
         .slider-label {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-bottom: 14px;
             font-weight: 600;
-            color: #2c3e50;
-            font-size: 0.95em;
+            color: var(--cnsa-text-dim);
+            font-size: 0.82rem;
         }
-        
+
         #wind-speed {
             width: 100%;
             margin: 20px 0;
         }
-        
+
         .ui-slider {
             background: linear-gradient(to right, #3498db 0%, #95a5a6 50%, #e74c3c 100%);
             height: 12px;
-            border-radius: 6px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+            border: none;
+            border-radius: var(--cnsa-radius-pill);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.35);
         }
 
         .ui-slider-handle {
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
-            background: white;
-            border: 3px solid #2c3e50;
+            background: #fff;
+            border: 3px solid var(--cnsa-accent-2);
             cursor: pointer;
-            top: -6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            top: -8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+            transition: transform 0.2s var(--cnsa-ease), box-shadow 0.2s var(--cnsa-ease);
         }
 
         .ui-slider-handle:hover {
-            transform: scale(1.15);
-            box-shadow: 0 3px 12px rgba(0,0,0,0.4);
+            transform: scale(1.12);
+            box-shadow: 0 3px 14px rgba(0,0,0,0.5);
         }
 
-        .ui-slider-handle:active {
-            transform: scale(1.05);
+        .ui-slider-handle:active { transform: scale(1.04); }
+
+        .ui-slider-handle:focus-visible {
+            outline: 3px solid var(--cnsa-accent-1);
+            outline-offset: 2px;
         }
-        
+
         .info-panel {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-top: 20px;
+            gap: 18px;
+            margin-top: 4px;
         }
-        
+
         .info-card {
-            background: white;
+            background: var(--cnsa-surface);
             padding: 18px;
-            border-radius: 10px;
-            border: 1px solid #e0e0e0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-radius: var(--cnsa-radius-sm);
+            border: 1px solid var(--cnsa-border);
+            box-shadow: var(--cnsa-shadow);
+            transition: transform 0.2s var(--cnsa-ease), border-color 0.2s var(--cnsa-ease);
         }
 
         .info-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: var(--cnsa-border-strong);
         }
-        
+
         .info-card h3 {
-            color: #2c3e50;
+            color: var(--cnsa-text-dim);
             margin: 0 0 12px 0;
-            font-size: 13px;
+            font-size: 12px;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.4px;
             font-weight: 700;
-            opacity: 0.8;
         }
-        
+
         #wind-speed-label, #condition-label {
-            font-size: 26px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: clamp(20px, 4vw, 26px);
             font-weight: 700;
-            color: #3498db;
-            margin-bottom: 10px;
-            text-shadow: 0 1px 2px rgba(52, 152, 219, 0.2);
+            color: var(--cnsa-accent-1);
+            margin-bottom: 6px;
         }
-        
+
+        .state-icon {
+            font-size: 1.1em;
+            line-height: 1;
+        }
+
         #condition-description {
-            color: #555;
+            color: var(--cnsa-text-dim);
             line-height: 1.7;
             min-height: 80px;
-            font-size: 0.95em;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 900px) {
+            .info-panel { grid-template-columns: 1fr; }
+            .controls { padding: 18px; }
+            .container { padding: 20px 16px 40px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🌊 ENSO 시뮬레이션 - 엘니뇨 & 라니냐</h1>
-        
-        <div id="interactive-container"></div>
-        
+        <h1>🌊 ENSO 시뮬레이션 - 엘니뇨 &amp; 라니냐</h1>
+
+        <div id="interactive-container" role="img" aria-label="적도 태평양 대기-해양 상호작용 모식도. 무역풍, 따뜻한 해수, 수온약층, 강수 구름을 표시합니다."></div>
+
         <div class="controls">
+            <div class="preset-row" role="group" aria-label="ENSO 상태 프리셋">
+                <span class="preset-legend">프리셋</span>
+                <button type="button" class="preset-btn cnsa-focusable" data-speed="-40" aria-pressed="false">엘니뇨</button>
+                <button type="button" class="preset-btn cnsa-focusable" data-speed="0" aria-pressed="false">중립</button>
+                <button type="button" class="preset-btn cnsa-focusable" data-speed="40" aria-pressed="false">라니냐</button>
+                <button type="button" id="pause-btn" class="preset-btn cnsa-focusable" aria-pressed="false">⏸ 일시정지</button>
+            </div>
+
             <div class="slider-container">
                 <div class="slider-label">
                     <span>← 엘니뇨 (약한 무역풍)</span>
                     <span>정상</span>
                     <span>라니냐 (강한 무역풍) →</span>
                 </div>
-                <div id="wind-speed"></div>
+                <div id="wind-speed" aria-label="무역풍 세기 조절. 왼쪽은 엘니뇨, 가운데는 중립, 오른쪽은 라니냐입니다."></div>
             </div>
-            
+
             <div class="info-panel">
                 <div class="info-card">
                     <h3>무역풍 속도</h3>
-                    <div id="wind-speed-label"><span>보통</span></div>
+                    <div id="wind-speed-label"><span class="state-icon" aria-hidden="true">💨</span><span>보통</span></div>
                 </div>
                 <div class="info-card">
                     <h3>상태</h3>
-                    <div id="condition-label"><span>중립</span></div>
+                    <div id="condition-label"><span class="state-icon" aria-hidden="true">⚖️</span><span>중립</span></div>
                 </div>
             </div>
-            
+
             <div class="info-card" style="margin-top: 20px;">
                 <h3>설명</h3>
-                <div id="condition-description">적도 태평양에서 엘니뇨나 라니냐가 발생하지 않은 정상 상태입니다.</div>
+                <div id="condition-description" aria-live="polite">적도 태평양에서 엘니뇨나 라니냐가 발생하지 않은 정상 상태입니다.</div>
             </div>
         </div>
     </div>
@@ -270,7 +348,8 @@
             create: function() {
                 // Store reference
                 _PS = this;
-                
+                this.simPaused = false;
+
                 // Backdrop
                 this.stage.backgroundColor = '#A2E4FF';
                 var ocean = this.add.sprite(0, 0, 'ocean');
@@ -315,6 +394,9 @@
                 this.$ctrl_windspeed.on("slide", function(event, ui) {
                     _PS.change(ui.value);
                 });
+                this.$ctrl_windspeed.on("slidechange", function(event, ui) {
+                    _PS.change(ui.value);
+                });
 
                 // Change handler
                 this.change = function(speed) {
@@ -334,19 +416,23 @@
                 this.$labels = {
                     speedTypes: ['약함', '보통', '강함'],
                     conditionTypes: ['엘니뇨', '중립', '라니냐'],
+                    conditionIcons: ['🌧️', '⚖️', '☀️'],
                     conditionDesc: [
-                        '엘리뇨는 무역풍의 약화로 태평양 적도 부근 해수면 온도가 평년보다 높아지는 현상으로, 동태평양에서는 강수량이 증가하고 서태평양에서는 가뭄이 나타납니다.',
-                        '평상시는 동풍(무역풍)이 안정적으로 불어 따뜻한 해수가 서태평양으로 이동합니다. 동태평양에서는 차가운 해수가 공급으로 건조한 기후가 나타나고 서태평양에서는 따뜻한 해수로 인한 활발한 강수가 나타납니다.',
-                        '라니냐는 무역풍이 강해져 태평양 적도 부근 해수면 온도가 평년보다 낮아지는 현상으로, 동태평양에서는 차가운 해수가 더욱 많이 공급되고 이로인한 건조한 기후가 나타나고 서태평양에서는 평년보다 많은 강수량이 나타납니다.'
+                        '엘니뇨는 무역풍의 약화로 태평양 적도 부근 해수면 온도가 평년보다 높아지는 현상으로, 동태평양에서는 강수량이 증가하고 서태평양에서는 가뭄이 나타납니다.',
+                        '평상시는 동풍(무역풍)이 안정적으로 불어 따뜻한 해수가 서태평양으로 이동합니다. 동태평양에서는 차가운 해수가 용승하여 건조한 기후가 나타나고 서태평양에서는 따뜻한 해수로 인한 활발한 강수가 나타납니다.',
+                        '라니냐는 무역풍이 강해져 태평양 적도 부근 해수면 온도가 평년보다 낮아지는 현상으로, 동태평양에서는 용승이 강화되어 표층 수온이 더욱 하강하고 이로 인한 건조한 기후가 나타나며 서태평양에서는 평년보다 많은 강수량이 나타납니다.'
                     ],
-                    $speed: $('#wind-speed-label span'),
-                    $condition: $('#condition-label span'),
+                    $speed: $('#wind-speed-label span:last-child'),
+                    $condition: $('#condition-label span:last-child'),
+                    $conditionIcon: $('#condition-label .state-icon'),
                     $descript: $('#condition-description'),
                     change: function(speed) {
                         var mod = Math.round(((speed + 50) / 50));
                         this.$speed.html(this.speedTypes[mod]);
                         this.$condition.html(this.conditionTypes[mod]);
+                        this.$conditionIcon.html(this.conditionIcons[mod]);
                         this.$descript.html(this.conditionDesc[mod]);
+                        if (window.CNSA) CNSA.srAnnounce('상태: ' + this.conditionTypes[mod] + '. 무역풍 ' + this.speedTypes[mod] + '.');
                     }
                 }
 
@@ -571,6 +657,7 @@
             },
 
             update: function() {
+                if (this.simPaused) return;
                 this.plot();
             },
 
@@ -581,19 +668,87 @@
 
         // Initialize on document ready instead of window load
         $(document).ready(function() {
-            // Setup slider
-            $("#wind-speed").slider({
+            var $slider = $("#wind-speed");
+            $slider.slider({
                 value: 0,
                 min: -50,
                 max: 50,
                 step: 1
             });
 
-            // Wait a bit for everything to load
+            var $handle = $slider.find('.ui-slider-handle');
+            $handle.attr({
+                'role': 'slider',
+                'aria-label': '무역풍 세기 (엘니뇨에서 라니냐)',
+                'aria-valuemin': -50,
+                'aria-valuemax': 50,
+                'aria-valuenow': 0,
+                'aria-valuetext': '중립'
+            });
+
+            function syncAria(speed) {
+                var mod = Math.round(((speed + 50) / 50));
+                var names = ['엘니뇨', '중립', '라니냐'];
+                $handle.attr('aria-valuenow', speed);
+                $handle.attr('aria-valuetext', names[mod]);
+            }
+
+            function whenReady(cb) {
+                var tries = 0;
+                (function poll() {
+                    if (typeof _PS !== 'undefined' && _PS && _PS.$labels) { cb(); return; }
+                    if (tries++ > 120) return;
+                    setTimeout(poll, 50);
+                })();
+            }
+
+            function applySpeed(speed) {
+                $slider.slider('value', speed);
+                syncAria(speed);
+            }
+
+            function setActivePreset(speed) {
+                $('.preset-btn[data-speed]').each(function() {
+                    var pressed = parseInt($(this).attr('data-speed'), 10) === speed;
+                    $(this).attr('aria-pressed', pressed ? 'true' : 'false');
+                });
+            }
+
+            $('.preset-btn[data-speed]').on('click', function() {
+                var speed = parseInt($(this).attr('data-speed'), 10);
+                whenReady(function() {
+                    applySpeed(speed);
+                    setActivePreset(speed);
+                });
+            });
+
+            $('#pause-btn').on('click', function() {
+                var $btn = $(this);
+                whenReady(function() {
+                    _PS.simPaused = !_PS.simPaused;
+                    var paused = _PS.simPaused;
+                    $btn.attr('aria-pressed', paused ? 'true' : 'false');
+                    $btn.html(paused ? '▶ 재생' : '⏸ 일시정지');
+                    if (window.CNSA) CNSA.srAnnounce(paused ? '시뮬레이션 일시정지됨' : '시뮬레이션 재생됨');
+                });
+            });
+
+            $slider.on('slide slidechange', function(event, ui) {
+                syncAria(ui.value);
+                setActivePreset(ui.value);
+            });
+
             setTimeout(function() {
                 WX_P.init('interactive-container', 1080, 700);
+                whenReady(function() {
+                    _PS.change(0);
+                    syncAria(0);
+                    setActivePreset(0);
+                });
             }, 100);
         });
     </script>
+    <script src="/assets/sim-ui.js"></script>
+    <script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
 </body>
 </html>

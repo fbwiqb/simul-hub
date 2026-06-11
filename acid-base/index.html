@@ -3,119 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="cnsa-sim" content="산-염기 적정|통합과학2">
+    <link rel="stylesheet" href="/assets/sim-ui.css">
     <title>중화반응 시뮬레이션</title>
 <style>
     body {
         margin: 0;
         padding: 20px;
-        font-family: 'Malgun Gothic', sans-serif;
-        background: linear-gradient(135deg, #1e3a5f 0%, #2c5f7f 100%);
+        font-family: var(--cnsa-font);
+        background: var(--cnsa-bg);
+        background-attachment: fixed;
         min-height: 100vh;
+        color: var(--cnsa-text);
     }
-    
+
     .container {
         max-width: 1400px;
         margin: 0 auto;
-        background: white;
-        border-radius: 20px;
+        background: var(--cnsa-surface);
+        backdrop-filter: var(--cnsa-blur);
+        -webkit-backdrop-filter: var(--cnsa-blur);
+        border: 1px solid var(--cnsa-border);
+        border-radius: var(--cnsa-radius);
         padding: 30px;
-        box-shadow: 0 25px 70px rgba(0,0,0,0.35);
+        box-shadow: var(--cnsa-shadow-lg);
     }
-    
+
     h1 {
         text-align: center;
-        color: #1e3a5f;
+        color: var(--cnsa-text);
         margin-bottom: 30px;
-        font-size: 2.5em;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        font-size: 2.3em;
+        letter-spacing: -0.02em;
     }
-    
+
     .main-content {
         display: grid;
         grid-template-columns: 250px 1fr 350px;
         gap: 30px;
     }
-    
+
+    @media (max-width: 900px) {
+        body { padding: 12px; }
+        .container { padding: 18px; border-radius: var(--cnsa-radius-sm); }
+        h1 { font-size: 1.7em; margin-bottom: 18px; }
+        .main-content { grid-template-columns: 1fr; gap: 18px; }
+    }
+
     .control-panel {
-        background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+        background: var(--cnsa-surface);
+        border: 1px solid var(--cnsa-border);
         padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        border-radius: var(--cnsa-radius);
+        box-shadow: var(--cnsa-shadow);
     }
     
     .control-section {
         margin-bottom: 25px;
         padding-bottom: 20px;
-        border-bottom: 2px solid #e0e0e0;
+        border-bottom: 1px solid var(--cnsa-border);
     }
-    
+
     .control-section:last-child {
         border-bottom: none;
     }
-    
+
     .control-section h3 {
-        color: #1e3a5f;
+        color: var(--cnsa-text);
         margin-bottom: 15px;
-        font-size: 1.1em;
+        font-size: 1.05em;
+        font-weight: 700;
     }
-    
+
     .control-group {
         margin-bottom: 15px;
     }
-    
+
     label {
         display: block;
         margin-bottom: 8px;
-        color: #666;
+        color: var(--cnsa-text-dim);
         font-weight: 500;
     }
-    
+
     select, input[type="range"], button {
         width: 100%;
-        padding: 10px;
-        border: 2px solid #ddd;
-        border-radius: 8px;
+        padding: 11px;
+        border: 1px solid var(--cnsa-border);
+        border-radius: var(--cnsa-radius-sm);
         font-size: 14px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 42px;
+        font-family: var(--cnsa-font);
+        transition: all 0.25s var(--cnsa-ease);
     }
 
-    select:hover, input[type="range"]:hover {
-        border-color: #2c5f7f;
-        box-shadow: 0 2px 8px rgba(44, 95, 127, 0.15);
+    select {
+        background: var(--cnsa-surface);
+        color: var(--cnsa-text);
     }
 
-    select:focus {
-        outline: none;
-        border-color: #2c5f7f;
-        box-shadow: 0 0 0 3px rgba(44, 95, 127, 0.1);
+    select option { color: var(--cnsa-ink); }
+
+    input[type="range"] {
+        padding: 0;
+        min-height: 0;
+        accent-color: var(--cnsa-accent-1);
+        background: transparent;
     }
-    
+
+    select:hover {
+        border-color: var(--cnsa-border-strong);
+        background: var(--cnsa-surface-2);
+    }
+
+    select:focus-visible, button:focus-visible, input:focus-visible {
+        outline: 3px solid var(--cnsa-accent-1);
+        outline-offset: 2px;
+    }
+
     button {
-        background: linear-gradient(135deg, #1e3a5f 0%, #2c5f7f 100%);
-        color: white;
+        background: var(--cnsa-accent);
+        color: #fff;
         border: none;
         cursor: pointer;
-        font-weight: bold;
+        font-weight: 600;
         margin-top: 10px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 3px 8px rgba(30, 58, 95, 0.25);
+        box-shadow: 0 4px 14px rgba(0, 130, 200, 0.32);
     }
 
     button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(30, 58, 95, 0.45);
-        background: linear-gradient(135deg, #152d4a 0%, #1f4d67 100%);
+        transform: translateY(-2px);
+        filter: brightness(1.07);
     }
 
     button:active {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(30, 58, 95, 0.35);
+        transform: translateY(0);
     }
-    
+
     .simulation-area {
-        background: linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%);
-        border-radius: 15px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        background: var(--cnsa-surface);
+        border: 1px solid var(--cnsa-border);
+        border-radius: var(--cnsa-radius);
+        box-shadow: var(--cnsa-shadow);
         padding: 20px;
     }
     
@@ -203,42 +232,47 @@
     }
     
     .graph-container {
-        background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+        background: var(--cnsa-surface);
+        border: 1px solid var(--cnsa-border);
         padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        border-radius: var(--cnsa-radius);
+        box-shadow: var(--cnsa-shadow);
     }
-    
+
+    .graph-container h3 {
+        color: var(--cnsa-text);
+        font-weight: 700;
+        margin-top: 0;
+    }
+
     #ionGraph {
         width: 100%;
-        height: 300px;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        background: white;
-        box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+        height: 320px;
+        border: 1px solid #d4dde6;
+        border-radius: var(--cnsa-radius-sm);
+        background: #ffffff;
     }
-    
+
     .stats {
         margin-top: 20px;
         padding: 15px;
-        background: white;
-        border-radius: 10px;
-        box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        background: rgba(0, 0, 0, 0.18);
+        border: 1px solid var(--cnsa-border);
+        border-radius: var(--cnsa-radius-sm);
     }
-    
+
     .stat-item {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 10px;
-        padding: 8px;
-        background: #f8f9fa;
-        border-radius: 5px;
-        transition: all 0.2s ease;
+        margin-bottom: 8px;
+        padding: 8px 10px;
+        background: var(--cnsa-surface);
+        border-radius: var(--cnsa-radius-sm);
+        transition: background 0.2s var(--cnsa-ease);
     }
 
     .stat-item:hover {
-        background: #e9ecef;
-        transform: translateX(2px);
+        background: var(--cnsa-surface-2);
     }
 
     .ion.shape-mode {
@@ -347,23 +381,26 @@
         .ion.shape-circle.Cl { background: #0088ff !important; }
             .stat-label {
                 font-weight: 500;
-                color: #666;
+                color: var(--cnsa-text-dim);
             }
-    
+
     .stat-value {
-        font-weight: bold;
-        color: #1e3a5f;
+        font-weight: 700;
+        color: var(--cnsa-text);
+        font-family: var(--cnsa-mono);
     }
-    
+
     .indicator-display {
         margin-top: 20px;
         padding: 15px;
-        border-radius: 10px;
+        border-radius: var(--cnsa-radius-sm);
         text-align: center;
         font-weight: bold;
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--cnsa-text);
+        background: rgba(0, 0, 0, 0.18);
+        border: 1px solid var(--cnsa-border);
+        transition: all 0.5s var(--cnsa-ease);
         min-height: 100px;
-        box-shadow: inset 0 2px 8px rgba(0,0,0,0.08);
     }
     
     .ph-acidic { background: #ffcdd2; color: #c62828; }
@@ -378,54 +415,64 @@
     
     .toggle-btn {
         flex: 1;
-        padding: 8px;
-        background: #e0e0e0;
-        border: 2px solid transparent;
-        border-radius: 8px;
+        padding: 9px;
+        min-height: 42px;
+        margin-top: 0;
+        background: var(--cnsa-surface);
+        color: var(--cnsa-text-dim);
+        border: 1px solid var(--cnsa-border);
+        border-radius: var(--cnsa-radius-sm);
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-weight: 600;
+        box-shadow: none;
+        transition: all 0.25s var(--cnsa-ease);
     }
 
     .toggle-btn:hover {
-        background: #d0d0d0;
-        transform: translateY(-1px);
-        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        background: var(--cnsa-surface-2);
+        color: #fff;
+        transform: none;
     }
 
     .toggle-btn.active {
-        background: linear-gradient(135deg, #2c5f7f 0%, #3a7090 100%);
-        color: white;
-        border-color: #1e3a5f;
-        box-shadow: 0 3px 8px rgba(30, 58, 95, 0.3);
+        background: var(--cnsa-accent);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 4px 14px rgba(0, 130, 200, 0.32);
     }
 
     .toggle-btn.active:hover {
-        background: linear-gradient(135deg, #1f4d67 0%, #2d6680 100%);
+        filter: brightness(1.07);
     }
-    
+
     .dropper {
-        display: inline-block;
-        padding: 8px 15px;
-        background: linear-gradient(135deg, #1e3a5f 0%, #2c5f7f 100%);
-        border-radius: 20px;
-        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 10px 18px;
+        background: var(--cnsa-accent);
+        border-radius: var(--cnsa-radius-pill);
+        color: #fff;
         cursor: pointer;
         margin: 5px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        font-weight: bold;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+        transition: all 0.25s var(--cnsa-ease);
+        font-weight: 700;
+        box-shadow: 0 4px 14px rgba(0, 130, 200, 0.32);
     }
 
     .dropper:hover {
-        transform: scale(1.08) translateY(-2px);
-        box-shadow: 0 6px 18px rgba(30, 58, 95, 0.45);
-        background: linear-gradient(135deg, #152d4a 0%, #1f4d67 100%);
+        transform: translateY(-2px);
+        filter: brightness(1.08);
     }
 
     .dropper:active {
-        transform: scale(1.02) translateY(0px);
-        box-shadow: 0 3px 12px rgba(30, 58, 95, 0.35);
+        transform: translateY(0);
+    }
+
+    .dropper:focus-visible {
+        outline: 3px solid var(--cnsa-accent-1);
+        outline-offset: 2px;
     }
     
     .water-molecules {
@@ -513,28 +560,29 @@
     }
     
     .home-btn {
-        background: linear-gradient(135deg, #1e3a5f 0%, #2c5f7f 100%);
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 10px;
+        background: var(--cnsa-surface);
+        color: var(--cnsa-text);
+        border: 1px solid var(--cnsa-border);
+        padding: 11px 22px;
+        min-height: 44px;
+        border-radius: var(--cnsa-radius-sm);
         cursor: pointer;
-        font-size: 16px;
-        font-weight: bold;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 15px;
+        font-weight: 600;
+        font-family: var(--cnsa-font);
+        transition: all 0.25s var(--cnsa-ease);
         width: auto;
-        box-shadow: 0 3px 8px rgba(30, 58, 95, 0.25);
+        box-shadow: none;
     }
 
     .home-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(30, 58, 95, 0.45);
-        background: linear-gradient(135deg, #152d4a 0%, #1f4d67 100%);
+        transform: translateY(-2px);
+        background: var(--cnsa-surface-2);
+        border-color: var(--cnsa-border-strong);
     }
 
     .home-btn:active {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(30, 58, 95, 0.35);
+        transform: translateY(0);
     }
     
     .modal {
@@ -574,7 +622,7 @@
     }
     
     .modal-header {
-        background: linear-gradient(135deg, #1e3a5f 0%, #2c5f7f 100%);
+        background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
         color: white;
         padding: 20px;
         margin: -30px -30px 20px -30px;
@@ -623,12 +671,12 @@
         margin-bottom: 25px;
         padding: 20px;
         background: #f8f9fa;
-        border-radius: 10px;
-        border-left: 4px solid #2c5f7f;
+        border-radius: var(--cnsa-radius-sm);
+        border-left: 4px solid var(--cnsa-accent-2);
     }
-    
+
     .log-date {
-        color: #1e3a5f;
+        color: #0f3460;
         font-weight: bold;
         font-size: 1.1em;
         margin-bottom: 10px;
@@ -653,25 +701,63 @@
     }
     
     .footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: #1e3a5f;
-        color: white;
+        position: static;
+        margin: 24px auto 0;
+        max-width: 1400px;
+        background: var(--cnsa-surface);
+        border: 1px solid var(--cnsa-border);
+        border-radius: var(--cnsa-radius-sm);
+        color: var(--cnsa-text-dim);
         text-align: center;
-        padding: 10px 20px;
-        font-size: 14px;
-        z-index: 999;
+        padding: 12px 20px;
+        font-size: 13px;
     }
 
     .footer a {
-        color: white;
+        color: var(--cnsa-accent-1);
         text-decoration: none;
     }
 
     .footer a:hover {
         text-decoration: underline;
+    }
+
+    .addrate-group {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .addrate-btn {
+        flex: 1;
+        min-height: 42px;
+        margin-top: 0;
+        padding: 9px;
+        background: var(--cnsa-surface);
+        color: var(--cnsa-text-dim);
+        border: 1px solid var(--cnsa-border);
+        border-radius: var(--cnsa-radius-sm);
+        cursor: pointer;
+        font-weight: 700;
+        font-family: var(--cnsa-mono);
+        box-shadow: none;
+    }
+
+    .addrate-btn:hover {
+        background: var(--cnsa-surface-2);
+        color: #fff;
+        transform: none;
+    }
+
+    .addrate-btn.active {
+        background: var(--cnsa-accent);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 4px 14px rgba(0, 130, 200, 0.32);
+    }
+
+    @media (max-width: 900px) {
+        .ion { touch-action: none; }
     }
 </style>
 </head>
@@ -698,7 +784,7 @@
                 
                 <div class="control-section">
                     <h3>🎨 지시약 선택</h3>
-                    <select id="indicatorSelect">
+                    <select id="indicatorSelect" aria-label="지시약 선택">
                         <option value="none">없음 (온도 측정)</option>
                         <option value="btb">BTB 용액</option>
                         <option value="phenol">페놀프탈레인</option>
@@ -716,6 +802,16 @@
                 </div>
                 
                 <div class="control-section">
+                    <h3>➕ 한 번에 첨가량</h3>
+                    <div class="addrate-group" role="group" aria-label="한 번 첨가할 때 추가되는 이온 묶음 수">
+                        <button class="addrate-btn active" id="addRate1" aria-pressed="true">×1</button>
+                        <button class="addrate-btn" id="addRate5" aria-pressed="false">×5</button>
+                        <button class="addrate-btn" id="addRate10" aria-pressed="false">×10</button>
+                    </div>
+                    <button id="continuousBtn" aria-pressed="false">연속 첨가 모드: 꺼짐</button>
+                </div>
+
+                <div class="control-section">
                     <h3>🔄 컨트롤</h3>
                     <button id="resetBtn">초기화</button>
                     <button id="pauseBtn">일시정지</button>
@@ -726,10 +822,10 @@
             <!-- 시뮬레이션 영역 -->
             <div class="simulation-area">
                 <div style="text-align: center;">
-                    <span class="dropper" id="acidDropper">산 첨가 💧</span>
-                    <span class="dropper" id="baseDropper">염기 첨가 💧</span>
+                    <span class="dropper" id="acidDropper" role="button" tabindex="0" aria-label="산 염산 HCl 첨가">산 첨가 💧</span>
+                    <span class="dropper" id="baseDropper" role="button" tabindex="0" aria-label="염기 수산화 나트륨 NaOH 첨가">염기 첨가 💧</span>
                 </div>
-                <div id="beaker"></div>
+                <div id="beaker" role="img" aria-label="비커 안 이온 움직임 영역"></div>
                 <div class="indicator-display" id="indicatorDisplay">
                     지시약: 없음
                 </div>
@@ -738,7 +834,7 @@
      <!-- 그래프 영역 -->
             <div class="graph-container">
                 <h3>📊 이온 수 변화 (상대값)</h3>
-                <canvas id="ionGraph"></canvas>
+                <canvas id="ionGraph" role="img" aria-label="가로축 첨가 횟수, 세로축 이온 수에 따른 H 플러스, OH 마이너스, Na 플러스, Cl 마이너스 이온 수 변화 그래프"></canvas>
                 
                 <div class="stats">
                     <div class="stat-item">
@@ -868,8 +964,9 @@
                         (이온 반응식: H⁺ + OH⁻ → H₂O)<br><br>
                         
                         <strong>중화열:</strong><br>
-                        중화 반응은 <strong>발열 반응</strong>으로, 반응이 일어나면 열이 발생하여 온도가 상승합니다. 
-                        이 시뮬레이션에서는 중화 반응이 일어날 때마다 온도가 올라가는 것을 관찰할 수 있습니다.<br><br>
+                        중화 반응은 <strong>발열 반응</strong>으로, 반응이 일어나면 열이 발생하여 온도가 상승합니다.
+                        이 시뮬레이션에서는 중화 반응이 일어날 때마다 온도가 올라가는 것을 관찰할 수 있습니다.<br>
+                        <strong>※ 이 시뮬레이션의 온도 변화는 정성적(개념 이해용) 모델입니다.</strong> 실제 중화열·열용량을 정량적으로 계산한 값이 아니라, 발열 반응으로 온도가 오른다는 경향만 보여 줍니다.<br><br>
                         
                         <strong>구경꾼 이온:</strong><br>
                         Na⁺와 Cl⁻는 반응에 직접 참여하지 않고 구경만 하는 이온입니다. 
@@ -929,34 +1026,43 @@
     </div>
     <script>
         // 모달 함수들
-function showTutorial() {
-    document.getElementById('tutorialModal').style.display = 'block';
+let activeModalId = null;
+let releaseTrap = null;
+let lastFocused = null;
+
+function openModal(id) {
+    const modal = document.getElementById(id);
+    lastFocused = document.activeElement;
+    modal.style.display = 'block';
+    activeModalId = id;
+    if (window.CNSA && CNSA.trapFocus) releaseTrap = CNSA.trapFocus(modal);
 }
 
-function closeTutorial() {
-    document.getElementById('tutorialModal').style.display = 'none';
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    modal.style.display = 'none';
+    if (releaseTrap) { releaseTrap(); releaseTrap = null; }
+    activeModalId = null;
+    if (lastFocused && lastFocused.focus) lastFocused.focus();
 }
 
-function showDevLog() {
-    document.getElementById('devLogModal').style.display = 'block';
-}
-
-function closeDevLog() {
-    document.getElementById('devLogModal').style.display = 'none';
-}
+function showTutorial() { openModal('tutorialModal'); }
+function closeTutorial() { closeModal('tutorialModal'); }
+function showDevLog() { openModal('devLogModal'); }
+function closeDevLog() { closeModal('devLogModal'); }
 
 // 모달 외부 클릭 시 닫기
 window.onclick = function(event) {
     const tutorialModal = document.getElementById('tutorialModal');
     const devLogModal = document.getElementById('devLogModal');
-    
-    if (event.target === tutorialModal) {
-        tutorialModal.style.display = 'none';
-    }
-    if (event.target === devLogModal) {
-        devLogModal.style.display = 'none';
-    }
+
+    if (event.target === tutorialModal) closeModal('tutorialModal');
+    if (event.target === devLogModal) closeModal('devLogModal');
 }
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && activeModalId) closeModal(activeModalId);
+});
         class NeutralizationSimulation {
             constructor() {
     this.ions = [];
@@ -969,6 +1075,9 @@ window.onclick = function(event) {
     this.waterMoleculeCount = 0;
     this.waterAnimations = [];
     this.safetyViolation = false;
+    this.addRate = 1;
+    this.continuousMode = false;
+    this.continuousTimer = null;
     
     // 도형 매핑 추가
     this.shapeMapping = {
@@ -1001,8 +1110,12 @@ window.onclick = function(event) {
             }
             
             setupEventListeners() {
-                document.getElementById('acidDropper').addEventListener('click', () => this.addAcid());
-                document.getElementById('baseDropper').addEventListener('click', () => this.addBase());
+                const acidDropper = document.getElementById('acidDropper');
+                const baseDropper = document.getElementById('baseDropper');
+                acidDropper.addEventListener('click', () => this.addAcid());
+                baseDropper.addEventListener('click', () => this.addBase());
+                acidDropper.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.addAcid(); } });
+                baseDropper.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.addBase(); } });
                 document.getElementById('ionModeBtn').addEventListener('click', () => this.setDisplayMode('ion'));
                 document.getElementById('shapeModeBtn').addEventListener('click', () => this.setDisplayMode('shape'));
                 document.getElementById('shuffleShapesBtn').addEventListener('click', () => this.shuffleShapes());
@@ -1012,18 +1125,53 @@ window.onclick = function(event) {
                 document.getElementById('pauseBtn').addEventListener('click', () => this.togglePause());
                 document.getElementById('indicatorSelect').addEventListener('change', () => this.updateIndicator());
                 document.getElementById('resetGraphBtn').addEventListener('click', () => this.resetGraph());
+                document.getElementById('addRate1').addEventListener('click', () => this.setAddRate(1));
+                document.getElementById('addRate5').addEventListener('click', () => this.setAddRate(5));
+                document.getElementById('addRate10').addEventListener('click', () => this.setAddRate(10));
+                document.getElementById('continuousBtn').addEventListener('click', () => this.toggleContinuous());
+            }
+
+            setAddRate(rate) {
+                this.addRate = rate;
+                [['addRate1', 1], ['addRate5', 5], ['addRate10', 10]].forEach(([id, r]) => {
+                    const b = document.getElementById(id);
+                    const on = r === rate;
+                    b.classList.toggle('active', on);
+                    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                });
+                this.announce('한 번에 ' + rate + '묶음 첨가로 설정');
+            }
+
+            toggleContinuous() {
+                this.continuousMode = !this.continuousMode;
+                const btn = document.getElementById('continuousBtn');
+                btn.textContent = '연속 첨가 모드: ' + (this.continuousMode ? '켜짐' : '꺼짐');
+                btn.setAttribute('aria-pressed', this.continuousMode ? 'true' : 'false');
+                this.announce(this.continuousMode ? '연속 첨가 모드 켜짐. 첨가 버튼이 잠기지 않습니다.' : '연속 첨가 모드 꺼짐.');
+            }
+
+            announce(text) {
+                if (window.CNSA && CNSA.srAnnounce) CNSA.srAnnounce(text);
             }
             
             addAcid() {
-                if (this.isAddingIons) return;
-                
-                this.isAddingIons = true;
+                if (this.isAddingIons && !this.continuousMode) return;
+
                 this.additionCount++;
-                
+
                 // 염산 (HCl)만 추가
-                this.addIon('H', 1);
-                this.addIon('Cl', 1);
-                
+                this.addIon('H', this.addRate);
+                this.addIon('Cl', this.addRate);
+                this.announce('산 ' + this.addRate + '묶음 첨가');
+
+                if (this.continuousMode) {
+                    this.updateStats();
+                    this.updateGraph();
+                    this.updateIndicator();
+                    return;
+                }
+
+                this.isAddingIons = true;
                 setTimeout(() => {
                     this.updateStats();
                     this.updateGraph();
@@ -1031,17 +1179,25 @@ window.onclick = function(event) {
                     this.isAddingIons = false;
                 }, 1500);
             }
-            
+
             addBase() {
-                if (this.isAddingIons) return;
-                
-                this.isAddingIons = true;
+                if (this.isAddingIons && !this.continuousMode) return;
+
                 this.additionCount++;
-                
+
                 // 수산화 나트륨 (NaOH)만 추가
-                this.addIon('Na', 1);
-                this.addIon('OH', 1);
-                
+                this.addIon('Na', this.addRate);
+                this.addIon('OH', this.addRate);
+                this.announce('염기 ' + this.addRate + '묶음 첨가');
+
+                if (this.continuousMode) {
+                    this.updateStats();
+                    this.updateGraph();
+                    this.updateIndicator();
+                    return;
+                }
+
+                this.isAddingIons = true;
                 setTimeout(() => {
                     this.updateStats();
                     this.updateGraph();
@@ -1088,6 +1244,8 @@ window.onclick = function(event) {
             type: type,
             vx: vx,
             vy: vy,
+            x: x,
+            y: y,
             baseX: x,
             baseY: y,
             isSpectator: ['Na', 'Cl'].includes(type)
@@ -1095,13 +1253,12 @@ window.onclick = function(event) {
     }
 }
 
-// 새로운 함수 추가: 겹침 확인
 checkOverlap(x, y, size) {
     for (let ionObj of this.ions) {
-        const ionX = parseFloat(ionObj.element.style.left);
-        const ionY = parseFloat(ionObj.element.style.top);
+        const ionX = ionObj.x;
+        const ionY = ionObj.y;
         const distance = Math.sqrt(Math.pow(x - ionX, 2) + Math.pow(y - ionY, 2));
-        
+
         // 이온 크기(40px) + 약간의 여백(10px)
         if (distance < size + 10) {
             return true;
@@ -1109,7 +1266,7 @@ checkOverlap(x, y, size) {
     }
     return false;
 }
-            
+
                 updateIonDisplay(ion) {
                     const type = ion.dataset.type;
                     
@@ -1222,122 +1379,115 @@ checkOverlap(x, y, size) {
 }
             
             addDragFunctionality(ion) {
-                let isDragging = false;
                 let startX, startY;
-                
-                ion.addEventListener('mousedown', (e) => {
-                    isDragging = true;
-                    startX = e.clientX - ion.offsetLeft;
-                    startY = e.clientY - ion.offsetTop;
-                    ion.style.zIndex = 1000;
-                });
-                
-                document.addEventListener('mousemove', (e) => {
-                    if (!isDragging) return;
-                    
-                    const x = e.clientX - startX;
-                    const y = e.clientY - startY;
-                    
-                    const maxX = this.beaker.offsetWidth - ion.offsetWidth;
-                    const maxY = this.beaker.offsetHeight - ion.offsetHeight;
-                    
-                    ion.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
-                    ion.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
-                });
-                
-                document.addEventListener('mouseup', () => {
-                    isDragging = false;
-                    ion.style.zIndex = 1;
+                const self = this;
+                const point = (e) => (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
+
+                if (!(window.CNSA && CNSA.pointer)) return;
+                CNSA.pointer(ion, {
+                    onDown: (e) => {
+                        const p = point(e);
+                        startX = p.clientX - ion.offsetLeft;
+                        startY = p.clientY - ion.offsetTop;
+                        ion.style.zIndex = 1000;
+                    },
+                    onMove: (e, active) => {
+                        if (!active) return;
+                        const p = point(e);
+                        const x = p.clientX - startX;
+                        const y = p.clientY - startY;
+                        const maxX = self.beaker.offsetWidth - ion.offsetWidth;
+                        const maxY = self.beaker.offsetHeight - ion.offsetHeight;
+                        const nx = Math.max(0, Math.min(x, maxX));
+                        const ny = Math.max(0, Math.min(y, maxY));
+                        ion.style.left = nx + 'px';
+                        ion.style.top = ny + 'px';
+                        const obj = self.ions.find(o => o.element === ion);
+                        if (obj) {
+                            obj.x = nx; obj.y = ny;
+                            obj.baseX = nx; obj.baseY = ny;
+                        }
+                    },
+                    onUp: () => { ion.style.zIndex = 1; }
                 });
             }
             
           moveIons() {
     const hIons = this.ions.filter(ion => ion.type === 'H');
     const ohIons = this.ions.filter(ion => ion.type === 'OH');
-    
+    const beakerW = this.beaker.offsetWidth;
+    const beakerH = this.beaker.offsetHeight;
+    const ionSize = 40;
+    const maxSpeed = 3;
+    const pruneSq = 600 * 600;
+
+    const nearest = (x, y, targets) => {
+        let best = null;
+        let bestSq = Infinity;
+        for (let i = 0; i < targets.length; i++) {
+            const tdx = targets[i].x - x;
+            const tdy = targets[i].y - y;
+            const sq = tdx * tdx + tdy * tdy;
+            if (sq < bestSq) { bestSq = sq; best = targets[i]; }
+        }
+        return best && bestSq <= pruneSq ? best : null;
+    };
+
     this.ions.forEach(ionObj => {
-        const ion = ionObj.element;
-        let x = parseFloat(ion.style.left);
-        let y = parseFloat(ion.style.top);
-        
+        let x = ionObj.x;
+        let y = ionObj.y;
+
         // 반응하지 않는 이온들(Na, Cl)은 제자리에 고정
         if (ionObj.isSpectator) {
             // 떠는 애니메이션 제거 - 고정 위치 유지
             x = ionObj.baseX;
             y = ionObj.baseY;
-        } else if (ionObj.type === 'H') {
-            // H+ 이온 움직임 (OH-로 이동)
-            ohIons.forEach(ohObj => {
-                const ohX = parseFloat(ohObj.element.style.left);
-                const ohY = parseFloat(ohObj.element.style.top);
-                const dx = ohX - x;
-                const dy = ohY - y;
+        } else {
+            const target = nearest(x, y, ionObj.type === 'H' ? ohIons : hIons);
+            if (target) {
+                const dx = target.x - x;
+                const dy = target.y - y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                
                 if (distance > 0) {
                     const force = 200 / (distance + 50);
                     ionObj.vx += force * dx / distance;
                     ionObj.vy += force * dy / distance;
                 }
-            });
-            
-            const maxSpeed = 3;
+            }
+
             const speed = Math.sqrt(ionObj.vx * ionObj.vx + ionObj.vy * ionObj.vy);
             if (speed > maxSpeed) {
                 ionObj.vx = (ionObj.vx / speed) * maxSpeed;
                 ionObj.vy = (ionObj.vy / speed) * maxSpeed;
             }
-            
-            x += ionObj.vx;
-            y += ionObj.vy;
-            ionObj.vx *= 0.95;
-            ionObj.vy *= 0.95;
-            
-        } else if (ionObj.type === 'OH') {
-            // OH- 이온 움직임 (H+로 이동)
-            hIons.forEach(hObj => {
-                const hX = parseFloat(hObj.element.style.left);
-                const hY = parseFloat(hObj.element.style.top);
-                const dx = hX - x;
-                const dy = hY - y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance > 0) {
-                    const force = 200 / (distance + 50);
-                    ionObj.vx += force * dx / distance;
-                    ionObj.vy += force * dy / distance;
-                }
-            });
-            
-            const maxSpeed = 3;
-            const speed = Math.sqrt(ionObj.vx * ionObj.vx + ionObj.vy * ionObj.vy);
-            if (speed > maxSpeed) {
-                ionObj.vx = (ionObj.vx / speed) * maxSpeed;
-                ionObj.vy = (ionObj.vy / speed) * maxSpeed;
-            }
-            
+
             x += ionObj.vx;
             y += ionObj.vy;
             ionObj.vx *= 0.95;
             ionObj.vy *= 0.95;
         }
-        
+
         // 경계 체크
-        x = Math.max(0, Math.min(x, this.beaker.offsetWidth - ion.offsetWidth));
-        y = Math.max(0, Math.min(y, this.beaker.offsetHeight - ion.offsetHeight));
-        
+        x = Math.max(0, Math.min(x, beakerW - ionSize));
+        y = Math.max(0, Math.min(y, beakerH - ionSize));
+
         // 반응 이온들의 벽 충돌 처리
         if (!ionObj.isSpectator) {
-            if (x <= 0 || x >= this.beaker.offsetWidth - ion.offsetWidth) {
+            if (x <= 0 || x >= beakerW - ionSize) {
                 ionObj.vx = -ionObj.vx * 0.8;
             }
-            if (y <= 0 || y >= this.beaker.offsetHeight - ion.offsetHeight) {
+            if (y <= 0 || y >= beakerH - ionSize) {
                 ionObj.vy = -ionObj.vy * 0.8;
             }
         }
-        
-        ion.style.left = x + 'px';
-        ion.style.top = y + 'px';
+
+        ionObj.x = x;
+        ionObj.y = y;
+    });
+
+    this.ions.forEach(ionObj => {
+        ionObj.element.style.left = ionObj.x + 'px';
+        ionObj.element.style.top = ionObj.y + 'px';
     });
 }
             
@@ -1432,19 +1582,6 @@ checkNeutralization() {
                 };
                 animate();
             }
-            checkOverlap(x, y, size) {
-    for (let ionObj of this.ions) {
-        const ionX = parseFloat(ionObj.element.style.left);
-        const ionY = parseFloat(ionObj.element.style.top);
-        const distance = Math.sqrt(Math.pow(x - ionX, 2) + Math.pow(y - ionY, 2));
-        
-        // 이온 크기(40px) + 약간의 여백(10px)
-        if (distance < size + 10) {
-            return true;
-        }
-    }
-    return false;
-}
             setupGraph() {
                 const canvas = document.getElementById('ionGraph');
                 this.ctx = canvas.getContext('2d');
@@ -1485,96 +1622,157 @@ checkNeutralization() {
                 const ctx = this.ctx;
                 const width = canvas.width;
                 const height = canvas.height;
-                
+
                 ctx.clearRect(0, 0, width, height);
-                
-                ctx.strokeStyle = '#e0e0e0';
-                ctx.lineWidth = 1;
-                for (let i = 0; i <= 10; i++) {
-                    const y = (height / 10) * i;
-                    ctx.beginPath();
-                    ctx.moveTo(0, y);
-                    ctx.lineTo(width, y);
-                    ctx.stroke();
-                }
-                
-                if (this.graphData.additions.length === 0) return;
-                
-                const maxValue = Math.max(...this.graphData.total, 10);
-                const xScale = this.graphData.additions.length > 1 
-                    ? width / (this.graphData.additions.length - 1) 
-                    : width;
-                const yScale = height / maxValue;
-                
+
+                const padL = 42;
+                const padR = 14;
+                const padT = 16;
+                const padB = 34;
+                const plotW = width - padL - padR;
+                const plotH = height - padT - padB;
+                const x0 = padL;
+                const y0 = height - padB;
+
                 const lineConfig = {
                     H: { color: '#ff5252', offset: 0, dash: [] },
                     OH: { color: '#339af0', offset: 2, dash: [] },
                     Na: { color: '#6c5ce7', offset: -2, dash: [5, 3] },
                     Cl: { color: '#0088ff', offset: 1, dash: [3, 3] }
                 };
-                
-                ['H', 'OH', 'Na', 'Cl'].forEach(key => {
-                    if (this.graphData[key].length === 0) return;
-                    
-                    const config = lineConfig[key];
-                    ctx.strokeStyle = config.color;
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash(config.dash);
+
+                const maxValue = this.graphData.additions.length
+                    ? Math.max(...this.graphData.total, 10)
+                    : 10;
+                const ticks = 5;
+
+                ctx.strokeStyle = '#e8edf2';
+                ctx.lineWidth = 1;
+                ctx.fillStyle = '#5a6b7b';
+                ctx.font = '10px sans-serif';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                for (let i = 0; i <= ticks; i++) {
+                    const gy = padT + (plotH / ticks) * i;
                     ctx.beginPath();
-                    
-                    this.graphData[key].forEach((value, index) => {
-                        const x = index * xScale;
-                        const y = height - (value * yScale) + config.offset;
-                        
-                        if (index === 0) {
-                            ctx.moveTo(x, y);
-                        } else {
-                            ctx.lineTo(x, y);
-                        }
-                    });
-                    
+                    ctx.moveTo(x0, gy);
+                    ctx.lineTo(x0 + plotW, gy);
                     ctx.stroke();
-                    ctx.setLineDash([]);
-                });
-                
-                // drawGraph() 함수의 범례 그리는 부분 (legendY = 20; 부터)
-                    let legendY = 20;
-                    const legendItems = [
-                        { key: 'H', label: 'H⁺', dash: [] },
-                        { key: 'OH', label: 'OH⁻', dash: [] },
-                        { key: 'Na', label: 'Na⁺', dash: [5, 3] },
-                        { key: 'Cl', label: 'Cl⁻', dash: [3, 3] }
-                    ];
-                    
-                    legendItems.forEach(item => {
-                        const config = lineConfig[item.key];
-                        ctx.strokeStyle = config.color;
-                        ctx.lineWidth = 2;
-                        ctx.setLineDash(item.dash);
+                    const val = Math.round(maxValue - (maxValue / ticks) * i);
+                    ctx.fillText(String(val), x0 - 6, gy);
+                }
+
+                ctx.strokeStyle = '#9aa7b4';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(x0, padT);
+                ctx.lineTo(x0, y0);
+                ctx.lineTo(x0 + plotW, y0);
+                ctx.stroke();
+
+                ctx.fillStyle = '#33414f';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillText('첨가 횟수', x0 + plotW / 2, height - 6);
+                ctx.save();
+                ctx.translate(12, padT + plotH / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.fillText('이온 수 (개)', 0, 0);
+                ctx.restore();
+
+                const n = this.graphData.additions.length;
+                const xScale = n > 1 ? plotW / (n - 1) : plotW;
+                const yScale = plotH / maxValue;
+                const px = (index) => x0 + index * xScale;
+                const py = (value, off) => y0 - (value * yScale) + (off || 0);
+
+                if (n > 0) {
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.fillStyle = '#5a6b7b';
+                    ctx.font = '10px sans-serif';
+                    const step = Math.max(1, Math.ceil(n / 6));
+                    for (let i = 0; i < n; i += step) {
+                        ctx.fillText(String(this.graphData.additions[i]), px(i), y0 + 6);
+                    }
+
+                    let crossIndex = -1;
+                    for (let i = 0; i < n; i++) {
+                        if (this.graphData.H[i] === this.graphData.OH[i] && this.graphData.H[i] > 0) {
+                            crossIndex = i;
+                            break;
+                        }
+                    }
+                    if (crossIndex >= 0) {
+                        const cx = px(crossIndex);
+                        ctx.strokeStyle = '#2e7d32';
+                        ctx.lineWidth = 1.5;
+                        ctx.setLineDash([4, 4]);
                         ctx.beginPath();
-                        ctx.moveTo(width - 80, legendY - 2);
-                        ctx.lineTo(width - 60, legendY - 2);
+                        ctx.moveTo(cx, padT);
+                        ctx.lineTo(cx, y0);
                         ctx.stroke();
                         ctx.setLineDash([]);
-                        
-                        // 도형 모드일 때 범례에 도형 기호만 표시
-                        let labelText = item.label;
-                        if (this.isShapeMode) {
-                            const shape = this.shapeMapping[item.key];
-                            const shapeSymbol = {
-                                'triangle': '▼',
-                                'star': '★',
-                                'square': '■',
-                                'circle': '●'
-                            };
-                            labelText = shapeSymbol[shape];  // ← 도형 기호만 표시
-                        }
-                        
-                        ctx.fillStyle = '#333';
-                        ctx.font = '10px sans-serif';
-                        ctx.fillText(labelText, width - 55, legendY);
-                        legendY += 15;
+                        ctx.fillStyle = '#2e7d32';
+                        ctx.font = 'bold 10px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'top';
+                        ctx.fillText('중화점', cx, padT);
+                    }
+
+                    ['H', 'OH', 'Na', 'Cl'].forEach(key => {
+                        if (this.graphData[key].length === 0) return;
+                        const config = lineConfig[key];
+                        ctx.strokeStyle = config.color;
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash(config.dash);
+                        ctx.beginPath();
+                        this.graphData[key].forEach((value, index) => {
+                            const x = px(index);
+                            const y = py(value, config.offset);
+                            if (index === 0) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        });
+                        ctx.stroke();
+                        ctx.setLineDash([]);
                     });
+                }
+
+                let legendY = padT + 4;
+                const legendX = x0 + plotW - 60;
+                const legendItems = [
+                    { key: 'H', label: 'H⁺', dash: [] },
+                    { key: 'OH', label: 'OH⁻', dash: [] },
+                    { key: 'Na', label: 'Na⁺', dash: [5, 3] },
+                    { key: 'Cl', label: 'Cl⁻', dash: [3, 3] }
+                ];
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                legendItems.forEach(item => {
+                    const config = lineConfig[item.key];
+                    ctx.strokeStyle = config.color;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash(item.dash);
+                    ctx.beginPath();
+                    ctx.moveTo(legendX, legendY);
+                    ctx.lineTo(legendX + 20, legendY);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    let labelText = item.label;
+                    if (this.isShapeMode) {
+                        const shape = this.shapeMapping[item.key];
+                        const shapeSymbol = { 'triangle': '▼', 'star': '★', 'square': '■', 'circle': '●' };
+                        labelText = item.label + ' ' + shapeSymbol[shape];
+                    }
+                    ctx.fillStyle = '#33414f';
+                    ctx.font = '11px sans-serif';
+                    ctx.fillText(labelText, legendX + 25, legendY);
+                    legendY += 15;
+                });
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'alphabetic';
             }
 
             showSafetyViolation() {
@@ -1893,5 +2091,7 @@ reset() {
     ⓒ 2025 충남삼성고등학교 신도경T<br>
     <a href="mailto:pantarei01@cnsa.hs.kr">pantarei01@cnsa.hs.kr</a>
 </div>
+    <script src="/assets/sim-ui.js"></script>
+    <script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
 </body>
 </html>

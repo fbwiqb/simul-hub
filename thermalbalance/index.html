@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="cnsa-sim" content="지구시스템 복사 평형|통합과학2">
+    <link rel="stylesheet" href="/assets/sim-ui.css">
     <title>지구 시스템 열수지 시뮬레이션</title>
     <style>
         * {
@@ -12,9 +14,9 @@
         }
 
         body {
-            font-family: 'Malgun Gothic', sans-serif;
-            background: linear-gradient(to bottom, #000000, #001a33);
-            color: white;
+            font-family: var(--cnsa-font);
+            background: var(--cnsa-bg);
+            color: var(--cnsa-text);
             min-height: 100vh;
             padding: 20px;
             padding-bottom: 80px;
@@ -27,8 +29,10 @@
 
         h1 {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
             font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
         }
 
         .main-content {
@@ -38,80 +42,92 @@
         }
 
         .visualization {
-            background: rgba(0, 20, 40, 0.5);
-            border-radius: 15px;
-            padding: 30px;
+            background: var(--cnsa-surface);
+            backdrop-filter: var(--cnsa-blur);
+            -webkit-backdrop-filter: var(--cnsa-blur);
+            border-radius: var(--cnsa-radius);
+            padding: 24px;
             position: relative;
             min-height: 600px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: var(--cnsa-shadow);
+            border: 1px solid var(--cnsa-border);
         }
 
         .control-panel {
-            background: rgba(20, 40, 60, 0.8);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: var(--cnsa-surface);
+            backdrop-filter: var(--cnsa-blur);
+            -webkit-backdrop-filter: var(--cnsa-blur);
+            border-radius: var(--cnsa-radius);
+            padding: 24px;
+            box-shadow: var(--cnsa-shadow);
+            border: 1px solid var(--cnsa-border);
         }
 
         .control-group {
-            margin-bottom: 30px;
+            margin-bottom: 26px;
         }
 
         .control-group label {
             display: block;
             margin-bottom: 10px;
-            font-size: 16px;
-            font-weight: bold;
+            font-size: 15px;
+            font-weight: 700;
         }
 
         input[type="range"] {
             width: 100%;
             height: 8px;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.2);
+            border-radius: var(--cnsa-radius-pill);
+            background: var(--cnsa-surface-2);
             outline: none;
             margin: 10px 0;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            background: #4CAF50;
+            background: var(--cnsa-accent);
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4), 0 0 0 3px rgba(76, 175, 80, 0.2);
-            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(0, 130, 200, 0.45), 0 0 0 3px rgba(0, 210, 255, 0.18);
+            transition: transform 0.18s var(--cnsa-ease), box-shadow 0.18s var(--cnsa-ease);
         }
 
         input[type="range"]::-webkit-slider-thumb:hover {
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.6), 0 0 0 4px rgba(76, 175, 80, 0.3);
-            transform: scale(1.1);
+            box-shadow: 0 4px 14px rgba(0, 130, 200, 0.6), 0 0 0 4px rgba(0, 210, 255, 0.28);
+            transform: scale(1.12);
         }
 
         input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            background: #4CAF50;
+            background: var(--cnsa-accent-1);
             cursor: pointer;
             border: none;
-            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4), 0 0 0 3px rgba(76, 175, 80, 0.2);
-            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(0, 130, 200, 0.45), 0 0 0 3px rgba(0, 210, 255, 0.18);
+            transition: transform 0.18s var(--cnsa-ease), box-shadow 0.18s var(--cnsa-ease);
         }
 
         input[type="range"]::-moz-range-thumb:hover {
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.6), 0 0 0 4px rgba(76, 175, 80, 0.3);
-            transform: scale(1.1);
+            box-shadow: 0 4px 14px rgba(0, 130, 200, 0.6), 0 0 0 4px rgba(0, 210, 255, 0.28);
+            transform: scale(1.12);
+        }
+
+        input[type="range"]:focus-visible {
+            outline: 3px solid var(--cnsa-accent-1);
+            outline-offset: 4px;
         }
 
         .slider-value {
             text-align: center;
             font-size: 18px;
-            color: #FFD700;
+            font-weight: 700;
+            color: var(--cnsa-accent-1);
             margin-top: 5px;
         }
 
@@ -119,85 +135,164 @@
             display: flex;
             justify-content: space-between;
             font-size: 12px;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--cnsa-text-dimmer);
             margin-top: -5px;
         }
 
         .energy-display {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.22);
+            border-radius: var(--cnsa-radius-sm);
             padding: 20px;
-            margin-top: 20px;
+            margin-top: 22px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) inset;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--cnsa-border);
         }
 
         .energy-display h3 {
-            margin-bottom: 15px;
-            color: #4CAF50;
+            margin-bottom: 6px;
+            color: var(--cnsa-accent-1);
+            font-size: 17px;
+        }
+
+        .energy-display .panel-note {
+            font-size: 12px;
+            color: var(--cnsa-text-dim);
+            margin-bottom: 14px;
         }
 
         .energy-item {
             display: flex;
             justify-content: space-between;
-            margin: 10px 0;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 5px;
-            transition: all 0.2s ease;
+            gap: 12px;
+            margin: 9px 0;
+            padding: 9px 11px;
+            background: var(--cnsa-surface);
+            border: 1px solid transparent;
+            border-radius: var(--cnsa-radius-sm);
+            transition: background 0.18s var(--cnsa-ease), transform 0.18s var(--cnsa-ease);
         }
 
         .energy-item:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--cnsa-surface-2);
             transform: translateX(2px);
         }
 
+        .energy-item .energy-label {
+            color: var(--cnsa-text-dim);
+        }
+
+        .energy-item span:last-child {
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+        }
+
         .energy-item.balanced {
-            border-left: 3px solid #4CAF50;
-            box-shadow: 0 0 8px rgba(76, 175, 80, 0.1);
+            border-left: 3px solid var(--cnsa-live);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.12);
+        }
+
+        .balance-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0 14px;
+            padding: 10px 14px;
+            border-radius: var(--cnsa-radius-sm);
+            font-size: 13px;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+
+        .balance-badge.is-balanced {
+            color: #bbf7d0;
+            background: rgba(34, 197, 94, 0.14);
+            border-color: rgba(34, 197, 94, 0.4);
+        }
+
+        .balance-badge.is-greenhouse {
+            color: #fde68a;
+            background: rgba(245, 158, 11, 0.14);
+            border-color: rgba(245, 158, 11, 0.42);
+        }
+
+        .balance-badge .badge-icon {
+            font-size: 15px;
         }
 
         canvas {
             display: block;
             width: 100%;
             height: 100%;
-            border-radius: 10px;
+            border-radius: var(--cnsa-radius-sm);
         }
 
         .preset-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 6px;
+        }
+
+        .preset-group-label {
+            display: block;
+            margin: 22px 0 10px;
+            font-size: 14px;
+            font-weight: 700;
         }
 
         .preset-btn {
-            padding: 12px;
-            background: rgba(76, 175, 80, 0.3);
-            border: 1px solid #4CAF50;
-            border-radius: 8px;
-            color: white;
+            min-height: 44px;
+            padding: 11px 12px;
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border);
+            border-radius: var(--cnsa-radius-sm);
+            color: var(--cnsa-text);
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.18s var(--cnsa-ease), background 0.18s var(--cnsa-ease), border-color 0.18s var(--cnsa-ease);
+            font-family: var(--cnsa-font);
             font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            font-weight: 600;
         }
 
         .preset-btn:hover {
-            background: rgba(76, 175, 80, 0.5);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3);
-            border-color: #5fd663;
+            background: var(--cnsa-surface-strong);
+            transform: translateY(-2px);
+            border-color: var(--cnsa-border-strong);
         }
 
         .preset-btn:active {
-            transform: translateY(-1px);
-            box-shadow: 0 3px 6px rgba(76, 175, 80, 0.2);
+            transform: translateY(0);
         }
 
-        @media (max-width: 1024px) {
+        .preset-btn:focus-visible {
+            outline: 3px solid var(--cnsa-accent-1);
+            outline-offset: 2px;
+        }
+
+        .preset-btn.preset-help {
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.18), rgba(58, 123, 213, 0.18));
+            border-color: rgba(0, 210, 255, 0.34);
+            color: #cdeffd;
+        }
+
+        .preset-btn.preset-help:hover {
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.28), rgba(58, 123, 213, 0.28));
+            border-color: rgba(0, 210, 255, 0.5);
+        }
+
+        .preset-caption {
+            margin-top: 12px;
+            font-size: 11.5px;
+            line-height: 1.5;
+            color: var(--cnsa-text-dimmer);
+        }
+
+        @media (max-width: 900px) {
             .main-content {
                 grid-template-columns: 1fr;
+            }
+            .visualization {
+                min-height: 420px;
             }
         }
 
@@ -206,14 +301,16 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(135deg, #3d4e9f 0%, #4a5ba8 100%);
-            color: white;
+            background: rgba(14, 22, 44, 0.82);
+            backdrop-filter: var(--cnsa-blur);
+            -webkit-backdrop-filter: var(--cnsa-blur);
+            color: var(--cnsa-text-dim);
             text-align: center;
             padding: 10px 20px;
-            font-size: 14px;
+            font-size: 13px;
             z-index: 999;
             box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid var(--cnsa-border);
         }
 
         .footer a {
@@ -275,7 +372,7 @@
         }
 
         .modal-header {
-            background: linear-gradient(135deg, #3d4e9f 0%, #667eea 100%);
+            background: linear-gradient(135deg, #16213e 0%, #3a7bd5 100%);
             color: white;
             padding: 20px;
             margin: -30px -30px 20px -30px;
@@ -324,7 +421,7 @@
             padding: 20px;
             background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
             border-radius: 10px;
-            border-left: 4px solid #3d4e9f;
+            border-left: 4px solid #16213e;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
         }
@@ -335,7 +432,7 @@
         }
 
         .help-section h3 {
-            color: #3d4e9f;
+            color: #16213e;
             margin-bottom: 10px;
             font-size: 18px;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -354,23 +451,24 @@
         }
 
         .help-section strong {
-            color: #3d4e9f;
+            color: #16213e;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🌍 지구 시스템 열수지 시뮬레이션</h1>
-        
+
         <div class="main-content">
             <div class="visualization">
-                <canvas id="energyCanvas"></canvas>
+                <canvas id="energyCanvas" role="img" aria-label="지구 복사 평형 다이어그램: 태양 복사가 지구에 입사하고, 일부는 반사되며, 지표와 대기를 거쳐 우주로 방출되는 에너지 흐름을 화살표로 표시합니다." aria-describedby="canvasSummary"></canvas>
+                <p id="canvasSummary" class="cnsa-visually-hidden" aria-live="polite"></p>
             </div>
 
             <div class="control-panel">
                 <div class="control-group">
-                    <label>☀️ 태양 복사 에너지 강도</label>
-                    <input type="range" id="solarInput" min="50" max="250" value="100" step="1">
+                    <label for="solarInput">☀️ 태양 복사 에너지 강도</label>
+                    <input type="range" id="solarInput" min="50" max="250" value="100" step="1" aria-describedby="solarValue">
                     <div class="slider-value" id="solarValue">100</div>
                     <div class="slider-labels">
                         <span>50</span>
@@ -379,8 +477,8 @@
                 </div>
 
                 <div class="control-group">
-                    <label>🌍 지구 반사도 (알베도)</label>
-                    <input type="range" id="albedoInput" min="0" max="100" value="30" step="1">
+                    <label for="albedoInput">🌍 지구 반사도 (알베도)</label>
+                    <input type="range" id="albedoInput" min="0" max="100" value="30" step="1" aria-describedby="albedoValue">
                     <div class="slider-value" id="albedoValue">30%</div>
                     <div class="slider-labels">
                         <span>0%</span>
@@ -389,8 +487,8 @@
                 </div>
 
                 <div class="control-group">
-                    <label>🌫️ 대기 두께</label>
-                    <input type="range" id="atmosphereInput" min="0" max="100" value="0" step="1">
+                    <label for="atmosphereInput">🌫️ 대기 두께</label>
+                    <input type="range" id="atmosphereInput" min="0" max="100" value="0" step="1" aria-describedby="atmosphereValue">
                     <div class="slider-value" id="atmosphereValue">0% (대기 없음)</div>
                     <div class="slider-labels">
                         <span>없음</span>
@@ -398,49 +496,56 @@
                     </div>
                 </div>
 
-                <div class="preset-buttons">
-                    <button class="preset-btn" onclick="setPreset('none')">대기 없음</button>
-                    <button class="preset-btn" onclick="setPreset('earth')">현재 지구</button>
-                    <button class="preset-btn" onclick="setPreset('mars')">화성형</button>
-                    <button class="preset-btn" onclick="setPreset('venus')">금성형</button>
+                <span class="preset-group-label" id="presetLabel">🪐 행성 프리셋</span>
+                <div class="preset-buttons" role="group" aria-labelledby="presetLabel">
+                    <button type="button" class="preset-btn" onclick="setPreset('none')">대기 없음</button>
+                    <button type="button" class="preset-btn" onclick="setPreset('earth')">현재 지구</button>
+                    <button type="button" class="preset-btn" onclick="setPreset('mars')">화성형</button>
+                    <button type="button" class="preset-btn" onclick="setPreset('venus')">금성형</button>
                 </div>
+                <p class="preset-caption">※ 정성적 비교용—실제 알베도·태양상수와는 다릅니다.</p>
 
                 <div style="text-align: center; margin-top: 15px;">
-                    <button class="preset-btn" onclick="showHelp()" style="background: rgba(255, 215, 0, 0.3); border: 1px solid #FFD700;">📖 사용법</button>
+                    <button type="button" class="preset-btn preset-help" onclick="showHelp()" aria-haspopup="dialog">📖 사용법</button>
                 </div>
 
                 <div class="energy-display">
                     <h3>📊 에너지 수치</h3>
+                    <p class="panel-note">모든 값은 입사=100 기준 상대값입니다.</p>
+                    <div class="balance-badge is-balanced" id="balanceBadge" aria-live="polite">
+                        <span class="badge-icon" aria-hidden="true">✓</span>
+                        <span id="balanceBadgeText">에너지 평형 (입사 − 반사 = 우주 방출)</span>
+                    </div>
                     <div class="energy-item balanced">
-                        <span>태양 복사 에너지 입사</span>
+                        <span class="energy-label">태양 복사 에너지 입사</span>
                         <span id="solarIn">100</span>
                     </div>
                     <div class="energy-item balanced">
-                        <span>반사 (알베도)</span>
+                        <span class="energy-label">반사 (알베도)</span>
                         <span id="reflected">30</span>
                     </div>
                     <div class="energy-item balanced">
-                        <span>지표 흡수 (태양 복사)</span>
+                        <span class="energy-label">지표 흡수 (태양 복사)</span>
                         <span id="surfaceAbsorb">70</span>
                     </div>
                     <div class="energy-item balanced">
-                        <span>대기 흡수 (지구 복사)</span>
+                        <span class="energy-label">대기 흡수 (지구 복사)</span>
                         <span id="atmAbsorbed">0</span>
                     </div>
                     <div class="energy-item balanced">
-                        <span>대기 → 지표 (재방출)</span>
+                        <span class="energy-label">대기 → 지표 (재방출)</span>
                         <span id="atmToSurface">0</span>
                     </div>
                     <div class="energy-item balanced">
-                        <span>대기 → 우주 (재방출)</span>
+                        <span class="energy-label">대기 → 우주 (재방출)</span>
                         <span id="atmToSpace">0</span>
                     </div>
                                         <div class="energy-item balanced">
-                            <span>지구 복사 에너지</span>
-                            <span id="surfaceTotal" style="color: #FFD700; font-weight: bold;">70</span>
+                            <span class="energy-label">지구 복사 에너지 (상대값)</span>
+                            <span id="surfaceTotal" style="color: #00d2ff; font-weight: bold;">70</span>
                         </div>
                     <div class="energy-item balanced">
-                        <span>우주로 방출 (총)</span>
+                        <span class="energy-label">우주로 방출 (총)</span>
                         <span id="toSpace">70</span>
                     </div>
                 </div>
@@ -454,11 +559,11 @@
     </div>
 
     <!-- 사용법 모달 -->
-    <div class="modal" id="helpModal">
+    <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📖 지구 시스템 열수지 시뮬레이션 사용법</h2>
-                <button class="modal-close" onclick="closeHelp()">×</button>
+                <h2 id="helpModalTitle">📖 지구 시스템 열수지 시뮬레이션 사용법</h2>
+                <button type="button" class="modal-close" onclick="closeHelp()" aria-label="사용법 창 닫기">×</button>
             </div>
             <div class="modal-body">
                 <div class="help-section">
@@ -614,56 +719,56 @@
             </div>
         </div>
     </div>
-</body>
 
     <script>
-        // 전역 변수로 선언
         let canvas, ctx;
         let solarInput, albedoInput, atmosphereInput;
         let solarValue, albedoValue, atmosphereValue;
+        let modalReleaseFocus = null;
+        let lastFocusedBeforeModal = null;
 
-        // DOM 로드 완료 후 실행
         document.addEventListener('DOMContentLoaded', function() {
-            // 요소 가져오기
             canvas = document.getElementById('energyCanvas');
             ctx = canvas.getContext('2d');
-            
+
             solarInput = document.getElementById('solarInput');
             albedoInput = document.getElementById('albedoInput');
             atmosphereInput = document.getElementById('atmosphereInput');
-            
+
             solarValue = document.getElementById('solarValue');
             albedoValue = document.getElementById('albedoValue');
             atmosphereValue = document.getElementById('atmosphereValue');
 
-            // Canvas 크기 초기 설정
             resizeCanvas();
 
-            // 이벤트 리스너 등록
             window.addEventListener('resize', resizeCanvas);
             solarInput.addEventListener('input', updateAndDraw);
             albedoInput.addEventListener('input', updateAndDraw);
             atmosphereInput.addEventListener('input', updateAndDraw);
 
-            // 초기 그리기
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.getElementById('helpModal').style.display === 'block') {
+                    closeHelp();
+                }
+            });
+
             updateAndDraw();
         });
 
         function resizeCanvas() {
             if (!canvas) return;
             const container = canvas.parentElement;
-            canvas.width = container.clientWidth - 60;
-            canvas.height = container.clientHeight - 60;
+            canvas.width = Math.max(280, container.clientWidth - 48);
+            canvas.height = Math.max(360, container.clientHeight - 48);
             if (solarInput) {
                 draw();
             }
         }
 
         function updateAndDraw() {
-            // 슬라이더 값 표시 업데이트
             solarValue.textContent = solarInput.value;
             albedoValue.textContent = albedoInput.value + '%';
-            
+
             const atmValue = atmosphereInput.value;
             if (atmValue == 0) {
                 atmosphereValue.textContent = '0% (대기 없음)';
@@ -672,6 +777,35 @@
             }
 
             draw();
+        }
+
+        function updateStatus(energy) {
+            const badge = document.getElementById('balanceBadge');
+            const badgeText = document.getElementById('balanceBadgeText');
+            const badgeIcon = badge.querySelector('.badge-icon');
+            if (energy.atmosphere > 0) {
+                badge.classList.remove('is-balanced');
+                badge.classList.add('is-greenhouse');
+                badgeIcon.textContent = '▲';
+                badgeText.textContent = '온실 강화 — 지표↑ vs 우주 방출 불변 (입사 − 반사 = ' + energy.toSpace.toFixed(0) + ')';
+            } else {
+                badge.classList.remove('is-greenhouse');
+                badge.classList.add('is-balanced');
+                badgeIcon.textContent = '✓';
+                badgeText.textContent = '에너지 평형 (입사 − 반사 = 우주 방출 = ' + energy.toSpace.toFixed(0) + ')';
+            }
+
+            const summary = document.getElementById('canvasSummary');
+            if (summary) {
+                summary.textContent =
+                    '태양 복사 입사 ' + energy.solar.toFixed(0) +
+                    ', 반사 ' + energy.reflected.toFixed(0) +
+                    ', 지표 흡수 ' + energy.surfaceAbsorb.toFixed(0) +
+                    ', 지구 복사 에너지 ' + energy.surfaceTotal.toFixed(0) +
+                    ', 우주로 방출 ' + energy.toSpace.toFixed(0) +
+                    (energy.atmosphere > 0 ? ', 대기 두께 ' + (energy.atmosphere * 100).toFixed(0) + '퍼센트' : ', 대기 없음') +
+                    ' (모두 입사=100 기준 상대값)';
+            }
         }
 
         function calculateEnergy() {
@@ -724,12 +858,15 @@
             };
         }
 
-        function drawArrow(fromX, fromY, toX, toY, width, color, label) {
-            const headlen = width * 2.0; // 화살표 머리 길이 = 두께의 2배
-            const headWidth = width * 1.2; // 화살표 머리 너비 = 두께의 1.2배
+        function simFont(w, base, min) {
+            return Math.max(min || 11, w / 55 * (base || 1));
+        }
+
+        function drawArrow(fromX, fromY, toX, toY, width, color, label, labelOffset) {
+            const headlen = width * 2.0;
+            const headWidth = width * 1.2;
             const angle = Math.atan2(toY - fromY, toX - fromX);
 
-            // 화살표 머리 시작점 계산 (삼각형의 밑변)
             const headBaseX = toX - headlen * Math.cos(angle);
             const headBaseY = toY - headlen * Math.sin(angle);
 
@@ -738,13 +875,11 @@
             ctx.lineWidth = width;
             ctx.lineCap = 'round';
 
-            // 화살표 몸통 (머리 시작점까지만)
             ctx.beginPath();
             ctx.moveTo(fromX, fromY);
             ctx.lineTo(headBaseX, headBaseY);
             ctx.stroke();
 
-            // 화살표 머리 (삼각형)
             ctx.beginPath();
             ctx.moveTo(toX, toY);
             ctx.lineTo(
@@ -758,163 +893,161 @@
             ctx.closePath();
             ctx.fill();
 
-            // 레이블
             if (label) {
-                ctx.font = 'bold 14px Malgun Gothic';
-                ctx.fillStyle = 'white';
+                const fs = simFont(canvas.width, 1, 11);
+                ctx.font = '700 ' + fs.toFixed(0) + "px 'Pretendard','Noto Sans KR',sans-serif";
+                ctx.fillStyle = '#ffffff';
                 ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const off = labelOffset === undefined ? canvas.width * 0.045 : labelOffset;
                 const midX = (fromX + toX) / 2;
                 const midY = (fromY + toY) / 2;
-                ctx.fillText(label, midX + 30, midY);
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = 'rgba(10,16,30,0.85)';
+                ctx.lineJoin = 'round';
+                ctx.strokeText(label, midX + off, midY);
+                ctx.fillText(label, midX + off, midY);
             }
         }
 
         function draw() {
             if (!canvas || !ctx) return;
-            
+
             const w = canvas.width;
             const h = canvas.height;
-            
-            // 배경 클리어
+
             ctx.clearRect(0, 0, w, h);
 
             const energy = calculateEnergy();
-            
-            // 레이아웃 위치 정의
-            const sunY = 50;
+            updateStatus(energy);
+
+            const pad = Math.max(28, w * 0.04);
+            const sunY = Math.max(34, h * 0.07);
+            const sunR = Math.max(16, w * 0.025);
             const atmTop = h * 0.25;
             const atmBottom = h * 0.45;
             const surfaceY = h * 0.6;
             const centerX = w / 2;
+            const colX = w * 0.18;
+            const labelFont = '700 ' + simFont(w, 1.15, 13).toFixed(0) + "px 'Pretendard','Noto Sans KR',sans-serif";
+            const infoFont = '700 ' + simFont(w, 1.25, 13).toFixed(0) + "px 'Pretendard','Noto Sans KR',sans-serif";
+            const legendFont = simFont(w, 1, 12).toFixed(0) + "px 'Pretendard','Noto Sans KR',sans-serif";
+            ctx.textBaseline = 'alphabetic';
 
-            // 태양 그리기
             ctx.fillStyle = '#FFD700';
             ctx.beginPath();
-            ctx.arc(centerX, sunY, 25, 0, Math.PI * 2);
+            ctx.arc(centerX, sunY, sunR, 0, Math.PI * 2);
             ctx.fill();
 
-            // 태양빛 광선 효과
             ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
             ctx.lineWidth = 2;
             for (let i = 0; i < 8; i++) {
                 const angle = (Math.PI * 2 / 8) * i;
                 ctx.beginPath();
-                ctx.moveTo(centerX + Math.cos(angle) * 30, sunY + Math.sin(angle) * 30);
-                ctx.lineTo(centerX + Math.cos(angle) * 45, sunY + Math.sin(angle) * 45);
+                ctx.moveTo(centerX + Math.cos(angle) * sunR * 1.2, sunY + Math.sin(angle) * sunR * 1.2);
+                ctx.lineTo(centerX + Math.cos(angle) * sunR * 1.8, sunY + Math.sin(angle) * sunR * 1.8);
                 ctx.stroke();
             }
 
-            // 대기 그리기 (있을 경우)
             if (energy.atmosphere > 0) {
                 const atmHeight = atmBottom - atmTop;
                 const atmOpacity = 0.2 + energy.atmosphere * 0.5;
                 const gradient = ctx.createLinearGradient(0, atmTop, 0, atmBottom);
                 gradient.addColorStop(0, `rgba(135, 206, 250, ${atmOpacity * 0.3})`);
                 gradient.addColorStop(1, `rgba(135, 206, 250, ${atmOpacity})`);
-                
+
                 ctx.fillStyle = gradient;
-                ctx.fillRect(50, atmTop, w - 100, atmHeight);
-                
-                // 대기 테두리
+                ctx.fillRect(pad, atmTop, w - pad * 2, atmHeight);
+
                 ctx.strokeStyle = `rgba(135, 206, 250, ${atmOpacity})`;
                 ctx.lineWidth = 2;
-                ctx.strokeRect(50, atmTop, w - 100, atmHeight);
+                ctx.strokeRect(pad, atmTop, w - pad * 2, atmHeight);
 
-                // 대기 레이블
                 ctx.fillStyle = 'white';
-                ctx.font = 'bold 16px Malgun Gothic';
-                ctx.fillText('대기', 70, atmTop + 25);
+                ctx.font = labelFont;
+                ctx.textAlign = 'left';
+                ctx.fillText('대기', pad + 10, atmTop + simFont(w, 1.6, 18));
             }
 
-            // 지표면 그리기
             const gradient = ctx.createLinearGradient(0, surfaceY, 0, h - 50);
             gradient.addColorStop(0, '#8B4513');
             gradient.addColorStop(0.5, '#654321');
             gradient.addColorStop(1, '#228B22');
             ctx.fillStyle = gradient;
-            ctx.fillRect(50, surfaceY, w - 100, h - surfaceY - 50);
+            ctx.fillRect(pad, surfaceY, w - pad * 2, h - surfaceY - 50);
 
-            // 지표면 레이블
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 16px Malgun Gothic';
-            ctx.fillText('지표면', 70, surfaceY + 25);
+            ctx.font = labelFont;
+            ctx.textAlign = 'left';
+            ctx.fillText('지표면', pad + 10, surfaceY + simFont(w, 1.6, 18));
 
-            // 화살표 두께 계산 (에너지에 비례)
-            const maxWidth = 20;
+            const maxWidth = Math.max(12, w * 0.028);
             const solarWidth = Math.max(2, (energy.solar / 250) * maxWidth);
             const reflectedWidth = Math.max(2, (energy.reflected / 250) * maxWidth);
             const irWidth = Math.max(2, (energy.surfaceAbsorb / 250) * maxWidth);
             const atmWidth = Math.max(2, (energy.atmToSurface / 250) * maxWidth);
+            const labelOff = w * 0.05;
 
-            // 1. 태양 → 지표/대기 (가시광선)
             const targetY = energy.atmosphere > 0 ? atmTop : surfaceY;
-            drawArrow(centerX, sunY + 35, centerX, targetY - 10, solarWidth, '#FFD700', energy.solar.toFixed(0));
+            drawArrow(centerX, sunY + sunR + 10, centerX, targetY - 10, solarWidth, '#FFD700', energy.solar.toFixed(0), labelOff);
 
-            // 2. 반사광 (태양광이 닿는 지점에서 시작) - 원래대로
             if (energy.reflected > 0.5) {
-                const reflectStartY = targetY - 10; // 입사광이 닿는 지점
-                drawArrow(centerX + 20, reflectStartY, centerX + 100, sunY + 60, reflectedWidth, '#FFEB99', energy.reflected.toFixed(0));
+                const reflectStartY = targetY - 10;
+                drawArrow(centerX + colX * 0.13, reflectStartY, centerX + colX * 0.66, sunY + sunR * 1.4, reflectedWidth, '#FFEB99', energy.reflected.toFixed(0), labelOff);
             }
 
-            // 3. 대기가 있을 경우
             if (energy.atmosphere > 0) {
-                // 대기를 통과해서 지표로
                 const absorbedBySurface = energy.surfaceAbsorb;
-                drawArrow(centerX, atmBottom + 10, centerX, surfaceY - 10, irWidth, '#FFD700', absorbedBySurface.toFixed(0));
+                drawArrow(centerX, atmBottom + 10, centerX, surfaceY - 10, irWidth, '#FFD700', absorbedBySurface.toFixed(0), labelOff);
 
-                // 지표 → 대기 (적외선) - 주황빛 붉은색, 더 왼쪽으로
                 const surfaceIRWidth = Math.max(2, (energy.surfaceTotal / 250) * maxWidth);
-                drawArrow(centerX - 150, surfaceY - 10, centerX - 150, atmBottom + 10, surfaceIRWidth, '#FF6666', energy.surfaceTotal.toFixed(0));
+                drawArrow(centerX - colX, surfaceY - 10, centerX - colX, atmBottom + 10, surfaceIRWidth, '#FF6666', energy.surfaceTotal.toFixed(0), -labelOff);
 
-                // 지표 → 우주 직접 (대기 통과, 흡수 안됨) - 같은 x 위치에서 연장
                 const directWidth = Math.max(2, (energy.surfaceTotal * (1 - energy.atmosphere) / 250) * maxWidth);
                 if (energy.surfaceTotal * (1 - energy.atmosphere) > 0.5) {
-                    drawArrow(centerX - 150, atmTop - 10, centerX - 150, sunY + 80, directWidth, '#FF6666', (energy.surfaceTotal * (1 - energy.atmosphere)).toFixed(0));
+                    drawArrow(centerX - colX, atmTop - 10, centerX - colX, sunY + sunR * 2.2, directWidth, '#FF6666', (energy.surfaceTotal * (1 - energy.atmosphere)).toFixed(0), -labelOff);
                 }
 
-                // 대기 → 지표 (재방출) - 더 오른쪽으로
                 if (energy.atmToSurface > 0.5) {
-                    drawArrow(centerX + 150, atmBottom + 10, centerX + 150, surfaceY - 10, atmWidth, '#FF4444', energy.atmToSurface.toFixed(0));
+                    drawArrow(centerX + colX, atmBottom + 10, centerX + colX, surfaceY - 10, atmWidth, '#FF4444', energy.atmToSurface.toFixed(0), labelOff);
                 }
 
-                // 대기 → 우주 - 더 오른쪽으로
                 const atmSpaceWidth = Math.max(2, (energy.atmToSpace / 250) * maxWidth);
-                drawArrow(centerX + 150, atmTop - 10, centerX + 150, sunY + 80, atmSpaceWidth, '#FF4444', energy.atmToSpace.toFixed(0));
+                drawArrow(centerX + colX, atmTop - 10, centerX + colX, sunY + sunR * 2.2, atmSpaceWidth, '#FF4444', energy.atmToSpace.toFixed(0), labelOff);
             } else {
-                // 대기 없을 때: 지표 → 우주 직접
-                drawArrow(centerX - 150, surfaceY - 10, centerX - 150, sunY + 80, irWidth, '#FF6666', energy.toSpace.toFixed(0));
+                drawArrow(centerX - colX, surfaceY - 10, centerX - colX, sunY + sunR * 2.2, irWidth, '#FF6666', energy.toSpace.toFixed(0), -labelOff);
             }
 
-            // 각 영역 에너지 표시
-            ctx.font = 'bold 18px Malgun Gothic';
-            ctx.textAlign = 'left';
-            
-            // 우주 공간 (나가는 에너지)
+            ctx.font = infoFont;
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+
             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.fillText(`우주로 방출: ${energy.toSpace.toFixed(1)}`, w - 200, 30);
-            
-            // 대기 에너지
+            ctx.fillText(`우주로 방출: ${energy.toSpace.toFixed(1)}`, w - pad, sunY * 0.7 + 8);
+
             if (energy.atmosphere > 0) {
                 const atmCenterY = (atmTop + atmBottom) / 2;
+                const lh = simFont(w, 1.7, 18);
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-                ctx.fillText(`대기 흡수: ${energy.atmAbsorbed.toFixed(1)}`, w - 200, atmCenterY - 20);
-                ctx.fillText(`↑ 우주: ${energy.atmToSpace.toFixed(1)}`, w - 200, atmCenterY + 5);
-                ctx.fillText(`↓ 지표: ${energy.atmToSurface.toFixed(1)}`, w - 200, atmCenterY + 30);
+                ctx.fillText(`대기 흡수: ${energy.atmAbsorbed.toFixed(1)}`, w - pad, atmCenterY - lh);
+                ctx.fillText(`↑ 우주: ${energy.atmToSpace.toFixed(1)}`, w - pad, atmCenterY);
+                ctx.fillText(`↓ 지표: ${energy.atmToSurface.toFixed(1)}`, w - pad, atmCenterY + lh);
             }
-            
-            // 지표 총 에너지
-            ctx.fillStyle = '#FFD700';
-            ctx.fillText(`지구 복사 에너지: ${energy.surfaceTotal.toFixed(1)}`, w - 230, surfaceY + 50);
-            
-            // 범례
-            ctx.fillStyle = 'white';
-            ctx.font = '14px Malgun Gothic';
+
+            ctx.fillStyle = '#00d2ff';
+            ctx.fillText(`지구 복사 에너지: ${energy.surfaceTotal.toFixed(1)}`, w - pad, surfaceY + simFont(w, 2.4, 28));
+
+            const legendY = h - simFont(w, 1.6, 18);
+            const legendStep = w * 0.30;
+            ctx.font = legendFont;
             ctx.textAlign = 'left';
-            ctx.fillText('노란색: 가시광선 (태양빛)', 60, h - 25);
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillStyle = 'white';
+            ctx.fillText('━ 노란색: 가시광선 (태양빛)', pad, legendY);
             ctx.fillStyle = '#FF6666';
-            ctx.fillText('주황빛: 지표 복사', 280, h - 25);
+            ctx.fillText('━ 주황빛: 지표 복사', pad + legendStep, legendY);
             ctx.fillStyle = '#FF4444';
-            ctx.fillText('빨간색: 대기 방출', 450, h - 25);
+            ctx.fillText('━ 빨간색: 대기 방출', pad + legendStep * 2, legendY);
         }
 
         function setPreset(type) {
@@ -941,24 +1074,40 @@
                     break;
             }
             updateAndDraw();
+            const labels = { none: '대기 없음', earth: '현재 지구', mars: '화성형', venus: '금성형' };
+            if (window.CNSA && labels[type]) CNSA.srAnnounce(labels[type] + ' 프리셋 적용됨');
         }
 
-        // 모달 함수
         function showHelp() {
-            document.getElementById('helpModal').style.display = 'block';
+            const helpModal = document.getElementById('helpModal');
+            lastFocusedBeforeModal = document.activeElement;
+            helpModal.style.display = 'block';
+            if (window.CNSA && CNSA.trapFocus) {
+                modalReleaseFocus = CNSA.trapFocus(helpModal);
+            } else {
+                const closeBtn = helpModal.querySelector('.modal-close');
+                if (closeBtn) closeBtn.focus();
+            }
         }
 
         function closeHelp() {
-            document.getElementById('helpModal').style.display = 'none';
-        }
-
-        // 모달 외부 클릭 시 닫기
-        window.onclick = function(event) {
             const helpModal = document.getElementById('helpModal');
-            if (event.target === helpModal) {
-                helpModal.style.display = 'none';
+            helpModal.style.display = 'none';
+            if (modalReleaseFocus) { modalReleaseFocus(); modalReleaseFocus = null; }
+            if (lastFocusedBeforeModal && lastFocusedBeforeModal.focus) {
+                lastFocusedBeforeModal.focus();
+                lastFocusedBeforeModal = null;
             }
         }
+
+        window.addEventListener('click', function(event) {
+            const helpModal = document.getElementById('helpModal');
+            if (event.target === helpModal) {
+                closeHelp();
+            }
+        });
     </script>
+    <script src="/assets/sim-ui.js"></script>
+    <script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
 </body>
 </html>

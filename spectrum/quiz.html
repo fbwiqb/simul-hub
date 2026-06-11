@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>스펙트럼 퀴즈 - 교사 대시보드</title>
+<meta name="cnsa-sim" content="스펙트럼 대시보드|통합과학1">
+<title>스펙트럼 대시보드</title>
+<link rel="stylesheet" href="/assets/sim-ui.css">
 <style>
 :root {
   --bg: #0a0e1a;
@@ -22,8 +24,9 @@
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
-  font-family: 'Segoe UI', -apple-system, sans-serif;
-  background: var(--bg);
+  font-family: var(--cnsa-font, 'Pretendard', 'Noto Sans KR', -apple-system, 'Segoe UI', sans-serif);
+  background: var(--cnsa-bg, linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%));
+  background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
 }
@@ -49,9 +52,11 @@ h1 {
   margin-bottom: 24px;
 }
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--cnsa-border, rgba(255,255,255,0.12));
+  backdrop-filter: var(--cnsa-blur, blur(12px));
+  -webkit-backdrop-filter: var(--cnsa-blur, blur(12px));
+  border-radius: var(--cnsa-radius, 16px);
   padding: 24px;
   margin-bottom: 16px;
 }
@@ -237,9 +242,10 @@ input:focus { border-color: var(--accent); }
   margin-bottom: 20px;
 }
 .element-card {
-  background: var(--surface2);
+  position: relative;
+  background: rgba(255,255,255,0.05);
   border: 2px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--cnsa-radius-sm, 10px);
   padding: 10px;
   cursor: pointer;
   transition: all 0.2s;
@@ -251,6 +257,16 @@ input:focus { border-color: var(--accent); }
   border-color: var(--accent);
   background: rgba(79,195,247,0.15);
   box-shadow: 0 0 12px rgba(79,195,247,0.2);
+}
+.element-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
 }
 .element-card .el-symbol {
   font-size: 1.4em;
@@ -367,9 +383,11 @@ select:focus { border-color: var(--accent); }
 }
 
 .dash-header {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--cnsa-border, rgba(255,255,255,0.12));
+  backdrop-filter: var(--cnsa-blur, blur(12px));
+  -webkit-backdrop-filter: var(--cnsa-blur, blur(12px));
+  border-radius: var(--cnsa-radius, 16px);
   padding: 16px 24px;
   margin-bottom: 16px;
 }
@@ -484,9 +502,10 @@ select:focus { border-color: var(--accent); }
   display: flex;
 }
 .modal-box {
-  background: var(--surface);
+  background: #121a30;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--cnsa-radius, 16px);
+  box-shadow: var(--cnsa-shadow-lg, 0 24px 48px rgba(0,0,0,0.4));
   width: 90%;
   max-width: 600px;
   max-height: 80vh;
@@ -563,7 +582,7 @@ select:focus { border-color: var(--accent); }
   .dash-info { flex-direction: column; align-items: flex-start; }
   .builder-options { flex-direction: column; align-items: flex-start; }
   .code-digit { width: 42px; height: 52px; font-size: 1.6em; }
-  .answer-table { font-size: 12px; }
+  .answer-table { font-size: 12px; display: block; overflow-x: auto; white-space: nowrap; }
   .answer-table th, .answer-table td { padding: 8px 6px; }
   .time-bar-cell { display: none; }
 }
@@ -706,11 +725,11 @@ select:focus { border-color: var(--accent); }
   </div>
 </div>
 
-<div class="modal-overlay" id="lbModal">
+<div class="modal-overlay" id="lbModal" role="dialog" aria-modal="true" aria-labelledby="lbModalTitle">
   <div class="modal-box">
     <div class="modal-top">
-      <h2>누적 순위</h2>
-      <button class="modal-close" id="closeLbModal">&times;</button>
+      <h2 id="lbModalTitle">누적 순위</h2>
+      <button class="modal-close cnsa-focusable" id="closeLbModal" aria-label="누적 순위 닫기">&times;</button>
     </div>
     <div class="modal-body">
       <table class="lb-table">
@@ -876,9 +895,14 @@ function renderBuilder() {
   grid.innerHTML = '';
   ALL_ELEMENTS.forEach(function(el) {
     var card = document.createElement('div');
-    card.className = 'element-card';
+    card.className = 'element-card cnsa-focusable';
     card.dataset.el = el;
-    if (selectedBuilderElements.indexOf(el) !== -1) card.classList.add('selected');
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', el + ' ' + ELEMENT_NAMES[el] + ' 선택');
+    var isSel = selectedBuilderElements.indexOf(el) !== -1;
+    if (isSel) card.classList.add('selected');
+    card.setAttribute('aria-pressed', isSel ? 'true' : 'false');
 
     var sym = document.createElement('div');
     sym.className = 'el-symbol';
@@ -894,17 +918,23 @@ function renderBuilder() {
     card.appendChild(name);
     card.appendChild(mini);
 
-    card.addEventListener('click', function() {
+    function toggleSel() {
       var idx = selectedBuilderElements.indexOf(el);
       if (idx === -1) {
         selectedBuilderElements.push(el);
         card.classList.add('selected');
+        card.setAttribute('aria-pressed', 'true');
       } else {
         selectedBuilderElements.splice(idx, 1);
         card.classList.remove('selected');
+        card.setAttribute('aria-pressed', 'false');
       }
       updatePreview();
       updateCountHint();
+    }
+    card.addEventListener('click', toggleSel);
+    card.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSel(); }
     });
 
     grid.appendChild(card);
@@ -1206,17 +1236,33 @@ document.getElementById('endSessionBtn').addEventListener('click', async functio
   document.getElementById('loginError').textContent = '';
 });
 
+var _lbReleaseTrap = null;
+var _lbLastFocus = null;
+function openLbModal() {
+  var modal = document.getElementById('lbModal');
+  _lbLastFocus = document.activeElement;
+  modal.classList.add('active');
+  if (window.CNSA) _lbReleaseTrap = CNSA.trapFocus(modal);
+}
+function closeLbModal() {
+  document.getElementById('lbModal').classList.remove('active');
+  if (_lbReleaseTrap) { _lbReleaseTrap(); _lbReleaseTrap = null; }
+  if (_lbLastFocus && _lbLastFocus.focus) _lbLastFocus.focus();
+}
+
 document.getElementById('leaderboardBtn').addEventListener('click', function() {
   renderLeaderboard();
-  document.getElementById('lbModal').classList.add('active');
+  openLbModal();
 });
 
-document.getElementById('closeLbModal').addEventListener('click', function() {
-  document.getElementById('lbModal').classList.remove('active');
-});
+document.getElementById('closeLbModal').addEventListener('click', closeLbModal);
 
 document.getElementById('lbModal').addEventListener('click', function(e) {
-  if (e.target === this) this.classList.remove('active');
+  if (e.target === this) closeLbModal();
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('lbModal').classList.contains('active')) closeLbModal();
 });
 
 function renderLeaderboard() {
@@ -1276,5 +1322,7 @@ function renderLeaderboard() {
   }
 }
 </script>
+<script src="/assets/sim-ui.js"></script>
+<script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
 </body>
 </html>

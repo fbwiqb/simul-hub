@@ -19,6 +19,12 @@ function showToast(message) {
   setTimeout(() => toast.remove(), 8000);
 }
 
+function announce(message) {
+  if (window.CNSA && typeof window.CNSA.srAnnounce === 'function') {
+    window.CNSA.srAnnounce(message);
+  }
+}
+
 function timestamp() {
   return new Date().toLocaleString('ko-KR', {
     dateStyle: 'short',
@@ -54,7 +60,7 @@ function renderSidebar() {
       </label>
       <div class="plate-types" id="volcano-types">
         <label class="plate-type-toggle">
-          <input type="checkbox" data-volcano-category="recent">
+          <input type="checkbox" data-volcano-category="recent" checked>
           <i class="volcano-swatch recent"></i><span>1964년 이후 (빨강)</span>
         </label>
         <label class="plate-type-toggle">
@@ -167,7 +173,7 @@ async function main() {
 
   if (layerResults[1].status === 'fulfilled') {
     volcanoes = layerResults[1].value;
-    volcanoes.setActiveCategories?.([]);
+    volcanoes.setActiveCategories?.(readActiveVolcanoCategories());
     if (document.getElementById('toggle-volcanoes').checked) volcanoes.show();
   } else {
     console.error(layerResults[1].reason);
@@ -226,10 +232,35 @@ async function main() {
     if (quakes && features.length > 0) quakes.setDeepHistory(features);
   });
 
+  const plateToggle = document.getElementById('toggle-plates');
+
+  function applyDeepLink(isDeep) {
+    if (!plates) return;
+    if (isDeep) {
+      plates.setMode('subduction');
+      plates.show();
+      if (plateToggle) plateToggle.checked = true;
+      if (platesTypesPanel) platesTypesPanel.hidden = true;
+      announce('심발 지진 보기로 전환했어요. 섭입형 경계만 강조됩니다.');
+    } else if (plates.getMode?.() === 'subduction') {
+      plates.setMode('all');
+      plates.setActiveTypes(readActivePlateTypes());
+      if (platesTypesPanel) {
+        platesTypesPanel.hidden = !(plateToggle?.checked && plates.getMode?.() !== 'subduction');
+      }
+    }
+    legend?.sync();
+  }
+
   if (quakes) {
     observationControl = mountObservation(document.getElementById('observation-root'));
     quakes.setOnUpdate(() => updateStats(quakes, volcanoes, observationControl));
+    let lastDepth = 'all';
     filterControl = mountFilter(document.getElementById('filter-root'), async (state) => {
+      if (state.depth !== lastDepth) {
+        applyDeepLink(state.depth === 'deep');
+        lastDepth = state.depth;
+      }
       try {
         if (state.days > 7) await quakes.ensureMonth();
         quakes.setFilter(state);
@@ -282,6 +313,7 @@ async function main() {
   }
 
   updateStats(quakes, volcanoes, observationControl);
+  showToast('최근 7일 지진과 최신 분화 화산이 표시됩니다. 왼쪽 필터로 규모·기간·깊이를 바꿔 보세요.');
 }
 
 main().catch((error) => {

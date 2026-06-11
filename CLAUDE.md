@@ -1,76 +1,91 @@
-<!-- 최종 확인일: 2026-03-14 -->
+<!-- 최종 확인일: 2026-06-12 -->
 
 # CNSA Simulation Platform
+
+> **한 줄 설명**: 과학 교과 인터랙티브 시뮬레이션
+> **카테고리**: 04_정적 호스팅 (Vercel 정적 호스팅; spectrum만 Firebase Firestore)
+> **GitHub**: github.com/fbwiqb/simul-hub
+> **배포 URL**: simul.cnsatools.com
+> **마지막 동기화**: 2026-06-12
 
 > Interactive science simulations for CNSA education
 
 | Item | Value |
 |------|-------|
-| **Deploy** | Vercel |
+| **Deploy** | Vercel (`simul.cnsatools.com`) |
 | **URL** | simul.cnsatools.com |
 | **GitHub** | github.com/fbwiqb/simul-hub |
 | **Stack** | Static HTML/JS (vanilla) + Vercel Edge Middleware |
-| **Backend** | None |
+| **Backend** | None (except `spectrum/`: Firebase Firestore) |
+| **Count** | 11 simulations (3 sections) |
 
 ## Architecture
 
 ```
-시뮬레이션/
+과학-시뮬레이션/
 ├── index.html          # Hub page - simulation catalog (password-protected)
 ├── middleware.js        # Password auth for hub only (POST form, cookie-based)
-├── vercel.json          # Empty config
+├── vercel.json          # Static config
 ├── .gitignore
 │
-├── thermalbalance/     # Thermal equilibrium (통합과학1)
-├── spectrum/           # Light spectrum (통합과학1)
-├── magnet/             # Magnetic field + Faraday's law (통합과학1)
-├── ecosystem/          # Predator-prey population (통합과학2)
-├── enso-simulation/    # El Nino/La Nina climate (통합과학2)
-├── neuronsimul/        # Neuron action potential (생명과학)
-├── musclesimul/        # Muscle contraction (생명과학)
-├── Evosnail/           # Natural selection evolution (생명과학)
-├── glycolysis/         # Cellular respiration: glycolysis + TCA (생명과학, 26 SVG images)
-└── acid-base/          # Acid-base titration (화학)
+│  # 통합과학1 (물질과 에너지)
+├── spectrum/           # Element emission/absorption spectra + Firebase realtime quiz/battle
+├── stellar-evolution/  # Star life cycle and internal structure by mass
+├── quake-volcano/      # Global earthquake/volcano/plate map (Leaflet + geojson; added 2026-06-12)
+│  # 통합과학2 (시스템과 상호작용)
+├── thermalbalance/     # Earth radiation balance
+├── magnet/             # Magnetic field + Faraday's law (7 images)
+├── Evosnail/           # Natural selection: snail shell color
+├── enso-simulation/    # El Nino/La Nina climate (15 images)
+├── acid-base/          # Acid-base titration + pH curve
+│  # 생명과학 (생명 시스템)
+├── neuronsimul/        # Neuron action potential
+├── musclesimul/        # Muscle contraction / sliding filament
+└── glycolysis/         # Cellular respiration: glycolysis + TCA (p5.js, 26 SVG images)
 ```
 
 ## Auth
 
-- Hub page (`/`) only: password `cnsa2026` via POST form
+- Hub page (`/`) only: password `9544` via POST form (see `middleware.js`)
 - Individual simulations (`/spectrum/`, etc.): public, no auth
 - Cookie `hub_auth=1` (24-hour expiry)
 - Students receive direct simulation URLs, cannot browse hub
+- Middleware matcher: `['/', '/index.html']` — only the hub is gated
 
 ## Simulations by Subject
 
-### 통합과학1 (Matter & Energy)
+> Mirrors the live hub `index.html` (3 sections, 11 simulations).
+
+### 통합과학1 (물질과 에너지)
 | Simulation | Path | Description |
 |-----------|------|-------------|
-| 열평형 | `/thermalbalance/` | Heat transfer between two objects |
-| 스펙트럼 | `/spectrum/` | Emission/absorption spectra |
+| 스펙트럼 | `/spectrum/` | Element emission/absorption spectra + Firebase realtime quiz & battle (index/play/quiz/battle.html, spectrum-core.js) |
+| 별의 진화 | `/stellar-evolution/` | Star life cycle and internal structure by mass |
+| 지진·화산 | `/quake-volcano/` | Global earthquake/volcano/plate-boundary map (Leaflet, geojson) |
+
+### 통합과학2 (시스템과 상호작용)
+| Simulation | Path | Description |
+|-----------|------|-------------|
+| 지구시스템 복사 평형 | `/thermalbalance/` | Earth energy absorption/emission radiation balance |
 | 자기장 | `/magnet/` | Magnetic field + Faraday's law (7 images) |
-
-### 통합과학2 (Systems & Interactions)
-| Simulation | Path | Description |
-|-----------|------|-------------|
-| 생태계 | `/ecosystem/` | Predator-prey population dynamics |
-| 엘니뇨 | `/enso-simulation/` | ENSO climate model (15 images) |
-
-### 생명과학 (Life Science)
-| Simulation | Path | Description |
-|-----------|------|-------------|
-| 뉴런 | `/neuronsimul/` | Action potential propagation |
-| 근수축 | `/musclesimul/` | Sliding filament theory |
 | 진화 | `/Evosnail/` | Snail shell color natural selection |
-| 세포 호흡 | `/glycolysis/` | Glycolysis + TCA cycle step-by-step (26 SVG images) |
+| 엘니뇨 | `/enso-simulation/` | ENSO climate / atmosphere-ocean interaction (15 images) |
+| 산-염기 적정 | `/acid-base/` | Neutralization and pH titration curve |
 
-### 화학 (Chemistry)
+### 생명과학 (생명 시스템)
 | Simulation | Path | Description |
 |-----------|------|-------------|
-| 산-염기 적정 | `/acid-base/` | Neutralization and pH curve |
+| 뉴런 | `/neuronsimul/` | Action potential generation and propagation |
+| 근수축 | `/musclesimul/` | Sliding filament theory |
+| 세포 호흡 | `/glycolysis/` | Glycolysis + TCA cycle step-by-step (p5.js, 26 SVG images) |
 
 ## Notes
 
-- Each simulation is a single `index.html` with embedded CSS/JS
-- `magnet/` and `enso-simulation/` have additional image assets
-- All simulations are self-contained, no external dependencies
-- Previously individual GitHub repos, consolidated 2026-02-06
+- Most simulations are a single self-contained `index.html` with embedded CSS/JS.
+- Exceptions / critical deps (do NOT break when refactoring):
+  - `spectrum/` — Firebase Firestore (realtime multiplayer quiz/battle). Preserve Firebase config & data shape.
+  - `glycolysis/` — loads p5.js (CDN) + 26 SVG/PNG in `img/`.
+  - `quake-volcano/` — loads Leaflet (CDN) + ES modules in `src/` + geojson/json in `public/`.
+  - `magnet/` (7 images), `enso-simulation/` (15 images) — image assets.
+- Previously individual GitHub repos, consolidated 2026-02-06.
+- `quake-volcano/` integrated from the standalone `quake-volcano-korean` Vercel project on 2026-06-12 (that standalone project is now redundant).

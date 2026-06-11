@@ -3,57 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="cnsa-sim" content="자기장|통합과학2">
+    <link rel="stylesheet" href="/assets/sim-ui.css">
     <title>패러데이의 전자기 유도 법칙</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js" integrity="sha384-DNa3EMEwCbXdWesI58M+KapvoPndaEq/H61SjvIbqhxlLG0vGzqAF3htFLNBL+Z2" crossorigin="anonymous"></script>
     <style>
         :root {
-            --bg: #e8eaf6;
-            --container-bg: #fff;
-            --text: #333;
-            --text-dim: #666;
-            --primary: #3949ab;
-            --primary-light: #5c6bc0;
-            --accent: #43a047;
-            --accent-dark: #388e3c;
-            --danger: #e53935;
-            --info-bg: #e3f2fd;
-            --info-title: #1565c0;
-            --border: #ddd;
-            --control-bg: #f5f5f5;
-            --card-bg: white;
-            --hover-bg: rgba(57,73,171,0.08);
-            --shadow: 0 8px 24px rgba(0,0,0,0.12);
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
-            --radius: 12px;
-            --radius-sm: 8px;
-            --data-positive: #1565c0;
-            --data-negative: #c62828;
+            --bg: var(--cnsa-bg);
+            --container-bg: var(--cnsa-surface);
+            --text: var(--cnsa-text);
+            --text-dim: var(--cnsa-text-dim);
+            --primary: var(--cnsa-accent-1);
+            --primary-light: #7fe4ff;
+            --accent: var(--cnsa-accent-2);
+            --accent-dark: #2f63ac;
+            --danger: var(--cnsa-danger);
+            --info-bg: var(--cnsa-surface);
+            --info-title: var(--cnsa-accent-1);
+            --border: var(--cnsa-border);
+            --control-bg: var(--cnsa-surface);
+            --card-bg: var(--cnsa-surface);
+            --hover-bg: var(--cnsa-surface-2);
+            --shadow: var(--cnsa-shadow-lg);
+            --shadow-sm: var(--cnsa-shadow);
+            --radius: var(--cnsa-radius);
+            --radius-sm: var(--cnsa-radius-sm);
+            --data-positive: #5ad1ff;
+            --data-negative: #ff8a8a;
         }
         body.dark-mode {
-            --bg: #0d1117;
-            --container-bg: #161b22;
-            --text: #e0e0e0;
-            --text-dim: #999;
-            --primary: #7986cb;
             --primary-light: #9fa8da;
-            --accent: #66bb6a;
-            --accent-dark: #4caf50;
-            --danger: #ef5350;
-            --info-bg: #1a237e;
-            --info-title: #90caf9;
-            --border: #30363d;
-            --control-bg: #21262d;
-            --card-bg: #1a1f29;
-            --hover-bg: rgba(121,134,203,0.12);
-            --shadow: 0 8px 24px rgba(0,0,0,0.4);
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
             --data-positive: #64b5f6;
             --data-negative: #ef9a9a;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
-            background: var(--bg);
+            font-family: var(--cnsa-font);
+            background: var(--cnsa-bg);
+            background-attachment: fixed;
             padding: 15px;
             min-height: 100vh;
             transition: background 0.3s, color 0.3s;
@@ -63,6 +50,9 @@
             max-width: 1200px;
             margin: 0 auto;
             background: var(--container-bg);
+            backdrop-filter: var(--cnsa-blur);
+            -webkit-backdrop-filter: var(--cnsa-blur);
+            border: 1px solid var(--cnsa-border);
             padding: 20px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
@@ -75,9 +65,14 @@
             margin-bottom: 14px;
         }
         .header h1 {
-            color: var(--primary);
             font-size: 1.5em;
-            font-weight: 700;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            background: var(--cnsa-accent);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: var(--cnsa-accent-1);
         }
         .header-right {
             display: flex;
@@ -85,27 +80,28 @@
             gap: 8px;
         }
         .dark-toggle {
-            background: none;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            width: 36px;
-            height: 36px;
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border);
+            color: var(--cnsa-text);
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             cursor: pointer;
             font-size: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
+            transition: all 0.25s var(--cnsa-ease);
         }
-        .dark-toggle:hover { transform: scale(1.1); }
+        .dark-toggle:hover { transform: scale(1.08); background: var(--cnsa-surface-strong); border-color: var(--cnsa-border-strong); }
+        .dark-toggle:focus-visible { outline: 3px solid var(--cnsa-accent-1); outline-offset: 2px; }
         .kbd-hint {
             font-size: 11px;
             color: var(--text-dim);
-            background: var(--control-bg);
-            padding: 3px 8px;
-            border-radius: 4px;
-            border: 1px solid var(--border);
+            background: var(--cnsa-surface);
+            padding: 4px 10px;
+            border-radius: var(--cnsa-radius-pill);
+            border: 1px solid var(--cnsa-border);
         }
         #canvasContainer {
             text-align: center;
@@ -113,9 +109,11 @@
             border-radius: var(--radius-sm);
             overflow: hidden;
             box-shadow: var(--shadow-sm);
-            background: var(--card-bg);
+            background: #fff;
+            border: 1px solid var(--cnsa-border);
             padding: 6px;
         }
+        body.dark-mode #canvasContainer { background: #16161e; }
         #canvasContainer canvas {
             max-width: 100%;
             height: auto !important;
@@ -129,14 +127,14 @@
             margin-bottom: 12px;
         }
         .data-item {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border);
             border-radius: var(--radius-sm);
             padding: 10px 12px;
             text-align: center;
-            transition: all 0.3s;
+            transition: all 0.25s var(--cnsa-ease);
         }
-        .data-item:hover { box-shadow: var(--shadow-sm); }
+        .data-item:hover { box-shadow: var(--shadow-sm); border-color: var(--cnsa-border-strong); }
         .data-label {
             font-size: 11px;
             color: var(--text-dim);
@@ -162,7 +160,8 @@
             gap: 10px;
             margin-bottom: 12px;
             padding: 14px;
-            background: var(--control-bg);
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border);
             border-radius: var(--radius-sm);
             align-items: flex-start;
             box-shadow: var(--shadow-sm);
@@ -183,8 +182,15 @@
         }
         .control-item input[type="range"] {
             width: 100%;
+            height: 28px;
             cursor: pointer;
-            accent-color: var(--primary);
+            accent-color: var(--cnsa-accent-1);
+        }
+        .radio-group input, .checkbox-group input {
+            accent-color: var(--cnsa-accent-1);
+            width: 17px;
+            height: 17px;
+            cursor: pointer;
         }
         .range-label {
             font-size: 12px;
@@ -216,49 +222,69 @@
             flex-wrap: wrap;
         }
         button {
-            padding: 8px 14px;
-            background: var(--accent);
-            color: white;
-            border: none;
+            padding: 9px 16px;
+            min-height: 40px;
+            background: var(--cnsa-surface);
+            color: var(--cnsa-text-dim);
+            border: 1px solid var(--cnsa-border);
             border-radius: var(--radius-sm);
             cursor: pointer;
+            font-family: var(--cnsa-font);
             font-size: 13px;
             font-weight: 600;
             height: fit-content;
             align-self: center;
-            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            transition: transform 0.18s var(--cnsa-ease), box-shadow 0.18s var(--cnsa-ease), filter 0.18s var(--cnsa-ease), background 0.18s var(--cnsa-ease);
         }
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            filter: brightness(1.1);
+            transform: translateY(-1px);
+            color: #fff;
+            background: var(--cnsa-surface-strong);
+            border-color: var(--cnsa-border-strong);
         }
         button:active {
             transform: translateY(0);
         }
+        button:focus-visible {
+            outline: 3px solid var(--cnsa-accent-1);
+            outline-offset: 2px;
+        }
         button.active {
-            background: var(--primary);
+            background: var(--cnsa-accent);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 14px rgba(0,130,200,0.32);
         }
         button.active:hover {
-            background: var(--primary-light);
+            filter: brightness(1.07);
+            color: #fff;
+            background: var(--cnsa-accent);
         }
         button.danger {
-            background: var(--danger);
+            background: rgba(239,68,68,0.18);
+            border-color: rgba(239,68,68,0.4);
+            color: #ffb4b4;
+        }
+        button.danger:hover {
+            background: var(--cnsa-danger);
+            color: #fff;
+            border-color: transparent;
         }
         .section-toggle {
             display: flex;
             align-items: center;
             gap: 6px;
             cursor: pointer;
-            padding: 8px 12px;
-            background: var(--control-bg);
+            padding: 10px 14px;
+            min-height: 40px;
+            background: var(--cnsa-surface);
             border-radius: var(--radius-sm);
             margin-bottom: 12px;
-            border: 1px solid var(--border);
-            transition: all 0.2s;
+            border: 1px solid var(--cnsa-border);
+            transition: all 0.2s var(--cnsa-ease);
             user-select: none;
         }
+        .section-toggle:focus-visible { outline: 3px solid var(--cnsa-accent-1); outline-offset: 2px; }
         .section-toggle:hover { background: var(--hover-bg); }
         .section-toggle .arrow {
             transition: transform 0.3s;
@@ -279,8 +305,8 @@
             max-height: 600px;
         }
         .graph-container {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border);
             border-radius: var(--radius-sm);
             padding: 10px;
             margin-bottom: 12px;
@@ -318,12 +344,13 @@
         }
         .info-section {
             padding: 16px;
-            background: var(--info-bg);
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border);
             border-radius: var(--radius-sm);
             transition: background 0.3s;
         }
         .info-section h2 {
-            color: var(--info-title);
+            color: var(--cnsa-accent-1);
             margin-bottom: 8px;
             font-size: 1.1em;
         }
@@ -340,11 +367,14 @@
             font-size: 12px;
             color: var(--text-dim);
         }
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .data-bar { grid-template-columns: repeat(2, 1fr); }
-            .controls { gap: 8px; }
-            .control-item { min-width: 120px; }
+            .controls { gap: 8px; flex-direction: column; }
+            .control-item { min-width: 0; width: 100%; }
+            .button-group { width: 100%; }
+            .button-group button { flex: 1; }
             .header h1 { font-size: 1.2em; }
+            .kbd-hint { display: none; }
         }
         @media (max-width: 480px) {
             body { padding: 8px; }
@@ -361,7 +391,7 @@
             <h1>패러데이의 전자기 유도 법칙</h1>
             <div class="header-right">
                 <span class="kbd-hint">Space:정지 F:극반전 R:리셋</span>
-                <button class="dark-toggle" id="darkToggle" title="다크 모드">☀️</button>
+                <button class="dark-toggle" id="darkToggle" title="다이어그램 명암 전환" aria-label="다이어그램 명암 전환">☀️</button>
             </div>
         </div>
 
@@ -369,56 +399,56 @@
 
         <div class="data-bar">
             <div class="data-item">
-                <div class="data-label">자기장 세기 B</div>
-                <div class="data-value" id="dataB">0.00<span class="data-unit">T</span></div>
+                <div class="data-label">자기장 세기 B <span style="text-transform:none;font-weight:500">(상대값)</span></div>
+                <div class="data-value" id="dataB">0.00<span class="data-unit">μT</span></div>
             </div>
             <div class="data-item">
-                <div class="data-label">유도 기전력 ε</div>
-                <div class="data-value" id="dataEMF">0.00<span class="data-unit">V</span></div>
+                <div class="data-label">유도 기전력 ε <span style="text-transform:none;font-weight:500">(상대값)</span></div>
+                <div class="data-value" id="dataEMF">0.00<span class="data-unit">mV</span></div>
             </div>
             <div class="data-item">
-                <div class="data-label">유도 전류 I</div>
-                <div class="data-value" id="dataCurrent">0.00<span class="data-unit">A</span></div>
+                <div class="data-label">유도 전류 I <span style="text-transform:none;font-weight:500">(상대값)</span></div>
+                <div class="data-value" id="dataCurrent">0.00<span class="data-unit">mA</span></div>
             </div>
             <div class="data-item">
-                <div class="data-label">자석 속도 v</div>
-                <div class="data-value" id="dataVelocity">0.0<span class="data-unit">m/s</span></div>
+                <div class="data-label">자석 속도 v <span style="text-transform:none;font-weight:500">(상대값)</span></div>
+                <div class="data-value" id="dataVelocity">0.0<span class="data-unit">cm/s</span></div>
             </div>
         </div>
 
         <div class="controls">
             <div class="control-item">
-                <label>모드 선택</label>
-                <div class="button-group">
-                    <button id="btnAutoMode" class="active">자동</button>
-                    <button id="btnDragMode">드래그</button>
+                <label id="lblMode">모드 선택</label>
+                <div class="button-group" role="group" aria-labelledby="lblMode">
+                    <button id="btnAutoMode" class="active" aria-pressed="true">자동</button>
+                    <button id="btnDragMode" aria-pressed="false">드래그</button>
                 </div>
             </div>
             <div class="control-item" id="autoControls">
                 <label for="rangeA">자석 속도</label>
-                <input type="range" id="rangeA" min="0" max="20" value="0">
-                <div class="range-label" id="speedLabel">0</div>
+                <input type="range" id="rangeA" min="0" max="20" value="6" aria-label="자동 모드 자석 속도">
+                <div class="range-label" id="speedLabel">6</div>
             </div>
             <div class="control-item">
-                <label>조작</label>
-                <div class="button-group">
-                    <button id="btnFlipMagnet">극 반전</button>
-                    <button id="btnPause">정지</button>
-                    <button id="btnReset" class="danger">리셋</button>
+                <label id="lblOps">조작</label>
+                <div class="button-group" role="group" aria-labelledby="lblOps">
+                    <button id="btnFlipMagnet" aria-label="자석 극 반전">극 반전</button>
+                    <button id="btnPause" aria-label="시뮬레이션 정지/재생">정지</button>
+                    <button id="btnReset" class="danger" aria-label="시뮬레이션 리셋">리셋</button>
                 </div>
             </div>
             <div class="control-item">
                 <label>표시 옵션</label>
                 <div class="checkbox-group">
                     <label><input type="checkbox" id="checkField"> 자기장</label>
-                    <label><input type="checkbox" id="checkCurrent"> 유도 전류</label>
+                    <label><input type="checkbox" id="checkCurrent" checked> 유도 전류</label>
                     <label><input type="checkbox" id="checkElectromagnet" checked> 전자석 극</label>
                 </div>
             </div>
         </div>
 
-        <div class="section-toggle" id="advancedToggle">
-            <span class="arrow" id="advancedArrow">▶</span>
+        <div class="section-toggle" id="advancedToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="advancedSection">
+            <span class="arrow" id="advancedArrow" aria-hidden="true">▶</span>
             <span>고급 설정</span>
         </div>
         <div class="collapsible" id="advancedSection">
@@ -454,8 +484,8 @@
             <canvas id="emfGraph"></canvas>
         </div>
 
-        <div class="section-toggle" id="infoToggle">
-            <span class="arrow" id="infoArrow">▶</span>
+        <div class="section-toggle" id="infoToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="infoSection">
+            <span class="arrow" id="infoArrow" aria-hidden="true">▶</span>
             <span>개념 설명</span>
         </div>
         <div class="collapsible" id="infoSection">
@@ -632,16 +662,24 @@
             document.getElementById('btnAutoMode').addEventListener('click', function() {
                 isDragMode = false;
                 this.classList.add('active');
-                document.getElementById('btnDragMode').classList.remove('active');
+                this.setAttribute('aria-pressed', 'true');
+                var dragBtn = document.getElementById('btnDragMode');
+                dragBtn.classList.remove('active');
+                dragBtn.setAttribute('aria-pressed', 'false');
                 document.getElementById('autoControls').style.display = 'flex';
+                announce('자동 모드');
             });
             document.getElementById('btnDragMode').addEventListener('click', function() {
                 isDragMode = true;
                 this.classList.add('active');
-                document.getElementById('btnAutoMode').classList.remove('active');
+                this.setAttribute('aria-pressed', 'true');
+                var autoBtn = document.getElementById('btnAutoMode');
+                autoBtn.classList.remove('active');
+                autoBtn.setAttribute('aria-pressed', 'false');
                 document.getElementById('autoControls').style.display = 'none';
                 document.getElementById('rangeA').value = 0;
                 updateSliderLabels();
+                announce('드래그 모드, 자석을 끌어 움직이세요');
             });
 
             document.getElementById('rangeA').addEventListener('input', updateSliderLabels);
@@ -656,18 +694,22 @@
 
             document.getElementById('darkToggle').addEventListener('click', toggleDarkMode);
 
-            document.getElementById('advancedToggle').addEventListener('click', function() {
-                var sec = document.getElementById('advancedSection');
-                var arr = document.getElementById('advancedArrow');
-                sec.classList.toggle('open');
-                arr.classList.toggle('open');
-            });
-            document.getElementById('infoToggle').addEventListener('click', function() {
-                var sec = document.getElementById('infoSection');
-                var arr = document.getElementById('infoArrow');
-                sec.classList.toggle('open');
-                arr.classList.toggle('open');
-            });
+            function bindToggle(toggleId, sectionId, arrowId) {
+                var toggle = document.getElementById(toggleId);
+                function run() {
+                    var sec = document.getElementById(sectionId);
+                    var arr = document.getElementById(arrowId);
+                    var open = sec.classList.toggle('open');
+                    arr.classList.toggle('open');
+                    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                }
+                toggle.addEventListener('click', run);
+                toggle.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); run(); }
+                });
+            }
+            bindToggle('advancedToggle', 'advancedSection', 'advancedArrow');
+            bindToggle('infoToggle', 'infoSection', 'infoArrow');
 
             document.addEventListener('keydown', function(e) {
                 if (e.target.tagName === 'INPUT') return;
@@ -680,21 +722,27 @@
             });
         }
 
+        function announce(text) {
+            if (window.CNSA && CNSA.srAnnounce) CNSA.srAnnounce(text);
+        }
+
         function doReset() {
             theta1 = 0;
             magnetX = 350;
             prevMagnetX = 350;
             accel = 0;
-            document.getElementById('rangeA').value = 0;
+            document.getElementById('rangeA').value = 6;
             isPaused = false;
             document.getElementById('btnPause').textContent = '정지';
             document.getElementById('btnPause').classList.remove('active');
             emfHistory = [];
             updateSliderLabels();
+            announce('초기화 완료');
         }
 
         function doFlip() {
             magnetFlipped = !magnetFlipped;
+            announce(magnetFlipped ? '자석 극 반전됨' : '자석 극 원위치');
         }
 
         function doPause() {
@@ -704,9 +752,11 @@
                 pausedMagnetX = magnetX;
                 document.getElementById('btnPause').textContent = '재생';
                 document.getElementById('btnPause').classList.add('active');
+                announce('정지됨');
             } else {
                 document.getElementById('btnPause').textContent = '정지';
                 document.getElementById('btnPause').classList.remove('active');
+                announce('재생됨');
             }
         }
 
@@ -735,29 +785,61 @@
             if (el) pathIndex = parseInt(el.value);
         }
 
-        function mousePressed() {
-            if (isDragMode && dist(mouseX, mouseY, magnetX, centerY) < magnetW / 2) {
+        function getCanvasScale() {
+            var c = document.querySelector('#canvasContainer canvas');
+            if (!c) return 1;
+            var r = c.getBoundingClientRect();
+            return r.width > 0 ? (CW / r.width) : 1;
+        }
+
+        function getCanvasMouseX() {
+            return mouseX * getCanvasScale();
+        }
+        function getCanvasMouseY() {
+            return mouseY * getCanvasScale();
+        }
+
+        function startDragIfOnMagnet() {
+            if (isDragMode && dist(getCanvasMouseX(), getCanvasMouseY(), magnetX, centerY) < magnetW / 2) {
                 isDragging = true;
                 document.body.style.cursor = 'grabbing';
+                return true;
             }
+            return false;
         }
-        function mouseReleased() {
+
+        function endDrag() {
             isDragging = false;
             document.body.style.cursor = '';
         }
+
+        function mousePressed() {
+            startDragIfOnMagnet();
+        }
+        function mouseReleased() {
+            endDrag();
+        }
         function mouseMoved() {
-            if (isDragMode && dist(mouseX, mouseY, magnetX, centerY) < magnetW / 2) {
+            if (isDragMode && dist(getCanvasMouseX(), getCanvasMouseY(), magnetX, centerY) < magnetW / 2) {
                 if (!isDragging) document.getElementById('canvasContainer').style.cursor = 'grab';
             } else {
                 document.getElementById('canvasContainer').style.cursor = '';
             }
         }
 
-        function updateDataDisplay(rawAccel, emfVal) {
+        function touchStarted() {
+            if (startDragIfOnMagnet()) return false;
+        }
+        function touchMoved() {
+            if (isDragMode && isDragging) return false;
+        }
+        function touchEnded() {
+            endDrag();
+        }
+
+        function updateDataDisplay(rawAccel, emfVal, velocity) {
             var bField = magneticField2 ? magneticField2.mag() * magnetStrength * 1e6 : 0;
-            var emf = Math.abs(emfVal * coilTurns);
-            var current = emf * 0.5;
-            var velocity = Math.abs(magnetX - prevMagnetX) * 30;
+            if (velocity === undefined) velocity = Math.abs(magnetX - prevMagnetX) * 30;
 
             var elB = document.getElementById('dataB');
             elB.innerHTML = bField.toFixed(2) + '<span class="data-unit">μT</span>';
@@ -782,9 +864,11 @@
 
             updatePathIndex();
 
+            var oldMagnetX = magnetX;
+
             if (!isPaused) {
                 if (isDragMode && isDragging) {
-                    magnetX = constrain(mouseX, 250, 450);
+                    magnetX = constrain(getCanvasMouseX(), 250, 450);
                 } else if (!isDragMode) {
                     var rangeA = parseInt(document.getElementById('rangeA').value);
                     theta1 += 0.01 * rangeA;
@@ -794,8 +878,6 @@
                 magneticField2 = calculateMagneticField();
                 accel = magneticField2.mag() - magneticField1.mag();
                 accel *= 1500000 * magnetStrength;
-
-                prevMagnetX = magnetX;
             } else {
                 accel = pausedAccel;
                 magnetX = pausedMagnetX;
@@ -903,7 +985,9 @@
                 magneticField1 = magneticField2;
             }
 
-            updateDataDisplay(accel, emfVal);
+            var velocity = isPaused ? 0 : Math.abs(magnetX - oldMagnetX) * 30;
+            prevMagnetX = oldMagnetX;
+            updateDataDisplay(accel, emfVal, velocity);
             drawGraph();
         }
 
@@ -1117,5 +1201,7 @@
             }
         });
     </script>
+    <script src="/assets/sim-ui.js"></script>
+    <script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
 </body>
 </html>

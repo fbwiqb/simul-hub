@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="cnsa-sim" content="뉴런|생명과학">
+    <link rel="stylesheet" href="/assets/sim-ui.css">
     <title>신경세포 막전위 시뮬레이터</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"
+        integrity="sha256-Mh46P6mNpKqpV9EL5Xy7UU3gmJ7tj51ya10FkCzQGQQ="
+        crossorigin="anonymous"></script>
     <style>
         * {
             margin: 0;
@@ -13,12 +18,12 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
-            background: linear-gradient(135deg, #f8f9ff 0%, #eef0f8 100%);
+            font-family: var(--cnsa-font);
+            background: var(--cnsa-bg);
+            background-attachment: fixed;
+            color: var(--cnsa-text);
             min-height: 100vh;
-            padding: 10px;
-            padding-bottom: 10px;
-            transition: background 0.3s ease;
+            padding: 16px 10px 10px;
         }
 
         .container {
@@ -28,19 +33,24 @@
             width: 100%;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .container {
-                padding: 10px;
+                padding: 6px;
             }
 
             h1 {
-                font-size: 22px;
-                margin-bottom: 20px;
+                font-size: 20px;
+                margin-bottom: 14px;
             }
 
             .control-row {
                 flex-direction: column;
-                gap: 15px;
+                align-items: stretch;
+                gap: 14px;
+            }
+
+            .control-group {
+                flex-wrap: wrap;
             }
 
             input[type="range"] {
@@ -50,30 +60,38 @@
 
         h1 {
             text-align: center;
-            font-size: 22px;
-            margin-bottom: 10px;
-            color: #2c3e50;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin-bottom: 14px;
+            color: var(--cnsa-text);
+        }
+
+        h1 span.accent {
+            background: var(--cnsa-accent);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .control-panel {
-            background: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            transition: box-shadow 0.3s ease;
-        }
-
-        .control-panel:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            background: var(--cnsa-surface);
+            backdrop-filter: var(--cnsa-blur);
+            -webkit-backdrop-filter: var(--cnsa-blur);
+            border: 1px solid var(--cnsa-border);
+            padding: 14px;
+            border-radius: var(--cnsa-radius);
+            margin-bottom: 12px;
+            box-shadow: var(--cnsa-shadow);
         }
 
         .control-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
         }
 
         .control-row:last-child {
@@ -88,177 +106,192 @@
 
         label {
             font-weight: 600;
-            font-size: 16px;
+            font-size: 15px;
+            color: var(--cnsa-text);
         }
 
         input[type="number"] {
-            padding: 8px 12px;
-            border: 2px solid #dee2e6;
-            border-radius: 6px;
+            padding: 9px 12px;
+            border: 1px solid var(--cnsa-border-strong);
+            border-radius: var(--cnsa-radius-sm);
             font-size: 15px;
-            width: 80px;
-            transition: all 0.2s ease;
+            font-family: var(--cnsa-font);
+            width: 82px;
+            min-height: 40px;
+            background: var(--cnsa-surface);
+            color: var(--cnsa-text);
+            transition: all 0.2s var(--cnsa-ease);
         }
 
         input[type="number"]:focus {
-            border-color: #3d4e9f;
+            border-color: var(--cnsa-accent-1);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(61,78,159,0.1);
+            box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.18);
         }
 
         select {
-            padding: 8px 12px;
-            border: 2px solid #dee2e6;
-            border-radius: 6px;
+            padding: 9px 12px;
+            border: 1px solid var(--cnsa-border-strong);
+            border-radius: var(--cnsa-radius-sm);
             font-size: 15px;
-            background: white;
+            font-family: var(--cnsa-font);
+            min-height: 40px;
+            background: var(--cnsa-surface);
+            color: var(--cnsa-text);
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.2s ease;
+            transition: all 0.2s var(--cnsa-ease);
+        }
+
+        select option {
+            background: #16213e;
+            color: var(--cnsa-text);
         }
 
         select:hover {
-            border-color: #3d4e9f;
+            border-color: var(--cnsa-accent-1);
         }
 
         select:focus {
-            border-color: #3d4e9f;
+            border-color: var(--cnsa-accent-1);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(61,78,159,0.1);
+            box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.18);
         }
 
         input[type="range"] {
-            width: 800px;
+            flex: 1 1 320px;
+            min-width: 0;
+            width: auto;
             height: 8px;
             -webkit-appearance: none;
             appearance: none;
-            background: #dee2e6;
+            background: var(--cnsa-surface-strong);
             border-radius: 5px;
             outline: none;
-        }
-
-        @media (max-width: 1200px) {
-            input[type="range"] {
-                width: 600px;
-            }
-        }
-
-        @media (max-width: 900px) {
-            input[type="range"] {
-                width: 400px;
-            }
         }
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #3d4e9f;
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(61,78,159,0.3);
-            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 130, 200, 0.5);
+            transition: all 0.2s var(--cnsa-ease);
         }
 
         input[type="range"]::-webkit-slider-thumb:hover {
-            background: #2c3a7a;
-            box-shadow: 0 3px 10px rgba(61,78,159,0.5);
-            transform: scale(1.15);
+            box-shadow: 0 3px 12px rgba(0, 210, 255, 0.6);
+            transform: scale(1.12);
         }
 
         input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: #3d4e9f;
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
             border-radius: 50%;
             cursor: pointer;
             border: none;
-            box-shadow: 0 2px 6px rgba(61,78,159,0.3);
-            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 130, 200, 0.5);
+            transition: all 0.2s var(--cnsa-ease);
         }
 
         input[type="range"]::-moz-range-thumb:hover {
-            background: #2c3a7a;
-            box-shadow: 0 3px 10px rgba(61,78,159,0.5);
-            transform: scale(1.15);
+            box-shadow: 0 3px 12px rgba(0, 210, 255, 0.6);
+            transform: scale(1.12);
+        }
+
+        input[type="range"]:focus-visible {
+            outline: 3px solid var(--cnsa-accent-1);
+            outline-offset: 4px;
         }
 
         .time-display {
+            font-family: var(--cnsa-mono);
             font-size: 18px;
-            font-weight: bold;
-            color: #3d4e9f;
-            min-width: 80px;
+            font-weight: 700;
+            color: #cdeffd;
+            min-width: 86px;
             text-align: center;
         }
 
         button {
-            padding: 10px 25px;
-            font-size: 16px;
-            border-radius: 8px;
+            padding: 10px 22px;
+            font-size: 15px;
+            font-family: var(--cnsa-font);
+            border-radius: var(--cnsa-radius-sm);
             border: none;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            min-height: 40px;
+            color: #fff;
+            transition: transform 0.18s var(--cnsa-ease), box-shadow 0.18s var(--cnsa-ease), filter 0.18s var(--cnsa-ease);
+            box-shadow: var(--cnsa-shadow);
         }
 
         .btn-help {
-            background: linear-gradient(135deg, #3d4e9f 0%, #5068c4 100%);
-            color: white;
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border);
+            color: var(--cnsa-text-dim);
+            box-shadow: none;
         }
 
         .btn-help:hover {
-            background: linear-gradient(135deg, #2c3a7a 0%, #3d4e9f 100%);
+            color: #fff;
+            background: var(--cnsa-surface-strong);
+            border-color: var(--cnsa-border-strong);
         }
 
         .btn-reset {
-            background: linear-gradient(135deg, #dc3545 0%, #e85d6a 100%);
-            color: white;
+            background: rgba(239, 68, 68, 0.22);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #ffd9d9;
         }
 
         .btn-reset:hover {
-            background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+            background: rgba(239, 68, 68, 0.34);
         }
 
         .btn-play {
-            background: linear-gradient(135deg, #28a745 0%, #48c774 100%);
-            color: white;
-            min-width: 120px;
-        }
-
-        .btn-play:hover {
-            background: linear-gradient(135deg, #218838 0%, #28a745 100%);
+            background: var(--cnsa-accent);
+            min-width: 124px;
+            box-shadow: 0 4px 14px rgba(0, 130, 200, 0.32);
         }
 
         .btn-play.playing {
-            background: linear-gradient(135deg, #fd7e14 0%, #fdab6c 100%);
-        }
-
-        .btn-play.playing:hover {
-            background: linear-gradient(135deg, #e8590c 0%, #fd7e14 100%);
+            background: linear-gradient(90deg, #f59e0b, #f97316);
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.34);
         }
 
         .btn-capture {
-            background: linear-gradient(135deg, #28a745 0%, #48c774 100%);
-            color: white;
-            padding: 8px 20px;
+            background: rgba(34, 197, 94, 0.22);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            color: #d6ffe5;
+            padding: 8px 18px;
             font-size: 14px;
             margin-left: 10px;
         }
 
         .btn-capture:hover {
-            background: linear-gradient(135deg, #218838 0%, #28a745 100%);
+            background: rgba(34, 197, 94, 0.34);
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            transform: translateY(-1px);
+            filter: brightness(1.07);
         }
 
         button:active {
             transform: translateY(0);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            filter: none;
+        }
+
+        button:focus-visible,
+        .modal-close:focus-visible {
+            outline: 3px solid var(--cnsa-accent-1);
+            outline-offset: 2px;
         }
 
         .modal {
@@ -274,15 +307,19 @@
         }
 
         .modal-content {
-            background-color: white;
+            background: rgba(20, 28, 52, 0.96);
+            backdrop-filter: var(--cnsa-blur);
+            -webkit-backdrop-filter: var(--cnsa-blur);
+            border: 1px solid var(--cnsa-border-strong);
+            color: var(--cnsa-text);
             margin: 5% auto;
             padding: 30px;
-            border-radius: 20px;
+            border-radius: var(--cnsa-radius);
             width: 90%;
             max-width: 700px;
             max-height: 85vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            box-shadow: var(--cnsa-shadow-lg);
             animation: modalSlideIn 0.3s ease;
         }
 
@@ -297,42 +334,53 @@
             }
         }
 
+        @media (prefers-reduced-motion: reduce) {
+            .modal-content {
+                animation: none;
+            }
+        }
+
         .modal-header {
-            background: linear-gradient(135deg, #3d4e9f 0%, #667eea 100%);
-            color: white;
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.22), rgba(58, 123, 213, 0.22));
+            color: #fff;
             padding: 20px;
             margin: -30px -30px 20px -30px;
-            border-radius: 20px 20px 0 0;
+            border-radius: var(--cnsa-radius) var(--cnsa-radius) 0 0;
+            border-bottom: 1px solid var(--cnsa-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .modal-header h2 {
-            color: white;
+            color: #fff;
             margin: 0;
-            font-size: 24px;
+            font-size: 22px;
+            font-weight: 700;
         }
 
         .modal-close {
             background: none;
-            color: white;
+            color: #fff;
             border: none;
             font-size: 30px;
             cursor: pointer;
             padding: 0;
-            width: 35px;
-            height: 35px;
+            width: 40px;
+            height: 40px;
+            min-height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s;
+            box-shadow: none;
         }
 
         .modal-close:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: rotate(90deg) scale(1.1);
+            filter: none;
         }
 
         .modal-close:active {
@@ -341,32 +389,30 @@
 
         .modal-body {
             padding: 10px;
-            color: #333;
+            color: var(--cnsa-text-dim);
             line-height: 1.8;
         }
 
         .help-section {
-            margin-bottom: 25px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border-left: 4px solid #3d4e9f;
-            transition: all 0.2s ease;
-        }
-
-        .help-section:hover {
-            background: #f1f3f5;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 22px;
+            padding: 18px;
+            background: var(--cnsa-surface);
+            border-radius: var(--cnsa-radius-sm);
+            border-left: 4px solid var(--cnsa-accent-1);
+            border-top: 1px solid var(--cnsa-border);
+            border-right: 1px solid var(--cnsa-border);
+            border-bottom: 1px solid var(--cnsa-border);
         }
 
         .help-section h3 {
-            color: #3d4e9f;
+            color: #cdeffd;
             margin-bottom: 10px;
-            font-size: 18px;
+            font-size: 17px;
         }
 
         .help-section p, .help-section ul {
             margin: 10px 0;
+            color: var(--cnsa-text-dim);
         }
 
         .help-section ul {
@@ -378,103 +424,138 @@
         }
 
         .help-section strong {
-            color: #3d4e9f;
+            color: #cdeffd;
+        }
+
+        .phase-key {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .phase-key li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .phase-swatch {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
         }
 
         .voltage-table-container {
-            border: 2px solid #dee2e6;
-            background-color: white;
-            padding: 8px;
-            border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            margin-bottom: 8px;
-            transition: box-shadow 0.3s ease;
-        }
-
-        .voltage-table-container:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            background: var(--cnsa-surface);
+            backdrop-filter: var(--cnsa-blur);
+            -webkit-backdrop-filter: var(--cnsa-blur);
+            border: 1px solid var(--cnsa-border);
+            padding: 12px;
+            border-radius: var(--cnsa-radius);
+            box-shadow: var(--cnsa-shadow);
+            margin-bottom: 12px;
         }
 
         .voltage-table-container h4 {
             margin-top: 0;
             text-align: center;
-            font-size: 13px;
-            margin-bottom: 6px;
-            color: #2c3e50;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: var(--cnsa-text);
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-wrap: wrap;
             gap: 10px;
+        }
+
+        .voltage-table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .voltage-table {
             width: 100%;
+            min-width: 480px;
             border-collapse: collapse;
         }
 
         .voltage-table th,
         .voltage-table td {
-            border: 2px solid #dee2e6;
-            padding: 5px 8px;
+            border: 1px solid var(--cnsa-border);
+            padding: 7px 8px;
             text-align: center;
         }
 
         .voltage-table th {
-            background-color: #e9ecef;
+            background: var(--cnsa-surface-strong);
+            color: var(--cnsa-text);
             font-weight: 600;
-            font-size: 12px;
+            font-size: 13px;
+            white-space: nowrap;
         }
 
         .voltage-table th span {
-            font-size: 9px;
+            font-size: 10px;
             font-weight: 400;
-            color: #6c757d;
+            color: var(--cnsa-text-dimmer);
         }
 
         .voltage-table td {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
+            font-family: var(--cnsa-mono);
+            color: var(--cnsa-text);
         }
 
         .voltage-table td.time-cell {
-            font-weight: bold;
-            background-color: #f8f9fa;
-            font-size: 12px;
+            font-weight: 700;
+            background: var(--cnsa-surface);
+            font-size: 13px;
         }
 
         .voltage-table td.voltage-cell {
-            background-color: white;
-            color: #212529;
-        }
-
-        .captured-row {
-            background-color: #f8f9fa !important;
+            background: rgba(255, 255, 255, 0.03);
         }
 
         .captured-row td {
-            background-color: #f8f9fa !important;
+            background: rgba(255, 255, 255, 0.06) !important;
         }
 
         .live-row td.voltage-cell {
-            font-weight: bold;
+            font-weight: 700;
+        }
+
+        .phase-tag {
+            display: inline-block;
+            margin-top: 2px;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: var(--cnsa-font);
+            letter-spacing: 0.02em;
         }
 
         .delete-btn {
-            background: linear-gradient(135deg, #dc3545 0%, #e85d6a 100%);
-            color: white;
-            border: none;
-            padding: 2px 6px;
-            border-radius: 3px;
+            background: rgba(239, 68, 68, 0.22);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #ffd9d9;
+            padding: 4px 8px;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 11px;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(220,53,69,0.3);
+            font-size: 12px;
+            min-height: 28px;
+            transition: all 0.2s var(--cnsa-ease);
         }
 
         .delete-btn:hover {
-            background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+            background: rgba(239, 68, 68, 0.36);
             transform: scale(1.05);
-            box-shadow: 0 2px 6px rgba(220,53,69,0.4);
         }
 
         .delete-btn:active {
@@ -482,17 +563,19 @@
         }
 
         .neuron-container {
-            background: linear-gradient(135deg, #e7f3ff 0%, #d4ebff 100%);
-            border: 2px solid #0066cc;
-            border-radius: 8px;
-            padding: 8px;
-            margin-bottom: 8px;
-            box-shadow: 0 2px 8px rgba(0,102,204,0.1);
-            transition: box-shadow 0.3s ease;
+            background: linear-gradient(135deg, #eef6ff 0%, #dceeff 100%);
+            border: 1px solid var(--cnsa-border-strong);
+            border-radius: var(--cnsa-radius);
+            padding: 10px;
+            margin-bottom: 12px;
+            box-shadow: var(--cnsa-shadow);
         }
 
-        .neuron-container:hover {
-            box-shadow: 0 4px 12px rgba(0,102,204,0.15);
+        .neuron-caption {
+            text-align: center;
+            font-size: 12px;
+            color: var(--cnsa-text-dim);
+            margin-bottom: 8px;
         }
 
         #neuronSvg {
@@ -500,6 +583,10 @@
             margin: 0 auto;
             max-width: 100%;
             height: auto;
+        }
+
+        #neuronSvg text {
+            font-family: var(--cnsa-font);
         }
 
         .graphs-container {
@@ -523,16 +610,17 @@
         }
 
         .graph-box {
-            background: white;
-            border-radius: 8px;
-            padding: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
+            background: #ffffff;
+            border-radius: var(--cnsa-radius-sm);
+            padding: 10px;
+            box-shadow: var(--cnsa-shadow);
+            border: 1px solid var(--cnsa-border);
+            transition: transform 0.3s var(--cnsa-ease), box-shadow 0.3s var(--cnsa-ease);
             min-width: 0;
         }
 
         .graph-box:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 22px rgba(0,0,0,0.28);
             transform: translateY(-2px);
         }
 
@@ -547,35 +635,39 @@
 
         .graph-box h3 {
             text-align: center;
-            margin-bottom: 4px;
-            font-size: 12px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #1f2a44;
             padding-bottom: 4px;
         }
 
         .graph-info {
             text-align: center;
-            background: #f8f9fa;
-            padding: 4px;
-            border-radius: 4px;
+            background: #f1f4fb;
+            color: #2c3e50;
+            padding: 5px;
+            border-radius: 6px;
             margin-bottom: 6px;
-            font-size: 10px;
-        }
-
-        .graph-info strong {
             font-size: 11px;
         }
 
+        .graph-info strong {
+            font-size: 12px;
+        }
+
         .footer {
-            background: #3d4e9f;
-            color: white;
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border);
+            color: var(--cnsa-text-dim);
+            border-radius: var(--cnsa-radius);
             text-align: center;
-            padding: 10px 20px;
+            padding: 14px 20px;
             font-size: 14px;
             margin-top: 20px;
         }
 
         .footer a {
-            color: white;
+            color: #cdeffd;
             text-decoration: none;
         }
 
@@ -585,28 +677,49 @@
 
         .checkbox-group {
             display: flex;
-            gap: 15px;
+            flex-wrap: wrap;
+            gap: 14px;
             align-items: center;
         }
 
         .checkbox-group label {
             cursor: pointer;
             font-size: 15px;
+            min-height: 40px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--cnsa-accent-1);
+            cursor: pointer;
+        }
+
+        .chart-fallback {
+            display: none;
+            text-align: center;
+            color: #b00020;
+            background: #fff4f4;
+            border: 1px solid #f3b5b5;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 12px;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🧠 신경세포 막전위 시뮬레이터</h1>
+        <h1>🧠 신경세포 <span class="accent">막전위 시뮬레이터</span></h1>
 
         <div class="control-panel">
             <div class="control-row">
                 <div class="control-group">
-                    <label>🎯 자극 지점:</label>
-                    <select id="stimulationPoint">
+                    <label for="stimulationPoint">🎯 자극 지점:</label>
+                    <select id="stimulationPoint" aria-label="자극 지점 선택">
                         <option value="0">d₁ (0cm)</option>
                         <option value="1">d₂ (2cm)</option>
                         <option value="2">d₃ (4cm)</option>
@@ -615,8 +728,8 @@
                 </div>
 
                 <div class="control-group">
-                    <label>⚡ 전도 속도 (cm/ms):</label>
-                    <input type="number" id="speedInput" value="2" step="0.1" min="0.1">
+                    <label for="speedInput">⚡ 전도 속도 (cm/ms):</label>
+                    <input type="number" id="speedInput" value="2" step="0.1" min="0.1" aria-label="전도 속도 (cm/ms)">
                 </div>
 
                 <div class="control-group">
@@ -627,10 +740,25 @@
             </div>
 
             <div class="control-row">
+                <div class="control-group">
+                    <label for="thresholdSlider">🚪 역치 (mV):</label>
+                    <input type="range" id="thresholdSlider" min="-65" max="-35" step="1" value="-55" style="flex:0 0 180px;" aria-label="역치 막전위 (mV)">
+                    <span class="time-display" id="thresholdDisplay" style="min-width:70px;">-55 mV</span>
+                </div>
+                <div class="control-group">
+                    <label for="intensityInput">💥 자극 세기 (mV):</label>
+                    <input type="number" id="intensityInput" value="-40" step="1" aria-label="자극 세기 (도달 최고 막전위, mV)">
+                </div>
+                <div class="control-group">
+                    <span class="cnsa-chip" id="apStatus" role="status" aria-live="polite">활동전위: 발생</span>
+                </div>
+            </div>
+
+            <div class="control-row">
                 <div class="control-group" style="flex: 1;">
-                    <label>⏱️ 시간 조절:</label>
-                    <button class="btn-play" id="playBtn">▶ 재생</button>
-                    <input type="range" id="timeSlider" min="0" max="8" step="0.1" value="0">
+                    <label for="timeSlider">⏱️ 시간 조절:</label>
+                    <button class="btn-play" id="playBtn" aria-label="재생 / 일시정지">▶ 재생</button>
+                    <input type="range" id="timeSlider" min="0" max="8" step="0.1" value="0" aria-label="시간 (ms)">
                     <span class="time-display" id="timeDisplay">0.0 ms</span>
                 </div>
             </div>
@@ -647,7 +775,8 @@
         </div>
 
         <div class="neuron-container">
-            <svg id="neuronSvg" viewBox="0 0 950 150" preserveAspectRatio="xMidYMid meet">
+            <p class="neuron-caption">⚡ 표시는 활동전위가 축삭을 따라 이동하는 위치입니다 · 직전 자극 지점 부근의 음영은 <strong>불응기</strong>(역방향 재흥분 차단) 구간입니다.</p>
+            <svg id="neuronSvg" viewBox="0 0 950 150" preserveAspectRatio="xMidYMid meet" role="img" aria-label="신경세포 모식도: 세포체와 축삭을 따라 활동전위가 전도되는 모습">
                 <g id="dendrites">
                     <path d="M 100 45 L 100 25 M 100 25 L 95 15 M 100 25 L 105 15" stroke="#CD853F" stroke-width="1.5" fill="none" />
                     <path d="M 85 50 L 75 30 M 75 30 L 70 20 M 75 30 L 65 25" stroke="#CD853F" stroke-width="1.5" fill="none" />
@@ -674,37 +803,40 @@
                     <circle cx="920" cy="90" r="5" fill="#FFE4B5" stroke="#8B4513" stroke-width="1" />
                 </g>
 
-                <text x="100" y="140" text-anchor="middle" font-size="14" font-weight="bold">세포체</text>
+                <text x="100" y="142" text-anchor="middle" font-size="17" font-weight="bold">세포체</text>
 
                 <g id="d1-marker">
                     <line x1="250" y1="30" x2="250" y2="120" stroke="black" stroke-width="2" stroke-dasharray="5 3" />
-                    <text x="250" y="140" text-anchor="middle" font-size="14" font-weight="bold">0cm</text>
-                    <text x="250" y="20" text-anchor="middle" font-size="16" font-weight="bold">d₁</text>
+                    <text x="250" y="142" text-anchor="middle" font-size="17" font-weight="bold">0cm</text>
+                    <text x="250" y="18" text-anchor="middle" font-size="19" font-weight="bold">d₁</text>
                 </g>
                 <g id="d2-marker">
                     <line x1="430" y1="30" x2="430" y2="120" stroke="black" stroke-width="2" stroke-dasharray="5 3" />
-                    <text x="430" y="140" text-anchor="middle" font-size="14" font-weight="bold">2cm</text>
-                    <text x="430" y="20" text-anchor="middle" font-size="16" font-weight="bold">d₂</text>
+                    <text x="430" y="142" text-anchor="middle" font-size="17" font-weight="bold">2cm</text>
+                    <text x="430" y="18" text-anchor="middle" font-size="19" font-weight="bold">d₂</text>
                 </g>
                 <g id="d3-marker">
                     <line x1="610" y1="30" x2="610" y2="120" stroke="black" stroke-width="2" stroke-dasharray="5 3" />
-                    <text x="610" y="140" text-anchor="middle" font-size="14" font-weight="bold">4cm</text>
-                    <text x="610" y="20" text-anchor="middle" font-size="16" font-weight="bold">d₃</text>
+                    <text x="610" y="142" text-anchor="middle" font-size="17" font-weight="bold">4cm</text>
+                    <text x="610" y="18" text-anchor="middle" font-size="19" font-weight="bold">d₃</text>
                 </g>
                 <g id="d4-marker">
                     <line x1="790" y1="30" x2="790" y2="120" stroke="black" stroke-width="2" stroke-dasharray="5 3" />
-                    <text x="790" y="140" text-anchor="middle" font-size="14" font-weight="bold">6cm</text>
-                    <text x="790" y="20" text-anchor="middle" font-size="16" font-weight="bold">d₄</text>
+                    <text x="790" y="142" text-anchor="middle" font-size="17" font-weight="bold">6cm</text>
+                    <text x="790" y="18" text-anchor="middle" font-size="19" font-weight="bold">d₄</text>
                 </g>
+
+                <rect id="refractory1" x="250" y="69" width="0" height="12" fill="#9b5de5" opacity="0.45" style="display: none;" />
+                <rect id="refractory2" x="250" y="69" width="0" height="12" fill="#9b5de5" opacity="0.45" style="display: none;" />
 
                 <g id="spark1" transform="translate(250, 75)" style="display: none;">
                     <circle r="20" fill="yellow" opacity="0.4" />
-                    <text font-size="24" fill="gold" dominant-baseline="middle" text-anchor="middle">⚡</text>
+                    <text font-size="26" fill="gold" dominant-baseline="middle" text-anchor="middle">⚡</text>
                 </g>
 
                 <g id="spark2" transform="translate(250, 75)" style="display: none;">
                     <circle r="20" fill="yellow" opacity="0.4" />
-                    <text font-size="24" fill="gold" dominant-baseline="middle" text-anchor="middle">⚡</text>
+                    <text font-size="26" fill="gold" dominant-baseline="middle" text-anchor="middle">⚡</text>
                 </g>
             </svg>
         </div>
@@ -712,37 +844,39 @@
         <div class="voltage-table-container">
             <h4>
                 📈 각 지점의 막전위 (mV)
-                <button class="btn-capture" onclick="captureData()">📸 캡처</button>
+                <button class="btn-capture" id="captureBtn">📸 캡처</button>
             </h4>
-            <table class="voltage-table">
-                <thead>
-                    <tr>
-                        <th>시간</th>
-                        <th>d₁ <span>(0cm)</span></th>
-                        <th>d₂ <span>(2cm)</span></th>
-                        <th>d₃ <span>(4cm)</span></th>
-                        <th>d₄ <span>(6cm)</span></th>
-                        <th>삭제</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr class="live-row">
-                        <td class="time-cell" id="tableTime">0.0 ms</td>
-                        <td class="voltage-cell" id="tableVoltage0">-70.0</td>
-                        <td class="voltage-cell" id="tableVoltage1">-70.0</td>
-                        <td class="voltage-cell" id="tableVoltage2">-70.0</td>
-                        <td class="voltage-cell" id="tableVoltage3">-70.0</td>
-                        <td>-</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="voltage-table-scroll">
+                <table class="voltage-table">
+                    <thead>
+                        <tr>
+                            <th>시간</th>
+                            <th>d₁ <span>(0cm)</span></th>
+                            <th>d₂ <span>(2cm)</span></th>
+                            <th>d₃ <span>(4cm)</span></th>
+                            <th>d₄ <span>(6cm)</span></th>
+                            <th>삭제</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr class="live-row">
+                            <td class="time-cell" id="tableTime">0.0 ms</td>
+                            <td class="voltage-cell" id="tableVoltage0">-70.0</td>
+                            <td class="voltage-cell" id="tableVoltage1">-70.0</td>
+                            <td class="voltage-cell" id="tableVoltage2">-70.0</td>
+                            <td class="voltage-cell" id="tableVoltage3">-70.0</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="graphs-container">
             <div class="graph-box" id="graph0">
                 <h3 style="border-bottom: 3px solid #0066cc;">📍 0cm 지점</h3>
                 <div class="graph-info">
-                    현재 막전위: <strong id="voltage0">-70 mV</strong><br>
+                    현재 막전위: <strong id="voltage0">-70 mV</strong> · 단계: <strong id="phase0">휴지</strong><br>
                     자극 후 경과 시간: <strong id="time0">도달 전</strong>
                 </div>
                 <canvas id="chart0"></canvas>
@@ -751,7 +885,7 @@
             <div class="graph-box" id="graph1">
                 <h3 style="border-bottom: 3px solid #fd7e14;">📍 2cm 지점</h3>
                 <div class="graph-info">
-                    현재 막전위: <strong id="voltage1">-70 mV</strong><br>
+                    현재 막전위: <strong id="voltage1">-70 mV</strong> · 단계: <strong id="phase1">휴지</strong><br>
                     자극 후 경과 시간: <strong id="time1">도달 전</strong>
                 </div>
                 <canvas id="chart1"></canvas>
@@ -760,7 +894,7 @@
             <div class="graph-box" id="graph2">
                 <h3 style="border-bottom: 3px solid #28a745;">📍 4cm 지점</h3>
                 <div class="graph-info">
-                    현재 막전위: <strong id="voltage2">-70 mV</strong><br>
+                    현재 막전위: <strong id="voltage2">-70 mV</strong> · 단계: <strong id="phase2">휴지</strong><br>
                     자극 후 경과 시간: <strong id="time2">도달 전</strong>
                 </div>
                 <canvas id="chart2"></canvas>
@@ -769,11 +903,16 @@
             <div class="graph-box" id="graph3">
                 <h3 style="border-bottom: 3px solid #dc3545;">📍 6cm 지점</h3>
                 <div class="graph-info">
-                    현재 막전위: <strong id="voltage3">-70 mV</strong><br>
+                    현재 막전위: <strong id="voltage3">-70 mV</strong> · 단계: <strong id="phase3">휴지</strong><br>
                     자극 후 경과 시간: <strong id="time3">도달 전</strong>
                 </div>
                 <canvas id="chart3"></canvas>
             </div>
+        </div>
+
+        <div class="chart-fallback" id="chartFallback">
+            ⚠️ 그래프 라이브러리(Chart.js)를 불러오지 못했습니다. 인터넷 연결을 확인하고 새로고침해 주세요.<br>
+            막전위 수치와 표, 모식도는 그래프 없이도 정상 작동합니다.
         </div>
     </div>
 
@@ -782,11 +921,11 @@
         <a href="mailto:pantarei01@cnsa.hs.kr">pantarei01@cnsa.hs.kr</a>
     </div>
 
-    <div class="modal" id="helpModal">
+    <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📖 신경세포 막전위 시뮬레이터 사용법</h2>
-                <button class="modal-close" onclick="closeHelp()">×</button>
+                <h2 id="helpModalTitle">📖 신경세포 막전위 시뮬레이터 사용법</h2>
+                <button class="modal-close" id="helpCloseBtn" aria-label="사용법 닫기">×</button>
             </div>
             <div class="modal-body">
                 <div class="help-section">
@@ -816,32 +955,44 @@
                         <li>📸 캡처: 현재 시간의 막전위를 표에 고정</li>
                         <li>여러 시점을 캡처하여 비교 분석 가능</li>
                     </ul>
-                    <p><strong>5. 막전위 색상 표시</strong></p>
+                    <p><strong>5. 역치 / 자극 세기 (실무율)</strong></p>
                     <ul>
-                        <li>회색: 휴지전위 / 빨강: 탈분극 / 초록: 재분극 / 파랑: 과분극</li>
+                        <li><strong>🚪 역치</strong>: 활동전위가 발생하는 막전위 기준값</li>
+                        <li><strong>💥 자극 세기</strong>가 역치 이상이면 활동전위가 발생하고, 역치 미만이면 발생하지 않습니다</li>
+                        <li>일단 발생하면 자극이 아무리 세져도 <strong>파형(크기)은 항상 동일</strong>합니다 — 실무율(all-or-none)</li>
                     </ul>
+                    <p><strong>6. 막전위 단계 표시 (색 + 글자 병기)</strong></p>
+                    <ul class="phase-key">
+                        <li><span class="phase-swatch" style="background:#6c757d;">휴지</span> 휴지전위 (약 -70mV)</li>
+                        <li><span class="phase-swatch" style="background:#dc3545;">탈분극</span> 막전위 급상승 (Na⁺ 유입)</li>
+                        <li><span class="phase-swatch" style="background:#28a745;">재분극</span> 막전위 하강 (K⁺ 유출)</li>
+                        <li><span class="phase-swatch" style="background:#0066cc;">과분극</span> 휴지전위 아래로 내려감</li>
+                        <li><span class="phase-swatch" style="background:#9b5de5;">회복</span> 과분극 후 휴지전위로 복귀</li>
+                    </ul>
+                    <p style="font-size:13px; color:var(--cnsa-text-dimmer);">각 단계는 색만이 아니라 그래프 정보의 <strong>단계 글자</strong>로도 함께 표시되어 색 구분이 어려워도 알 수 있습니다.</p>
                 </div>
 
                 <div class="help-section">
                     <h3>🔬 과학적 배경</h3>
                     <p>자극이 역치를 넘으면 Na⁺ 통로가 열리며 막전위가 급격히 상승(탈분극)하고, K⁺ 통로가 열리며 다시 하강(재분극)합니다. 이 활동전위는 축삭을 따라 전파됩니다.</p>
+                    <p style="font-size:13px; color:var(--cnsa-text-dimmer);">※ 본 시뮬레이션의 파형은 실제 이온 통로 동역학을 푸는 모델이 아니라, 교과서의 막전위 변화 단계를 단순화해 보여 주는 <strong>현상론적 근사 파형(교과서형 단계 모델)</strong>입니다. 활동전위 직후의 짧은 구간은 <strong>불응기</strong>여서 역방향으로는 다시 흥분이 일어나지 않습니다(역전파 차단).</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal" id="devLogModal">
+    <div class="modal" id="devLogModal" role="dialog" aria-modal="true" aria-labelledby="devLogModalTitle">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📝 개발자 로그</h2>
-                <button class="modal-close" onclick="closeDevLog()">×</button>
+                <h2 id="devLogModalTitle">📝 개발자 로그</h2>
+                <button class="modal-close" id="devLogCloseBtn" aria-label="개발자 로그 닫기">×</button>
             </div>
             <div class="modal-body">
                 <div class="help-section">
                     <div class="log-date" style="color: #3d4e9f; font-weight: bold; font-size: 1.1em; margin-bottom: 10px;">2026. 2. 24. (월)</div>
                     <div class="log-text">
                         <strong>신경세포 막전위 시뮬레이터 v3.0 업데이트</strong><br>
-                        - 📈 지수함수 형태의 활동전위 파형으로 개선 (Hodgkin-Huxley 근사)<br>
+                        - 📈 지수함수 형태의 활동전위 파형으로 개선 (현상론적 근사 파형 · 교과서형 단계 모델)<br>
                         - ⏱️ 동적 시간 슬라이더 범위 (전도 속도에 따라 자동 조정)<br>
                         - ▶️ 재생/⏸️ 일시정지 애니메이션 기능<br>
                         - 🔄 초기화 버튼<br>
@@ -885,7 +1036,11 @@
     </div>
 
     <script>
+        let apFires = true;
+
         function getVoltageAtTime(delay, currentTime) {
+            if (!apFires) return -70;
+
             const t = currentTime - delay;
             if (t < 0 || t > 4) return -70;
 
@@ -959,28 +1114,61 @@
             }
         }
 
+        const PHASE = {
+            rest:    { label: '휴지',   color: '#6c757d' },
+            depol:   { label: '탈분극', color: '#dc3545' },
+            repol:   { label: '재분극', color: '#28a745' },
+            hyper:   { label: '과분극', color: '#0066cc' },
+            recover: { label: '회복',   color: '#9b5de5' }
+        };
+
+        function getPhase(delay, currentTime) {
+            if (!apFires) return PHASE.rest;
+
+            const t = currentTime - delay;
+
+            if (t < 0 || t > 4) return PHASE.rest;
+
+            const voltage = getVoltageAtTime(delay, currentTime);
+
+            if (t < 0.1 && Math.abs(voltage - (-70)) <= 2) return PHASE.rest;
+
+            if (voltage < -72) return PHASE.hyper;
+
+            if (t <= 2) return PHASE.depol;
+            if (t <= 3) return PHASE.repol;
+            return PHASE.recover;
+        }
+
         function getVoltageColor(voltage, delay, currentTime) {
-            const localTime = currentTime - delay;
+            return getPhase(delay, currentTime).color;
+        }
 
-            if (localTime < 0) {
-                return '#6c757d';
+        const AXON_X0 = 130;
+        const AXON_X1 = 880;
+
+        function setRefractory(rectId, frontX, dir) {
+            const rect = document.getElementById(rectId);
+            if (!rect) return;
+            const pxPerCm = (790 - 250) / 6;
+            const tailLen = 2 * speed * pxPerCm;
+            let x, w;
+            if (dir > 0) {
+                x = Math.max(AXON_X0, frontX - tailLen);
+                w = frontX - x;
+            } else {
+                x = frontX;
+                w = Math.min(AXON_X1, frontX + tailLen) - frontX;
             }
+            if (w <= 0) { rect.style.display = 'none'; return; }
+            rect.setAttribute('x', x);
+            rect.setAttribute('width', w);
+            rect.style.display = 'block';
+        }
 
-            if (Math.abs(voltage - (-70)) <= 2 && (localTime < 0.1 || localTime > 3.8)) {
-                return '#6c757d';
-            }
-
-            if (voltage < -72) {
-                return '#0066cc';
-            }
-
-            const prevVoltage = getVoltageAtTime(delay, currentTime - 0.1);
-            const rising = voltage >= prevVoltage;
-
-            if (rising) {
-                return '#dc3545';
-            }
-            return '#28a745';
+        function hideRefractory(rectId) {
+            const rect = document.getElementById(rectId);
+            if (rect) rect.style.display = 'none';
         }
 
         function updateSparkPosition() {
@@ -993,38 +1181,56 @@
 
             const traveled = currentTime * speed;
 
+            if (!apFires) {
+                spark1.style.display = 'none';
+                spark2.style.display = 'none';
+                hideRefractory('refractory1');
+                hideRefractory('refractory2');
+                return;
+            }
+
             if (stimulationPoint === 0) {
                 if (traveled <= 6) {
                     const xPos = stimPos + (traveled / 6) * (markerPositions[3] - markerPositions[0]);
                     spark1.setAttribute('transform', `translate(${xPos}, 75)`);
                     spark1.style.display = 'block';
+                    setRefractory('refractory1', xPos, 1);
                 } else {
                     spark1.style.display = 'none';
+                    hideRefractory('refractory1');
                 }
                 spark2.style.display = 'none';
+                hideRefractory('refractory2');
             } else if (stimulationPoint === 3) {
                 if (traveled <= 6) {
                     const xPos = stimPos - (traveled / 6) * (markerPositions[3] - markerPositions[0]);
                     spark1.setAttribute('transform', `translate(${xPos}, 75)`);
                     spark1.style.display = 'block';
+                    setRefractory('refractory1', xPos, -1);
                 } else {
                     spark1.style.display = 'none';
+                    hideRefractory('refractory1');
                 }
                 spark2.style.display = 'none';
+                hideRefractory('refractory2');
             } else {
                 if (traveled <= stimDist) {
                     const xPos = stimPos - (traveled / 6) * (markerPositions[3] - markerPositions[0]);
                     spark1.setAttribute('transform', `translate(${xPos}, 75)`);
                     spark1.style.display = 'block';
+                    setRefractory('refractory1', xPos, -1);
                 } else {
                     spark1.style.display = 'none';
+                    hideRefractory('refractory1');
                 }
                 if (traveled <= 6 - stimDist) {
                     const xPos = stimPos + (traveled / 6) * (markerPositions[3] - markerPositions[0]);
                     spark2.setAttribute('transform', `translate(${xPos}, 75)`);
                     spark2.style.display = 'block';
+                    setRefractory('refractory2', xPos, 1);
                 } else {
                     spark2.style.display = 'none';
+                    hideRefractory('refractory2');
                 }
             }
         }
@@ -1038,15 +1244,22 @@
             distances.forEach((distance, index) => {
                 const delay = cachedDelays[index];
                 const voltage = +getVoltageAtTime(delay, currentTime).toFixed(2);
-                const voltageColor = getVoltageColor(voltage, delay, currentTime);
+                const phase = getPhase(delay, currentTime);
+                const voltageColor = phase.color;
 
                 const voltageElem = document.getElementById(`voltage${index}`);
                 voltageElem.textContent = `${voltage} mV`;
                 voltageElem.style.color = voltageColor;
 
+                const phaseElem = document.getElementById(`phase${index}`);
+                if (phaseElem) {
+                    phaseElem.textContent = phase.label;
+                    phaseElem.style.color = voltageColor;
+                }
+
                 const tableVoltageElem = document.getElementById(`tableVoltage${index}`);
                 if (tableVoltageElem) {
-                    tableVoltageElem.textContent = voltage.toFixed(1);
+                    tableVoltageElem.innerHTML = `${voltage.toFixed(1)}<br><span class="phase-tag">${phase.label}</span>`;
                     tableVoltageElem.style.color = voltageColor;
                 }
 
@@ -1058,7 +1271,7 @@
                 }
 
                 const graphBox = document.getElementById(`graph${index}`);
-                if (!graphBox.classList.contains('graph-hidden')) {
+                if (charts[index] && !graphBox.classList.contains('graph-hidden')) {
                     const data = cachedData[index];
                     const timeIndex = Math.round(currentTime / 0.1);
                     const clampedIndex = Math.min(timeIndex, data.length - 1);
@@ -1068,6 +1281,28 @@
                     }
                 }
             });
+        }
+
+        function evaluateAP() {
+            const threshold = parseFloat(document.getElementById('thresholdSlider').value);
+            const intensity = parseFloat(document.getElementById('intensityInput').value);
+            const prev = apFires;
+            apFires = !isNaN(intensity) && intensity >= threshold;
+
+            const statusElem = document.getElementById('apStatus');
+            if (apFires) {
+                statusElem.textContent = '활동전위: 발생 ✅';
+                statusElem.style.color = '#d6ffe5';
+            } else {
+                statusElem.textContent = '활동전위: 미발생 (역치 미달) ⛔';
+                statusElem.style.color = '#ffd9d9';
+            }
+
+            if (window.CNSA && prev !== apFires) {
+                CNSA.srAnnounce(apFires
+                    ? '자극 세기가 역치 이상이라 활동전위가 발생합니다.'
+                    : '자극 세기가 역치 미만이라 활동전위가 발생하지 않습니다.');
+            }
         }
 
         function reset() {
@@ -1086,9 +1321,11 @@
             document.getElementById('timeSlider').value = 0;
             capturedData = [];
 
+            evaluateAP();
             rebuildCache();
 
             distances.forEach((distance, index) => {
+                if (!charts[index]) return;
                 charts[index].data.labels = cachedData[index].map(d => d.time);
                 charts[index].data.datasets[0].data = cachedData[index].map(d => d.voltage);
                 charts[index].data.datasets[0].pointRadius = 0;
@@ -1145,19 +1382,22 @@
             const captured = {
                 time: currentTime.toFixed(1),
                 voltages: [],
-                colors: []
+                colors: [],
+                phases: []
             };
 
             distances.forEach((distance, index) => {
                 const delay = cachedDelays[index];
                 const voltage = +getVoltageAtTime(delay, currentTime).toFixed(2);
-                const color = getVoltageColor(voltage, delay, currentTime);
+                const phase = getPhase(delay, currentTime);
                 captured.voltages.push(voltage.toFixed(1));
-                captured.colors.push(color);
+                captured.colors.push(phase.color);
+                captured.phases.push(phase.label);
             });
 
             capturedData.push(captured);
             renderTable();
+            if (window.CNSA) CNSA.srAnnounce(`${currentTime.toFixed(1)}ms 시점의 막전위를 표에 캡처했습니다.`);
         }
 
         function renderTable() {
@@ -1167,13 +1407,15 @@
             capturedData.forEach((capture, idx) => {
                 const row = document.createElement('tr');
                 row.className = 'captured-row';
+                const cell = (i) => {
+                    const tag = (capture.phases && capture.phases[i])
+                        ? `<br><span class="phase-tag">${capture.phases[i]}</span>` : '';
+                    return `<td class="voltage-cell" style="color: ${capture.colors[i]}; font-weight: bold;">${capture.voltages[i]}${tag}</td>`;
+                };
                 row.innerHTML = `
                     <td class="time-cell">${capture.time} ms</td>
-                    <td class="voltage-cell" style="color: ${capture.colors[0]}; font-weight: bold;">${capture.voltages[0]}</td>
-                    <td class="voltage-cell" style="color: ${capture.colors[1]}; font-weight: bold;">${capture.voltages[1]}</td>
-                    <td class="voltage-cell" style="color: ${capture.colors[2]}; font-weight: bold;">${capture.voltages[2]}</td>
-                    <td class="voltage-cell" style="color: ${capture.colors[3]}; font-weight: bold;">${capture.voltages[3]}</td>
-                    <td><button class="delete-btn" onclick="deleteCapture(${idx})">❌</button></td>
+                    ${cell(0)}${cell(1)}${cell(2)}${cell(3)}
+                    <td><button class="delete-btn" data-capture-index="${idx}" aria-label="${capture.time}ms 캡처 삭제">❌</button></td>
                 `;
                 tbody.appendChild(row);
             });
@@ -1197,67 +1439,99 @@
             renderTable();
         }
 
-        function showHelp() { document.getElementById('helpModal').style.display = 'block'; }
-        function closeHelp() { document.getElementById('helpModal').style.display = 'none'; }
-        function showDevLog() { document.getElementById('devLogModal').style.display = 'block'; }
-        function closeDevLog() { document.getElementById('devLogModal').style.display = 'none'; }
+        let releaseTrap = null;
+        let lastFocused = null;
 
-        window.onclick = function(event) {
-            if (event.target === document.getElementById('helpModal')) closeHelp();
-            if (event.target === document.getElementById('devLogModal')) closeDevLog();
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            lastFocused = document.activeElement;
+            modal.style.display = 'block';
+            if (window.CNSA && CNSA.trapFocus) releaseTrap = CNSA.trapFocus(modal);
         }
 
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.style.display = 'none';
+            if (releaseTrap) { releaseTrap(); releaseTrap = null; }
+            if (lastFocused && lastFocused.focus) lastFocused.focus();
+        }
+
+        function showHelp() { openModal('helpModal'); }
+        function closeHelp() { closeModal('helpModal'); }
+        function showDevLog() { openModal('devLogModal'); }
+        function closeDevLog() { closeModal('devLogModal'); }
+
+        window.addEventListener('click', function(event) {
+            if (event.target === document.getElementById('helpModal')) closeHelp();
+            if (event.target === document.getElementById('devLogModal')) closeDevLog();
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key !== 'Escape') return;
+            if (document.getElementById('helpModal').style.display === 'block') closeHelp();
+            if (document.getElementById('devLogModal').style.display === 'block') closeDevLog();
+        });
+
+        const chartsAvailable = typeof Chart !== 'undefined';
+
+        evaluateAP();
         rebuildCache();
 
-        distances.forEach((distance, index) => {
-            const ctx = document.getElementById(`chart${index}`).getContext('2d');
-            const data = cachedData[index];
+        if (chartsAvailable) {
+            distances.forEach((distance, index) => {
+                const ctx = document.getElementById(`chart${index}`).getContext('2d');
+                const data = cachedData[index];
 
-            const chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.map(d => d.time),
-                    datasets: [{
-                        label: '막전위 (mV)',
-                        data: data.map(d => d.voltage),
-                        borderColor: chartColors[index],
-                        backgroundColor: `${chartColors[index]}20`,
-                        borderWidth: 3,
-                        pointRadius: 0,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 2.2,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: true, titleFont: { size: 9 }, bodyFont: { size: 9 } }
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => d.time),
+                        datasets: [{
+                            label: '막전위 (mV)',
+                            data: data.map(d => d.voltage),
+                            borderColor: chartColors[index],
+                            backgroundColor: `${chartColors[index]}20`,
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            tension: 0.4
+                        }]
                     },
-                    scales: {
-                        x: {
-                            title: { display: true, text: '시간 (ms)', font: { size: 9, weight: 'bold' } },
-                            ticks: {
-                                font: { size: 7 },
-                                stepSize: 1,
-                                callback: function(value) {
-                                    const label = this.getLabelForValue(value);
-                                    return label % 1 === 0 ? label : '';
-                                }
-                            }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        aspectRatio: 2.2,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: true, titleFont: { size: 12 }, bodyFont: { size: 12 } }
                         },
-                        y: {
-                            title: { display: true, text: '막전위 (mV)', font: { size: 9, weight: 'bold' } },
-                            ticks: { font: { size: 7 } },
-                            min: -100,
-                            max: 50
+                        scales: {
+                            x: {
+                                title: { display: true, text: '시간 (ms)', font: { size: 12, weight: 'bold' } },
+                                ticks: {
+                                    font: { size: 11 },
+                                    stepSize: 1,
+                                    callback: function(value) {
+                                        const label = this.getLabelForValue(value);
+                                        return label % 1 === 0 ? label : '';
+                                    }
+                                }
+                            },
+                            y: {
+                                title: { display: true, text: '막전위 (mV)', font: { size: 12, weight: 'bold' } },
+                                ticks: { font: { size: 11 } },
+                                min: -100,
+                                max: 50
+                            }
                         }
                     }
-                }
+                });
+                charts.push(chart);
             });
-            charts.push(chart);
-        });
+        } else {
+            const fb = document.getElementById('chartFallback');
+            if (fb) fb.style.display = 'block';
+            document.querySelectorAll('.graph-box canvas').forEach(c => c.style.display = 'none');
+        }
 
         let resizeTimeout;
         window.addEventListener('resize', function() {
@@ -1271,8 +1545,22 @@
         document.getElementById('devLogBtn').addEventListener('click', showDevLog);
         document.getElementById('resetBtn').addEventListener('click', reset);
         document.getElementById('playBtn').addEventListener('click', toggleAnimation);
+        document.getElementById('captureBtn').addEventListener('click', captureData);
+        document.getElementById('helpCloseBtn').addEventListener('click', closeHelp);
+        document.getElementById('devLogCloseBtn').addEventListener('click', closeDevLog);
         document.getElementById('speedInput').addEventListener('change', reset);
         document.getElementById('stimulationPoint').addEventListener('change', reset);
+        document.getElementById('intensityInput').addEventListener('change', reset);
+
+        document.getElementById('thresholdSlider').addEventListener('input', (e) => {
+            document.getElementById('thresholdDisplay').textContent = `${parseInt(e.target.value)} mV`;
+        });
+        document.getElementById('thresholdSlider').addEventListener('change', reset);
+
+        document.getElementById('tableBody').addEventListener('click', (e) => {
+            const btn = e.target.closest('.delete-btn');
+            if (btn) deleteCapture(parseInt(btn.dataset.captureIndex));
+        });
 
         document.getElementById('timeSlider').addEventListener('input', (e) => {
             currentTime = parseFloat(e.target.value);
@@ -1291,7 +1579,12 @@
             });
         });
 
+        document.getElementById('thresholdDisplay').textContent =
+            `${parseInt(document.getElementById('thresholdSlider').value)} mV`;
+
         updateSimulation();
     </script>
+    <script src="/assets/sim-ui.js"></script>
+    <script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
 </body>
 </html>

@@ -2,8 +2,10 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>스펙트럼 퀴즈 - 학생</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="cnsa-sim" content="스펙트럼 퀴즈|통합과학1">
+    <title>스펙트럼 퀴즈</title>
+    <link rel="stylesheet" href="/assets/sim-ui.css">
     <style>
         :root {
             --bg: #0a0e1a;
@@ -22,8 +24,9 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: var(--bg);
+            font-family: var(--cnsa-font, 'Pretendard', 'Noto Sans KR', -apple-system, 'Segoe UI', sans-serif);
+            background: var(--cnsa-bg, linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%));
+            background-attachment: fixed;
             color: var(--text);
             min-height: 100vh;
             min-height: 100dvh;
@@ -72,8 +75,8 @@
             width: 100%;
             padding: 14px 16px;
             border: 2px solid var(--border);
-            border-radius: 12px;
-            background: var(--surface);
+            border-radius: var(--cnsa-radius-sm, 10px);
+            background: rgba(255,255,255,0.06);
             color: var(--text);
             font-size: 18px;
             text-align: center;
@@ -114,8 +117,11 @@
             align-items: center;
             justify-content: space-between;
             padding: 10px 14px;
-            background: var(--surface);
-            border-radius: 12px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--cnsa-border, rgba(255,255,255,0.12));
+            backdrop-filter: var(--cnsa-blur, blur(12px));
+            -webkit-backdrop-filter: var(--cnsa-blur, blur(12px));
+            border-radius: var(--cnsa-radius, 16px);
             margin-bottom: 12px;
             flex-shrink: 0;
         }
@@ -274,14 +280,15 @@
             padding-bottom: 8px;
         }
         .element-card {
+            position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 4px;
             padding: 8px 4px;
-            border-radius: 10px;
+            border-radius: var(--cnsa-radius-sm, 10px);
             border: 2px solid var(--border);
-            background: var(--surface);
+            background: rgba(255,255,255,0.05);
             cursor: pointer;
             transition: all 0.15s;
             user-select: none;
@@ -293,6 +300,16 @@
             border-color: var(--accent);
             background: rgba(79, 195, 247, 0.15);
             box-shadow: 0 0 12px rgba(79, 195, 247, 0.25);
+        }
+        .element-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
         }
         .element-symbol {
             font-size: 16px;
@@ -778,8 +795,12 @@ function buildElementGrid(q) {
 
     ALL_ELEMENTS.forEach(function(el) {
         var card = document.createElement('div');
-        card.className = 'element-card';
+        card.className = 'element-card cnsa-focusable';
         card.dataset.element = el;
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-pressed', 'false');
+        card.setAttribute('aria-label', el + ' ' + ELEMENT_NAMES[el] + ' 선택');
 
         var sym = document.createElement('div');
         sym.className = 'element-symbol';
@@ -795,9 +816,14 @@ function buildElementGrid(q) {
         card.appendChild(nameKr);
         card.appendChild(mini);
 
-        card.addEventListener('click', function() {
+        function toggleSel() {
             if (state.submitted) return;
-            this.classList.toggle('selected');
+            var on = card.classList.toggle('selected');
+            card.setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+        card.addEventListener('click', toggleSel);
+        card.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSel(); }
         });
 
         grid.appendChild(card);
@@ -877,10 +903,12 @@ async function showResult(isCorrect, selected, q, timeTaken) {
         textEl.className = 'result-text correct';
         detailEl.innerHTML = '<strong>' + matched.length + '/' + sortedCorrect.length + '</strong> 맞춤';
         spawnConfetti();
+        if (window.CNSA) CNSA.srAnnounce('정답입니다.');
     } else {
         iconEl.textContent = '\u274c';
         textEl.textContent = '오답';
         textEl.className = 'result-text wrong';
+        if (window.CNSA) CNSA.srAnnounce('오답입니다. 정답은 ' + sortedCorrect.join(', '));
         var resultScreen = document.getElementById('resultScreen');
         resultScreen.classList.add('shake');
         setTimeout(function() { resultScreen.classList.remove('shake'); }, 400);
@@ -889,12 +917,9 @@ async function showResult(isCorrect, selected, q, timeTaken) {
         sortedCorrect.forEach(function(el) {
             var tag = document.createElement('span');
             tag.className = 'result-el-tag';
-            if (selected.indexOf(el) !== -1) {
-                tag.classList.add('matched');
-            } else {
-                tag.classList.add('missed');
-            }
-            tag.textContent = el + '(' + ELEMENT_NAMES[el] + ')';
+            var picked = selected.indexOf(el) !== -1;
+            tag.classList.add(picked ? 'matched' : 'missed');
+            tag.textContent = (picked ? '✓ ' : '✕ ') + el + '(' + ELEMENT_NAMES[el] + ')';
             elementsEl.appendChild(tag);
         });
 
@@ -1098,5 +1123,7 @@ function init() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
 </script>
+<script src="/assets/sim-ui.js"></script>
+<script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
 </body>
 </html>

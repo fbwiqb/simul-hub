@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="cnsa-sim" content="진화|통합과학2">
+    <link rel="stylesheet" href="/assets/sim-ui.css">
     <title>달팽이 진화 시뮬레이션</title>
     <style>
         * {
@@ -12,8 +14,10 @@
         }
         
        body {
-    font-family: 'Malgun Gothic', sans-serif;
-    background: linear-gradient(135deg, #f8f9ff 0%, #eef0f8 100%);
+    font-family: var(--cnsa-font);
+    background: var(--cnsa-bg);
+    background-attachment: fixed;
+    color: var(--cnsa-text);
     min-height: 100vh;
     padding: 10px;
     margin: 0;
@@ -31,14 +35,15 @@
         }
         
         .selection-screen h1 {
-            color: #3d4e9f;
+            color: var(--cnsa-text);
             font-size: 3em;
             margin-bottom: 20px;
             text-shadow: none;
+            letter-spacing: -0.02em;
         }
-        
+
         .selection-screen p {
-            color: #333;
+            color: var(--cnsa-text-dim);
             font-size: 1.3em;
             margin-bottom: 50px;
         }
@@ -52,27 +57,29 @@
         }
         
         .home-btn {
-            background: linear-gradient(135deg, #3d4e9f 0%, #5865b5 100%);
-            color: white;
-            border: none;
+            background: var(--cnsa-surface);
+            color: var(--cnsa-text-dim);
+            border: 1px solid var(--cnsa-border);
             padding: 12px 24px;
-            border-radius: 10px;
+            border-radius: var(--cnsa-radius-sm);
             cursor: pointer;
             font-size: 16px;
             font-weight: bold;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 8px rgba(61, 78, 159, 0.25);
+            font-family: var(--cnsa-font);
+            transition: all 0.3s var(--cnsa-ease);
+            box-shadow: none;
         }
 
         .home-btn:hover {
-            background: linear-gradient(135deg, #2d3e8f 0%, #4855a5 100%);
+            background: var(--cnsa-surface-strong);
+            color: #fff;
+            border-color: var(--cnsa-border-strong);
             transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(61, 78, 159, 0.5);
+            box-shadow: var(--cnsa-shadow);
         }
 
         .home-btn:active {
             transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(61, 78, 159, 0.4);
         }
         
         .scenario-cards {
@@ -84,42 +91,40 @@
         }
         
         .scenario-card {
-            background: white;
-            border: 3px solid #3d4e9f;
-            border-radius: 20px;
+            background: var(--cnsa-surface);
+            backdrop-filter: var(--cnsa-blur);
+            -webkit-backdrop-filter: var(--cnsa-blur);
+            border: 1px solid var(--cnsa-border);
+            border-radius: var(--cnsa-radius);
             padding: 40px 30px;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 12px rgba(61, 78, 159, 0.15);
+            transition: all 0.4s var(--cnsa-ease);
+            box-shadow: var(--cnsa-shadow);
         }
 
         .scenario-card:hover {
             transform: translateY(-12px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(61, 78, 159, 0.35);
-            background: linear-gradient(to bottom, #ffffff 0%, #f8f9ff 100%);
-            border-color: #5865b5;
+            box-shadow: var(--cnsa-shadow-lg);
+            background: var(--cnsa-surface-strong);
+            border-color: var(--cnsa-accent-1);
         }
-        
+
         .scenario-card .icon {
             font-size: 4em;
             margin-bottom: 20px;
         }
-        
+
         .scenario-card h2 {
-            color: #3d4e9f;
+            color: var(--cnsa-text);
             margin-bottom: 15px;
             font-size: 1.8em;
         }
-        
+
         .scenario-card p {
-            color: #666;
+            color: var(--cnsa-text-dim);
             font-size: 1em;
             line-height: 1.6;
         }
-        
-        .speed-card { background: white; border-color: #3d4e9f; }
-        .color-card { background: white; border-color: #3d4e9f; }
-        .size-card { background: white; border-color: #3d4e9f; }
         
         /* 팝업 모달 */
         .modal {
@@ -140,16 +145,19 @@
         }
         
         .modal-content {
-            background-color: white;
+            background: var(--cnsa-bg-2);
+            background-image: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0));
+            color: var(--cnsa-text);
             margin: 10% auto;
             padding: 30px;
-            border-radius: 20px;
+            border-radius: var(--cnsa-radius);
+            border: 1px solid var(--cnsa-border);
             width: 90%;
             max-width: 600px;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 25px 70px rgba(0,0,0,0.35);
-            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--cnsa-shadow-lg);
+            animation: slideIn 0.4s var(--cnsa-ease);
         }
         
         @keyframes slideIn {
@@ -158,11 +166,11 @@
         }
         
         .modal-header {
-            background: #3d4e9f;
+            background: var(--cnsa-accent);
             color: white;
             padding: 20px;
             margin: -30px -30px 20px -30px;
-            border-radius: 20px 20px 0 0;
+            border-radius: var(--cnsa-radius) var(--cnsa-radius) 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -205,29 +213,29 @@
         .log-entry {
             margin-bottom: 25px;
             padding: 20px;
-            background: #f8f9ff;
-            border-radius: 10px;
-            border-left: 4px solid #3d4e9f;
+            background: var(--cnsa-surface);
+            border-radius: var(--cnsa-radius-sm);
+            border-left: 4px solid var(--cnsa-accent-1);
         }
-        
+
         .log-date {
-            color: #3d4e9f;
+            color: var(--cnsa-accent-1);
             font-weight: bold;
             font-size: 1.1em;
             margin-bottom: 10px;
         }
-        
+
         .log-text {
-            color: #333;
+            color: var(--cnsa-text-dim);
             line-height: 1.8;
         }
-        
+
         .log-text strong {
-            color: #3d4e9f;
+            color: var(--cnsa-text);
         }
-        
+
         .log-text a {
-            color: #3d4e9f;
+            color: var(--cnsa-accent-1);
             text-decoration: none;
         }
         
@@ -242,24 +250,28 @@
         .trait-level {
             margin: 15px 0;
             padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border);
+            border-radius: var(--cnsa-radius-sm);
         }
-        
+
         .trait-level label {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: #495057;
+            color: var(--cnsa-text);
             font-weight: bold;
         }
-        
+
         .trait-level input[type="number"] {
             width: 80px;
             padding: 8px;
-            border: 2px solid #dee2e6;
-            border-radius: 5px;
+            border: 1px solid var(--cnsa-border-strong);
+            border-radius: var(--cnsa-radius-sm);
+            background: var(--cnsa-surface-2);
+            color: var(--cnsa-text);
             font-size: 1em;
+            font-family: var(--cnsa-font);
             text-align: center;
         }
         
@@ -273,27 +285,35 @@
             flex: 1;
             padding: 12px;
             border: none;
-            border-radius: 10px;
+            border-radius: var(--cnsa-radius-sm);
             font-size: 1.1em;
             font-weight: bold;
+            font-family: var(--cnsa-font);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s var(--cnsa-ease);
         }
-        
+
         .btn-start {
-            background: #3d4e9f;
+            background: var(--cnsa-accent);
             color: white;
+            box-shadow: 0 4px 14px rgba(0, 130, 200, 0.32);
         }
-        
+
         .btn-cancel {
-            background: #e9ecef;
-            color: #495057;
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border) !important;
+            color: var(--cnsa-text-dim);
         }
-        
+
         .btn-start:hover {
-            background: #2d3e8f;
+            filter: brightness(1.07);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(61, 78, 159, 0.3);
+            box-shadow: var(--cnsa-shadow);
+        }
+
+        .btn-cancel:hover {
+            background: var(--cnsa-surface-strong);
+            color: #fff;
         }
         
         /* 시뮬레이션 화면 - 수직 레이아웃 */
@@ -304,10 +324,14 @@
             height: auto;
             max-height: 95vh;
             margin: auto;
-            background: white;
-            border-radius: 20px;
+            background: var(--cnsa-surface);
+            backdrop-filter: var(--cnsa-blur);
+            -webkit-backdrop-filter: var(--cnsa-blur);
+            border: 1px solid var(--cnsa-border);
+            color: var(--cnsa-text);
+            border-radius: var(--cnsa-radius);
             padding: 20px;
-            box-shadow: 0 25px 70px rgba(0,0,0,0.35);
+            box-shadow: var(--cnsa-shadow-lg);
             overflow-y: auto;
         }
         
@@ -321,18 +345,18 @@
             align-items: center;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #dee2e6;
+            border-bottom: 1px solid var(--cnsa-border);
         }
-        
+
         .sim-title-section {
             display: flex;
             align-items: center;
             gap: 20px;
         }
-        
+
         .sim-title {
             font-size: 1.8em;
-            color: #3d4e9f;
+            color: var(--cnsa-text);
         }
         
         .header-controls {
@@ -347,17 +371,20 @@
         
         .btn-back {
             padding: 10px 20px;
-            background: #e9ecef;
-            border: none;
-            border-radius: 8px;
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border);
+            border-radius: var(--cnsa-radius-sm);
             cursor: pointer;
             font-weight: bold;
-            color: #495057;
-            transition: all 0.3s;
+            font-family: var(--cnsa-font);
+            color: var(--cnsa-text-dim);
+            transition: all 0.3s var(--cnsa-ease);
         }
-        
+
         .btn-back:hover {
-            background: #dee2e6;
+            background: var(--cnsa-surface-strong);
+            color: #fff;
+            border-color: var(--cnsa-border-strong);
         }
         
         .main-area {
@@ -370,42 +397,42 @@
         }
         
         #gameCanvas {
-            border: 3px solid #3d4e9f;
-            border-radius: 10px;
+            border: 1px solid var(--cnsa-border-strong);
+            border-radius: var(--cnsa-radius-sm);
             cursor: crosshair;
-            box-shadow: 0 8px 24px rgba(61, 78, 159, 0.25);
+            box-shadow: var(--cnsa-shadow);
             width: 100%;
             height: 100%;
             transition: box-shadow 0.3s ease;
         }
 
         #gameCanvas:hover {
-            box-shadow: 0 12px 32px rgba(61, 78, 159, 0.3);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
         }
-        
+
         .stats-panel, .graph-panel {
             height: 100%;
         }
-        
+
         .stats-panel {
-            background: linear-gradient(to bottom, #f8f9ff 0%, #ffffff 100%);
+            background: var(--cnsa-surface);
             padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(61, 78, 159, 0.15);
+            border-radius: var(--cnsa-radius-sm);
+            box-shadow: var(--cnsa-shadow);
             font-size: 0.9em;
             overflow-y: auto;
-            border: 2px solid #3d4e9f;
+            border: 1px solid var(--cnsa-border);
         }
-        
+
         .graph-panel {
             background: #f8f9ff;
             padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(61, 78, 159, 0.1);
-            border: 2px solid #3d4e9f;
+            border-radius: var(--cnsa-radius-sm);
+            box-shadow: var(--cnsa-shadow);
+            border: 1px solid var(--cnsa-border);
             display: none;
         }
-        
+
         .graph-panel h3 {
             color: #3d4e9f;
             margin-bottom: 15px;
@@ -418,57 +445,58 @@
         }
         
         .stats-panel h3 {
-            color: #3d4e9f;
+            color: var(--cnsa-text);
             margin-bottom: 15px;
-            border-bottom: 2px solid #3d4e9f;
+            border-bottom: 1px solid var(--cnsa-border);
             padding-bottom: 10px;
         }
-        
+
         .stat-item {
             display: flex;
             justify-content: space-between;
             margin: 10px 0;
             padding: 8px;
-            background: white;
-            border-radius: 5px;
+            background: var(--cnsa-surface);
+            border-radius: var(--cnsa-radius-sm);
             transition: all 0.2s ease;
         }
 
         .stat-item:hover {
-            background: #f8f9ff;
+            background: var(--cnsa-surface-strong);
             transform: translateX(2px);
         }
-        
+
         .stat-label {
             font-weight: bold;
-            color: #6c757d;
+            color: var(--cnsa-text-dim);
         }
-        
+
         .stat-value {
-            color: #3d4e9f;
+            color: var(--cnsa-accent-1);
             font-weight: bold;
         }
         
         .controls {
-            background: #f8f9ff;
+            background: var(--cnsa-surface);
             padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(61, 78, 159, 0.1);
-            border: 2px solid #3d4e9f;
+            border-radius: var(--cnsa-radius-sm);
+            box-shadow: var(--cnsa-shadow);
+            border: 1px solid var(--cnsa-border);
             flex-shrink: 0;
             display: flex;
             gap: 15px;
         }
-        
+
         .control-section {
             flex: 1;
             padding: 10px;
-            background: white;
-            border-radius: 8px;
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border);
+            border-radius: var(--cnsa-radius-sm);
         }
-        
+
         .control-section h3 {
-            color: #3d4e9f;
+            color: var(--cnsa-text);
             margin-bottom: 10px;
             font-size: 0.95em;
         }
@@ -482,20 +510,25 @@
         
         .mode-button {
             padding: 15px;
-            border: 2px solid #3d4e9f;
-            background: white;
-            border-radius: 8px;
+            border: 1px solid var(--cnsa-border-strong);
+            background: var(--cnsa-surface);
+            border-radius: var(--cnsa-radius-sm);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s var(--cnsa-ease);
             font-weight: bold;
             text-align: center;
-            color: #3d4e9f;
+            color: var(--cnsa-text-dim);
         }
-        
+
+        .mode-button:hover {
+            background: var(--cnsa-surface-strong);
+            color: #fff;
+        }
+
         .mode-button.active {
-            background: #3d4e9f;
+            background: var(--cnsa-accent);
             color: white;
-            border-color: #3d4e9f;
+            border-color: transparent;
         }
         
         .bg-selector {
@@ -507,19 +540,24 @@
         
         .bg-button {
             padding: 12px;
-            border: 2px solid #3d4e9f;
-            background: white;
-            border-radius: 8px;
+            border: 1px solid var(--cnsa-border-strong);
+            background: var(--cnsa-surface);
+            border-radius: var(--cnsa-radius-sm);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s var(--cnsa-ease);
             font-weight: bold;
             text-align: center;
-            color: #3d4e9f;
+            color: var(--cnsa-text-dim);
         }
-        
+
+        .bg-button:hover {
+            background: var(--cnsa-surface-strong);
+            color: #fff;
+        }
+
         .bg-button.active {
             color: white;
-            border-color: #3d4e9f;
+            border-color: transparent;
         }
         
         .bg-button.active.grassland {
@@ -540,53 +578,42 @@
             padding: 12px 24px;
             font-size: 16px;
             font-weight: bold;
+            font-family: var(--cnsa-font);
             border: none;
-            border-radius: 8px;
+            border-radius: var(--cnsa-radius-sm);
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 3px 8px rgba(61, 78, 159, 0.2);
+            transition: all 0.3s var(--cnsa-ease);
+            box-shadow: var(--cnsa-shadow);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #3d4e9f 0%, #5865b5 100%);
+            background: var(--cnsa-accent);
             color: white;
         }
 
         .btn-success {
-            background: linear-gradient(135deg, #3d4e9f 0%, #5865b5 100%);
+            background: var(--cnsa-accent);
             color: white;
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, #dc3545 0%, #e85563 100%);
+            background: linear-gradient(135deg, var(--cnsa-danger) 0%, #e85563 100%);
             color: white;
         }
 
         .btn-warning {
-            background: linear-gradient(135deg, #ffc107 0%, #ffd04a 100%);
-            color: #333;
+            background: linear-gradient(135deg, var(--cnsa-warn) 0%, #ffd04a 100%);
+            color: #1a1a2e;
         }
 
         button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 16px rgba(61, 78, 159, 0.35);
+            filter: brightness(1.07);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
         }
 
         button:active {
             transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(61, 78, 159, 0.3);
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #2d3e8f 0%, #4855a5 100%);
-        }
-
-        .btn-danger:hover {
-            background: linear-gradient(135deg, #c82333 0%, #d84453 100%);
-        }
-
-        .btn-warning:hover {
-            background: linear-gradient(135deg, #e0a800 0%, #f0c040 100%);
         }
 
         button:disabled {
@@ -610,18 +637,22 @@
         
         .checkbox-group label {
             cursor: pointer;
-            color: #495057;
+            color: var(--cnsa-text-dim);
             font-weight: 500;
         }
-        
+
+        .checkbox-group input[type="checkbox"] {
+            accent-color: var(--cnsa-accent-1);
+        }
+
         .slider-group {
             margin: 15px 0;
         }
-        
+
         .slider-group label {
             display: block;
             margin-bottom: 5px;
-            color: #495057;
+            color: var(--cnsa-text-dim);
             font-weight: 500;
         }
         
@@ -636,47 +667,47 @@
             height: 6px;
             -webkit-appearance: none;
             appearance: none;
-            background: #dee2e6;
+            background: var(--cnsa-surface-strong);
             border-radius: 3px;
             outline: none;
         }
-        
+
         .slider-container input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
             width: 20px;
             height: 20px;
-            background: #3d4e9f;
+            background: var(--cnsa-accent-1);
             border-radius: 50%;
             cursor: pointer;
         }
-        
+
         .slider-container input[type="range"]::-moz-range-thumb {
             width: 20px;
             height: 20px;
-            background: #3d4e9f;
+            background: var(--cnsa-accent-1);
             border-radius: 50%;
             cursor: pointer;
             border: none;
         }
-        
+
         .slider-value {
             min-width: 50px;
             text-align: center;
             font-weight: bold;
-            color: #3d4e9f;
-        }   
+            color: var(--cnsa-accent-1);
+        }
         .keyboard-hints {
             text-align: center;
             padding: 6px 12px;
             margin-top: 10px;
-            color: #8a8faa;
+            color: var(--cnsa-text-dimmer);
             font-size: 12px;
-            background: rgba(61, 78, 159, 0.04);
-            border-radius: 8px;
+            background: var(--cnsa-surface);
+            border-radius: var(--cnsa-radius-sm);
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .controls {
                 display: block;
             }
@@ -693,13 +724,29 @@
             .sim-header {
                 flex-direction: column;
                 gap: 10px;
+                align-items: stretch;
+            }
+
+            .sim-title-section {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .header-controls {
+                flex-wrap: wrap;
+            }
+
+            .header-controls button {
+                flex: 1 1 auto;
+                min-height: 44px;
             }
 
             .scenario-cards {
                 grid-template-columns: 1fr;
             }
 
-            .genetics-cards {
+            .genetics-cards.open {
                 grid-template-columns: 1fr;
             }
 
@@ -709,6 +756,38 @@
 
             .keyboard-hints {
                 display: none;
+            }
+
+            button,
+            .mode-button,
+            .bg-button,
+            .home-btn,
+            .btn-back,
+            .modal-buttons button {
+                min-height: 44px;
+            }
+
+            .modal-content {
+                margin: 6% auto;
+                padding: 24px 20px;
+            }
+
+            .selection-screen {
+                margin: 24px auto;
+            }
+
+            .selection-screen h1 {
+                font-size: 2.1em;
+            }
+
+            .selection-screen p {
+                font-size: 1.1em;
+                margin-bottom: 32px;
+            }
+
+            .modal-close {
+                width: 44px;
+                height: 44px;
             }
         }
 
@@ -725,20 +804,20 @@
             gap: 12px;
             cursor: pointer;
             padding: 16px 24px;
-            background: linear-gradient(135deg, rgba(61, 78, 159, 0.06) 0%, rgba(88, 101, 181, 0.1) 100%);
-            border: 2px solid rgba(61, 78, 159, 0.15);
-            border-radius: 14px;
-            transition: all 0.3s ease;
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border);
+            border-radius: var(--cnsa-radius);
+            transition: all 0.3s var(--cnsa-ease);
             user-select: none;
         }
 
         .genetics-toggle:hover {
-            background: linear-gradient(135deg, rgba(61, 78, 159, 0.1) 0%, rgba(88, 101, 181, 0.15) 100%);
-            border-color: rgba(61, 78, 159, 0.3);
+            background: var(--cnsa-surface-strong);
+            border-color: var(--cnsa-border-strong);
         }
 
         .genetics-toggle h2 {
-            color: #3d4e9f;
+            color: var(--cnsa-text);
             font-size: 1.4em;
             margin: 0;
         }
@@ -746,7 +825,7 @@
         .genetics-toggle .toggle-arrow {
             font-size: 1.2em;
             transition: transform 0.3s ease;
-            color: #3d4e9f;
+            color: var(--cnsa-accent-1);
         }
 
         .genetics-toggle .toggle-arrow.open {
@@ -772,19 +851,19 @@
         }
 
         .genetics-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(61, 78, 159, 0.12);
-            border-radius: 16px;
+            background: var(--cnsa-surface);
+            backdrop-filter: var(--cnsa-blur);
+            -webkit-backdrop-filter: var(--cnsa-blur);
+            border: 1px solid var(--cnsa-border);
+            border-radius: var(--cnsa-radius);
             padding: 28px 24px;
-            transition: all 0.3s ease;
+            transition: all 0.3s var(--cnsa-ease);
         }
 
         .genetics-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(61, 78, 159, 0.15);
-            border-color: rgba(61, 78, 159, 0.25);
+            box-shadow: var(--cnsa-shadow);
+            border-color: var(--cnsa-border-strong);
         }
 
         .genetics-card .card-icon {
@@ -793,45 +872,54 @@
         }
 
         .genetics-card h3 {
-            color: #3d4e9f;
+            color: var(--cnsa-text);
             font-size: 1.1em;
             line-height: 1.5;
             margin-bottom: 14px;
         }
 
         .genetics-card .card-teaser {
-            color: #555;
+            color: var(--cnsa-text-dim);
             font-size: 0.95em;
             line-height: 1.7;
             margin-bottom: 16px;
         }
 
         .genetics-card .card-hint {
-            color: #7a85c0;
+            color: #cdeffd;
             font-size: 0.85em;
             font-style: italic;
             line-height: 1.6;
             padding-top: 12px;
-            border-top: 1px solid rgba(61, 78, 159, 0.08);
+            border-top: 1px solid var(--cnsa-border);
+        }
+
+        .genetics-card .card-hint strong {
+            color: var(--cnsa-accent-1);
         }
 
         .genetics-card .card-footer {
-            color: #9aa2cc;
+            color: var(--cnsa-text-dimmer);
             font-size: 0.8em;
             margin-top: 12px;
             text-align: right;
         }
 
         .btn-record {
-            background: white;
-            color: #3d4e9f;
-            border: 2px solid #3d4e9f;
+            background: var(--cnsa-surface);
+            color: var(--cnsa-text-dim);
+            border: 1px solid var(--cnsa-border-strong);
+        }
+
+        .btn-record:hover {
+            color: #fff;
+            background: var(--cnsa-surface-strong);
         }
 
         .btn-record.active {
-            background: linear-gradient(135deg, #dc3545 0%, #e85563 100%);
+            background: linear-gradient(135deg, var(--cnsa-danger) 0%, #e85563 100%);
             color: white;
-            border-color: #dc3545;
+            border-color: transparent;
         }
 
         .recording-badge {
@@ -869,7 +957,7 @@
         }
 
         .name-modal-body p {
-            color: #555;
+            color: var(--cnsa-text-dim);
             margin-bottom: 15px;
             font-size: 1em;
         }
@@ -877,15 +965,22 @@
         .name-modal-body input[type="text"] {
             width: 100%;
             padding: 12px 16px;
-            border: 2px solid #dee2e6;
-            border-radius: 10px;
+            border: 1px solid var(--cnsa-border-strong);
+            border-radius: var(--cnsa-radius-sm);
+            background: var(--cnsa-surface-2);
+            color: var(--cnsa-text);
             font-size: 1.1em;
+            font-family: var(--cnsa-font);
             outline: none;
             transition: border-color 0.3s;
         }
 
         .name-modal-body input[type="text"]:focus {
-            border-color: #3d4e9f;
+            border-color: var(--cnsa-accent-1);
+        }
+
+        .name-modal-body input[type="text"]::placeholder {
+            color: var(--cnsa-text-dimmer);
         }
 
         .toast-container {
@@ -899,14 +994,17 @@
         }
 
         .toast {
-            background: rgba(61, 78, 159, 0.95);
+            background: rgba(14, 22, 44, 0.92);
+            backdrop-filter: var(--cnsa-blur);
+            -webkit-backdrop-filter: var(--cnsa-blur);
+            border: 1px solid var(--cnsa-border-strong);
             color: white;
             padding: 14px 24px;
-            border-radius: 12px;
+            border-radius: var(--cnsa-radius-sm);
             font-size: 15px;
             font-weight: 500;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-            animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1), toastOut 0.4s ease-in forwards;
+            box-shadow: var(--cnsa-shadow-lg);
+            animation: toastIn 0.4s var(--cnsa-ease), toastOut 0.4s ease-in forwards;
             animation-delay: 0s, var(--toast-duration, 2.5s);
             max-width: 360px;
         }
@@ -923,19 +1021,20 @@
 
         .footer {
             position: relative;
-            background: #3d4e9f;
-            color: white;
+            background: var(--cnsa-surface);
+            border: 1px solid var(--cnsa-border);
+            color: var(--cnsa-text-dim);
             text-align: center;
             padding: 10px 20px;
             font-size: 14px;
             margin-top: 30px;
-            border-radius: 10px;
+            border-radius: var(--cnsa-radius-sm);
             max-width: 1200px;
             width: 90%;
         }
         
         .footer a {
-            color: white;
+            color: var(--cnsa-accent-1);
             text-decoration: none;
         }
         
@@ -954,34 +1053,34 @@
         
         <!-- 홈 버튼 섹션 추가 -->
         <div class="home-buttons">
-            <button class="home-btn" onclick="showTutorial()">📖 사용법</button>
-            <button class="home-btn" onclick="showDevLog()">📝 개발자 로그</button>
+            <button class="home-btn cnsa-focusable" onclick="showTutorial()">📖 사용법</button>
+            <button class="home-btn cnsa-focusable" onclick="showDevLog()">📝 개발자 로그</button>
         </div>
-        
+
         <div class="scenario-cards">
-            <div class="scenario-card speed-card" onclick="openModal('speed')">
-                <div class="icon">⚡</div>
+            <div class="scenario-card speed-card cnsa-focusable" role="button" tabindex="0" aria-label="속도의 진화 시나리오 시작" onclick="openModal('speed')">
+                <div class="icon" aria-hidden="true">⚡</div>
                 <h2>속도의 진화</h2>
                 <p>포식자로부터 도망치는 속도가 생존에 미치는 영향을 관찰합니다. 빠른 달팽이가 살아남을까요?</p>
             </div>
-            
-            <div class="scenario-card color-card" onclick="openModal('color')">
-                <div class="icon">🎨</div>
+
+            <div class="scenario-card color-card cnsa-focusable" role="button" tabindex="0" aria-label="색의 진화 시나리오 시작" onclick="openModal('color')">
+                <div class="icon" aria-hidden="true">🎨</div>
                 <h2>색의 진화</h2>
                 <p>환경과의 보호색이 생존에 미치는 영향을 관찰합니다. 배경과 비슷한 색이 유리할까요?</p>
             </div>
-            
-            <div class="scenario-card size-card" onclick="openModal('size')">
-                <div class="icon">📏</div>
+
+            <div class="scenario-card size-card cnsa-focusable" role="button" tabindex="0" aria-label="크기의 진화 시나리오 시작" onclick="openModal('size')">
+                <div class="icon" aria-hidden="true">📏</div>
                 <h2>크기의 진화</h2>
                 <p>개체의 크기가 포식 위험에 미치는 영향을 관찰합니다. 작은 개체가 더 안전할까요?</p>
             </div>
         </div>
 
         <div class="genetics-section">
-            <div class="genetics-toggle" onclick="toggleGenetics()">
+            <div class="genetics-toggle cnsa-focusable" role="button" tabindex="0" aria-expanded="false" aria-controls="geneticsCards" onclick="toggleGenetics()">
                 <h2>🔬 알고 보면 놀라운, 달팽이의 유전</h2>
-                <span class="toggle-arrow" id="geneticsArrow">▼</span>
+                <span class="toggle-arrow" id="geneticsArrow" aria-hidden="true">▼</span>
             </div>
             <div class="genetics-cards" id="geneticsCards">
                 <div class="genetics-card">
@@ -1025,10 +1124,10 @@
 
     <!-- 튜토리얼 모달 -->
     <div class="modal" id="tutorialModal">
-        <div class="modal-content">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="tutorialModalTitle">
             <div class="modal-header">
-                <h3>📖 사용법 안내</h3>
-                <button class="modal-close" onclick="closeTutorial()">×</button>
+                <h3 id="tutorialModalTitle">📖 사용법 안내</h3>
+                <button class="modal-close cnsa-focusable" onclick="closeTutorial()" aria-label="사용법 안내 닫기">×</button>
             </div>
             <div class="modal-body">
                 <div class="log-entry">
@@ -1103,10 +1202,10 @@
     
     <!-- 개발자 로그 모달 -->
     <div class="modal" id="devLogModal">
-        <div class="modal-content">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="devLogModalTitle">
             <div class="modal-header">
-                <h3>📝 개발자 로그</h3>
-                <button class="modal-close" onclick="closeDevLog()">×</button>
+                <h3 id="devLogModalTitle">📝 개발자 로그</h3>
+                <button class="modal-close cnsa-focusable" onclick="closeDevLog()" aria-label="개발자 로그 닫기">×</button>
             </div>
             <div class="modal-body">
                 <div class="log-entry">
@@ -1135,63 +1234,63 @@
     
     <!-- 초기 설정 모달 -->
     <div id="setupModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
             <h3 id="modalTitle">초기 개체군 설정</h3>
-            
+
             <div class="distribution-setup">
                 <div class="trait-level">
                     <label>
                         <span id="level1Label">레벨 1</span>
-                        <input type="number" id="level1Count" min="0" max="50" value="10">
+                        <input type="number" id="level1Count" min="0" max="50" value="10" aria-labelledby="level1Label">
                     </label>
                 </div>
                 <div class="trait-level">
                     <label>
                         <span id="level2Label">레벨 2</span>
-                        <input type="number" id="level2Count" min="0" max="50" value="10">
+                        <input type="number" id="level2Count" min="0" max="50" value="10" aria-labelledby="level2Label">
                     </label>
                 </div>
                 <div class="trait-level">
                     <label>
                         <span id="level3Label">레벨 3</span>
-                        <input type="number" id="level3Count" min="0" max="50" value="10">
+                        <input type="number" id="level3Count" min="0" max="50" value="10" aria-labelledby="level3Label">
                     </label>
                 </div>
                 <div class="trait-level">
                     <label>
                         <span id="level4Label">레벨 4</span>
-                        <input type="number" id="level4Count" min="0" max="50" value="10">
+                        <input type="number" id="level4Count" min="0" max="50" value="10" aria-labelledby="level4Label">
                     </label>
                 </div>
                 <div class="trait-level">
                     <label>
                         <span id="level5Label">레벨 5</span>
-                        <input type="number" id="level5Count" min="0" max="50" value="10">
+                        <input type="number" id="level5Count" min="0" max="50" value="10" aria-labelledby="level5Label">
                     </label>
                 </div>
             </div>
-            
+
             <div class="modal-buttons">
-                <button class="btn-cancel" onclick="closeModal()">취소</button>
-                <button class="btn-start" onclick="startSimulation()">시작하기</button>
+                <button class="btn-cancel cnsa-focusable" onclick="closeModal()">취소</button>
+                <button class="btn-start cnsa-focusable" onclick="startSimulation()">시작하기</button>
             </div>
         </div>
     </div>
     
     <!-- 이름 입력 모달 -->
     <div class="modal" id="nameModal">
-        <div class="modal-content" style="max-width:420px;">
+        <div class="modal-content" style="max-width:420px;" role="dialog" aria-modal="true" aria-labelledby="nameModalTitle">
             <div class="modal-header">
-                <h3>📋 기록모드</h3>
-                <button class="modal-close" onclick="cancelRecording()">×</button>
+                <h3 id="nameModalTitle">📋 기록모드</h3>
+                <button class="modal-close cnsa-focusable" onclick="cancelRecording()" aria-label="기록모드 닫기">×</button>
             </div>
             <div class="name-modal-body">
-                <p>이름 또는 번호를 입력하세요</p>
-                <input type="text" id="studentNameInput" placeholder="예: 홍길동, 1반 3번" maxlength="20">
+                <p id="studentNameHint">이름 또는 번호를 입력하세요</p>
+                <input type="text" id="studentNameInput" placeholder="예: 홍길동, 1반 3번" maxlength="20" aria-labelledby="studentNameHint">
             </div>
             <div class="modal-buttons">
-                <button class="btn-cancel" onclick="cancelRecording()">취소</button>
-                <button class="btn-start" onclick="startRecording()">기록 시작</button>
+                <button class="btn-cancel cnsa-focusable" onclick="cancelRecording()">취소</button>
+                <button class="btn-start cnsa-focusable" onclick="startRecording()">기록 시작</button>
             </div>
         </div>
     </div>
@@ -1202,18 +1301,18 @@
             <div class="sim-title-section">
                 <h2 class="sim-title" id="simTitle">속도의 진화</h2>
                 <div class="header-controls">
-                    <button class="btn-success" id="startBtn" onclick="toggleSimulation()">▶️ 시작</button>
-                    <button class="btn-warning" id="reproduceBtn" onclick="reproduce()">🔄 번식</button>
-                    <button class="btn-primary" id="toggleViewBtn" onclick="toggleView()">📊 그래프</button>
-                    <button class="btn-record" id="recordBtn" onclick="toggleRecording()">📋 기록모드</button>
+                    <button class="btn-success cnsa-focusable" id="startBtn" onclick="toggleSimulation()" aria-label="시뮬레이션 시작 또는 정지">▶️ 시작</button>
+                    <button class="btn-warning cnsa-focusable" id="reproduceBtn" onclick="reproduce()" aria-label="다음 세대 번식">🔄 번식</button>
+                    <button class="btn-primary cnsa-focusable" id="toggleViewBtn" onclick="toggleView()" aria-label="통계와 그래프 보기 전환">📊 그래프</button>
+                    <button class="btn-record cnsa-focusable" id="recordBtn" onclick="toggleRecording()" aria-label="기록모드 켜기 또는 끄기">📋 기록모드</button>
                 </div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
-                <div class="recording-badge" id="recordingBadge">
-                    <span class="recording-dot"></span>
+                <div class="recording-badge" id="recordingBadge" role="status">
+                    <span class="recording-dot" aria-hidden="true"></span>
                     기록 중
                 </div>
-                <button class="btn-back" onclick="backToSelection()">◀ 처음으로</button>
+                <button class="btn-back cnsa-focusable" onclick="backToSelection()" aria-label="처음 화면으로 돌아가기">◀ 처음으로</button>
             </div>
         </div>
         
@@ -1221,20 +1320,20 @@
             <div class="control-section">
                 <h3>⚙️ 시뮬레이션 설정</h3>
                 
-                <div class="mode-selector">
-                    <div class="mode-button active" id="manualMode" onclick="setMode('manual')">
+                <div class="mode-selector" role="group" aria-label="시뮬레이션 모드 선택">
+                    <div class="mode-button active cnsa-focusable" id="manualMode" role="button" tabindex="0" aria-pressed="true" onclick="setMode('manual')">
                         👆 수동 모드
                     </div>
-                    <div class="mode-button" id="autoMode" onclick="setMode('auto')">
+                    <div class="mode-button cnsa-focusable" id="autoMode" role="button" tabindex="0" aria-pressed="false" onclick="setMode('auto')">
                         🦅 자동 모드
                     </div>
                 </div>
-                
-                <div class="bg-selector" id="bgSelector" style="display: none; margin-top: 10px;">
-                    <div class="bg-button grassland active" id="grasslandBg" onclick="setBackground('grassland')">
+
+                <div class="bg-selector" id="bgSelector" style="display: none; margin-top: 10px;" role="group" aria-label="배경 환경 선택">
+                    <div class="bg-button grassland active cnsa-focusable" id="grasslandBg" role="button" tabindex="0" aria-pressed="true" onclick="setBackground('grassland')">
                         🌿 초지
                     </div>
-                    <div class="bg-button openfield" id="openfieldBg" onclick="setBackground('openfield')">
+                    <div class="bg-button openfield cnsa-focusable" id="openfieldBg" role="button" tabindex="0" aria-pressed="false" onclick="setBackground('openfield')">
                         🏜️ 개활지
                     </div>
                 </div>
@@ -1270,14 +1369,14 @@
                     </div>
                 </div>
                 
-                <button class="btn-danger" onclick="resetSimulation()" style="width: 100%; margin-top: 10px;">↺ 초기화</button>
+                <button class="btn-danger cnsa-focusable" onclick="resetSimulation()" style="width: 100%; margin-top: 10px;" aria-label="시뮬레이션 초기화">↺ 초기화</button>
             </div>
         </div>
         
         <div class="keyboard-hints">⌨️ Space(시작/정지) R(번식) G(그래프) D(기록) Esc(처음으로)</div>
 
         <div class="main-area">
-            <canvas id="gameCanvas" width="600" height="400"></canvas>
+            <canvas id="gameCanvas" width="600" height="400" role="img" aria-label="달팽이 진화 시뮬레이션 화면. 수동 모드에서는 달팽이를 클릭해 포식합니다."></canvas>
             
             <div class="stats-panel" id="statsPanel">
                 <h3>📊 현재 상태</h3>
@@ -1313,13 +1412,15 @@
             </div>
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         function toggleGenetics() {
             const cards = document.getElementById('geneticsCards');
             const arrow = document.getElementById('geneticsArrow');
-            cards.classList.toggle('open');
+            const isOpen = cards.classList.toggle('open');
             arrow.classList.toggle('open');
+            const toggle = document.querySelector('.genetics-toggle');
+            if (toggle) toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         }
 
         function showToast(msg, duration = 3000) {
@@ -2038,10 +2139,13 @@ window.onclick = function(event) {
         // 모드 설정
         function setMode(mode) {
             currentMode = mode;
-            
+
             document.getElementById('manualMode').classList.toggle('active', mode === 'manual');
             document.getElementById('autoMode').classList.toggle('active', mode === 'auto');
-            
+            document.getElementById('manualMode').setAttribute('aria-pressed', mode === 'manual' ? 'true' : 'false');
+            document.getElementById('autoMode').setAttribute('aria-pressed', mode === 'auto' ? 'true' : 'false');
+            if (window.CNSA) CNSA.srAnnounce(mode === 'auto' ? '자동 모드. 독수리가 달팽이를 사냥합니다.' : '수동 모드. 달팽이를 클릭해 포식합니다.');
+
             if (mode === 'auto') {
                 eagles = [new Eagle(0), new Eagle(1)];
                 document.getElementById('eagleStats').style.display = 'flex';
@@ -2056,10 +2160,13 @@ window.onclick = function(event) {
         // 배경 설정
         function setBackground(bg) {
             currentBackground = bg;
-            
+
             document.getElementById('grasslandBg').classList.toggle('active', bg === 'grassland');
             document.getElementById('openfieldBg').classList.toggle('active', bg === 'openfield');
-            
+            document.getElementById('grasslandBg').setAttribute('aria-pressed', bg === 'grassland' ? 'true' : 'false');
+            document.getElementById('openfieldBg').setAttribute('aria-pressed', bg === 'openfield' ? 'true' : 'false');
+            if (window.CNSA) CNSA.srAnnounce(bg === 'grassland' ? '초지 배경. 초록색 달팽이가 유리합니다.' : '개활지 배경. 토양색 달팽이가 유리합니다.');
+
             backgroundImage = null;
             drawBackground();
         }
@@ -2204,9 +2311,15 @@ window.onclick = function(event) {
             });
             
             document.getElementById('reproduceBtn').disabled = false;
-            
+
             updateStats();
             updateChart();
+
+            if (window.CNSA) {
+                const aliveNow = snails.filter(s => s.alive).length;
+                const avgText = document.getElementById('avgValue').textContent;
+                CNSA.srAnnounce(`${generation}세대 번식 완료. 개체수 ${aliveNow}마리, 평균값 ${avgText}.`);
+            }
 
             if (isRecording) {
                 recordingData.push(captureSnapshot());
@@ -2447,8 +2560,66 @@ window.onclick = function(event) {
             }
         });
 
+        const ALL_MODAL_IDS = ['tutorialModal', 'devLogModal', 'setupModal', 'nameModal'];
+
+        function getOpenModal() {
+            for (const id of ALL_MODAL_IDS) {
+                const m = document.getElementById(id);
+                if (m && m.style.display === 'block') return m;
+            }
+            return null;
+        }
+
+        function closeOpenModal() {
+            const m = getOpenModal();
+            if (!m) return false;
+            if (m.id === 'nameModal') cancelRecording();
+            else m.style.display = 'none';
+            return true;
+        }
+
+        let releaseTrap = null;
+        let lastFocusBeforeModal = null;
+
+        const modalObserver = new MutationObserver(() => {
+            const open = getOpenModal();
+            if (open) {
+                if (!releaseTrap && window.CNSA) {
+                    lastFocusBeforeModal = document.activeElement;
+                    releaseTrap = CNSA.trapFocus(open);
+                }
+            } else if (releaseTrap) {
+                releaseTrap();
+                releaseTrap = null;
+                if (lastFocusBeforeModal && lastFocusBeforeModal.focus) lastFocusBeforeModal.focus();
+                lastFocusBeforeModal = null;
+            }
+        });
+        ALL_MODAL_IDS.forEach(id => {
+            const m = document.getElementById(id);
+            if (m) modalObserver.observe(m, { attributes: true, attributeFilter: ['style'] });
+        });
+
+        function activateOnKey(e) {
+            if (e.key === 'Enter' || e.key === ' ' || e.code === 'Space') {
+                e.preventDefault();
+                e.currentTarget.click();
+            }
+        }
+        document.querySelectorAll('[role="button"][tabindex="0"]').forEach(el => {
+            el.addEventListener('keydown', activateOnKey);
+        });
+
         document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (closeOpenModal()) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+
             if (e.target.tagName === 'INPUT') return;
+            if (getOpenModal()) return;
             if (!document.getElementById('simulationScreen').classList.contains('active')) return;
 
             switch (e.code) {
@@ -2475,6 +2646,8 @@ window.onclick = function(event) {
             }
         });
     </script>
+    <script src="/assets/sim-ui.js"></script>
+    <script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
     
     <!-- Footer 여기에 추가 -->
     <div class="footer">

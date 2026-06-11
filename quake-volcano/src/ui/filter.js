@@ -1,11 +1,10 @@
 function daysLabel(days) {
-  if (days === 0) return '표시 안 함';
-  if (days === 1) return '최근 24시간';
+  if (days <= 1) return '최근 24시간';
   return `최근 ${days}일`;
 }
 
 export function mountFilter(rootEl, onChange) {
-  let state = { magMin: 0, days: 0, depth: 'all' };
+  let state = { magMin: 0, days: 7, depth: 'all' };
 
   rootEl.innerHTML = `
     <div class="panel-section">
@@ -16,9 +15,9 @@ export function mountFilter(rootEl, onChange) {
         <div class="range-scale"><span>M0</span><span>M3.5</span><span>M7+</span></div>
       </div>
       <div class="range-group">
-        <div class="range-head"><span>기간</span><span class="range-value" id="days-value">표시 안 함</span></div>
-        <input class="range-input" id="days-range" type="range" min="0" max="30" step="1" value="0" aria-label="지진 표시 기간">
-        <div class="range-scale"><span>0</span><span>15일</span><span>30일</span></div>
+        <div class="range-head"><span>기간</span><span class="range-value" id="days-value">최근 7일</span></div>
+        <input class="range-input" id="days-range" type="range" min="1" max="30" step="1" value="7" aria-label="지진 표시 기간">
+        <div class="range-scale"><span>24시간</span><span>15일</span><span>30일</span></div>
       </div>
       <div class="range-group">
         <div class="range-head"><span>깊이</span><span class="range-value" id="depth-value">전체</span></div>
@@ -52,7 +51,9 @@ export function mountFilter(rootEl, onChange) {
     daysValue.textContent = daysLabel(state.days);
     depthValue.textContent = depthLabels[state.depth];
     depthButtons.forEach((button) => {
-      button.classList.toggle('active', button.dataset.depthFilter === state.depth);
+      const isActive = button.dataset.depthFilter === state.depth;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
     });
   }
 

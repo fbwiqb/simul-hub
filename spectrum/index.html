@@ -3,45 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>원소 스펙트럼 퀴즈</title>
+    <meta name="cnsa-sim" content="원소 스펙트럼|통합과학1">
+    <title>원소 스펙트럼</title>
+    <link rel="stylesheet" href="/assets/sim-ui.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 63,38 98,38 69,59 80,95 50,72 20,95 31,59 2,38 37,38' fill='%23ffd700'/></svg>">
     <style>
         :root {
-            --bg: #3d4e9f;
-            --container-bg: rgba(255,255,255,0.95);
-            --text: #333;
-            --text-dim: #666;
-            --primary: #3d4e9f;
-            --primary-dark: #2d3e8f;
-            --accent: #27ae60;
-            --danger: #e74c3c;
-            --border: #ddd;
-            --card-bg: white;
-            --hover-bg: #f0f0ff;
-            --success-bg: #d4edda;
-            --success-text: #155724;
-            --warn-bg: #fff3cd;
-            --warn-text: #856404;
-            --radius: 10px;
-            --radius-sm: 6px;
+            --bg: var(--cnsa-bg, linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%));
+            --container-bg: rgba(255,255,255,0.06);
+            --text: #f3f5fb;
+            --text-dim: rgba(255,255,255,0.6);
+            --primary: #00d2ff;
+            --primary-dark: #3a7bd5;
+            --accent: #22c55e;
+            --danger: #ef4444;
+            --border: rgba(255,255,255,0.12);
+            --card-bg: rgba(255,255,255,0.05);
+            --hover-bg: rgba(255,255,255,0.1);
+            --success-bg: rgba(34,197,94,0.18);
+            --success-text: #6ee7a8;
+            --warn-bg: rgba(245,158,11,0.18);
+            --warn-text: #fcd34d;
+            --radius: 16px;
+            --radius-sm: 10px;
         }
         body.dark-mode {
-            --bg: #0a0a1a;
-            --container-bg: rgba(20,20,40,0.95);
-            --text: #e0e0e0;
-            --text-dim: #999;
-            --border: #333;
-            --card-bg: #1a1a2e;
-            --hover-bg: #252540;
-            --success-bg: #1a3a1a;
-            --success-text: #4caf50;
-            --warn-bg: #3a3000;
-            --warn-text: #ffc107;
+            --bg: #07080f;
+            --container-bg: rgba(255,255,255,0.04);
+            --text: #e8eaf6;
+            --text-dim: rgba(255,255,255,0.55);
+            --border: rgba(255,255,255,0.1);
+            --card-bg: rgba(255,255,255,0.035);
+            --hover-bg: rgba(255,255,255,0.09);
+            --success-bg: rgba(34,197,94,0.16);
+            --success-text: #6ee7a8;
+            --warn-bg: rgba(245,158,11,0.16);
+            --warn-text: #fcd34d;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: var(--cnsa-font, 'Pretendard', 'Noto Sans KR', -apple-system, 'Segoe UI', sans-serif);
             background: var(--bg);
+            background-attachment: fixed;
             min-height: 100vh;
             padding: 15px;
             padding-bottom: 55px;
@@ -51,10 +54,13 @@
             max-width: 1200px;
             margin: 0 auto;
             background: var(--container-bg);
+            backdrop-filter: var(--cnsa-blur, blur(12px));
+            -webkit-backdrop-filter: var(--cnsa-blur, blur(12px));
+            border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 15px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            height: calc(100vh - 85px);
+            box-shadow: var(--cnsa-shadow-lg, 0 24px 48px rgba(0,0,0,0.4));
+            height: calc(100vh - 85px - var(--cnsa-bar-h, 48px));
             display: flex;
             flex-direction: column;
             color: var(--text);
@@ -245,10 +251,10 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .toggle-btn.active { background: var(--primary); color: white; }
-        body.dark-mode .toggle-btn { background: #1a1a2e; color: #7b8ed6; }
-        body.dark-mode .toggle-btn.active { background: #4a5abf; color: white; }
-        body.dark-mode .toggle-group { border-color: #4a5abf; }
+        .toggle-btn.active { background: var(--primary); color: #06121f; }
+        body.dark-mode .toggle-btn { background: var(--card-bg); color: var(--primary); }
+        body.dark-mode .toggle-btn.active { background: var(--primary); color: #06121f; }
+        body.dark-mode .toggle-group { border-color: var(--primary); }
         .count-slider {
             flex: 1;
             display: flex;
@@ -265,24 +271,26 @@
         }
         body.dark-mode .count-slider .count-label { color: #7b8ed6; }
         .btn {
-            background: var(--primary);
+            background: var(--cnsa-accent, linear-gradient(90deg, #00d2ff, #3a7bd5));
             color: white;
             border: none;
-            padding: 8px 14px;
+            padding: 10px 14px;
             border-radius: var(--radius-sm);
             cursor: pointer;
             font-size: 12px;
             font-weight: 700;
-            transition: all 0.2s;
+            min-height: 40px;
+            transition: transform 0.18s, filter 0.18s;
+            box-shadow: 0 4px 14px rgba(0,130,200,0.28);
         }
-        .btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
         .btn:active { transform: translateY(0); }
-        .btn-start { background: var(--accent); flex: 1; }
-        .btn-start:hover { background: #229954; }
-        .btn-show { background: var(--accent); }
-        .btn-show:hover { background: #229954; }
-        .btn-hide { background: var(--danger); }
-        .btn-hide:hover { background: #c0392b; }
+        .btn-start { background: linear-gradient(135deg, #22c55e, #16a34a); flex: 1; box-shadow: 0 4px 14px rgba(34,197,94,0.3); }
+        .btn-start:hover { filter: brightness(1.08); }
+        .btn-show { background: linear-gradient(135deg, #22c55e, #16a34a); box-shadow: 0 4px 14px rgba(34,197,94,0.3); }
+        .btn-show:hover { filter: brightness(1.08); }
+        .btn-hide { background: linear-gradient(135deg, #ef4444, #b91c1c); box-shadow: 0 4px 14px rgba(239,68,68,0.3); }
+        .btn-hide:hover { filter: brightness(1.08); }
         .timer-toggle {
             display: flex;
             align-items: center;
@@ -349,8 +357,9 @@
             user-select: none;
         }
         .checkbox-item:hover { background: var(--hover-bg); border-color: var(--primary); }
-        .checkbox-item.selected { background: var(--primary); color: white; border-color: var(--primary); }
-        body.dark-mode .checkbox-item.selected { background: #4a5abf; border-color: #4a5abf; }
+        .checkbox-item.selected { background: rgba(0,210,255,0.18); color: var(--text); border-color: var(--primary); box-shadow: 0 0 12px rgba(0,210,255,0.25); }
+        .checkbox-item.selected .cb-name { color: var(--primary); }
+        body.dark-mode .checkbox-item.selected { background: rgba(0,210,255,0.16); border-color: var(--primary); }
         .checkbox-item .cb-name { font-size: 13px; font-weight: 700; }
         .checkbox-item .cb-mini-spectrum {
             width: 100%;
@@ -362,19 +371,21 @@
         }
         .checkbox-item.selected .cb-mini-spectrum { opacity: 0.7; }
         .submit-btn {
-            background: var(--danger);
+            background: var(--cnsa-accent, linear-gradient(90deg, #00d2ff, #3a7bd5));
             color: white;
             border: none;
-            padding: 10px;
+            padding: 12px;
             border-radius: var(--radius-sm);
             cursor: pointer;
             font-size: 14px;
             font-weight: 700;
             margin-top: 8px;
+            min-height: 44px;
             flex-shrink: 0;
-            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(0,130,200,0.28);
+            transition: transform 0.18s, filter 0.18s;
         }
-        .submit-btn:hover { background: #c0392b; transform: translateY(-1px); }
+        .submit-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
         .submit-btn:active { transform: translateY(0); }
         .result-message {
             margin-top: 6px;
@@ -425,18 +436,21 @@
         .copyright a { color: rgba(255,255,255,0.7); text-decoration: none; }
         .copyright a:hover { color: white; }
         .footer-btn {
-            background: rgba(61,78,159,0.7);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 6px 12px;
-            border-radius: var(--radius-sm);
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: var(--cnsa-blur, blur(12px));
+            -webkit-backdrop-filter: var(--cnsa-blur, blur(12px));
+            color: rgba(255,255,255,0.85);
+            border: 1px solid rgba(255,255,255,0.16);
+            padding: 8px 12px;
+            border-radius: var(--cnsa-radius-pill, 999px);
             cursor: pointer;
             font-size: 10px;
             font-weight: 600;
-            transition: all 0.2s;
+            min-height: 36px;
+            transition: transform 0.18s, background 0.18s;
             white-space: nowrap;
         }
-        .footer-btn:hover { background: rgba(61,78,159,1); transform: translateY(-1px); }
+        .footer-btn:hover { background: rgba(255,255,255,0.16); transform: translateY(-1px); }
         .modal {
             display: none;
             position: fixed;
@@ -447,25 +461,25 @@
         }
         .modal.show { display: flex; align-items: center; justify-content: center; }
         .modal-content {
-            background: var(--card-bg);
+            background: #121a30;
             border: 1px solid var(--border);
             width: 90%;
             max-width: 600px;
             max-height: 80vh;
             overflow-y: auto;
             border-radius: var(--radius);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: var(--cnsa-shadow-lg, 0 24px 48px rgba(0,0,0,0.4));
         }
         .modal-header {
-            background: var(--primary);
+            background: var(--cnsa-accent, linear-gradient(90deg, #00d2ff, #3a7bd5));
             color: white;
-            padding: 12px 18px;
+            padding: 14px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-radius: var(--radius) var(--radius) 0 0;
         }
-        body.dark-mode .modal-header { background: #2a2a4a; }
+        body.dark-mode .modal-header { background: var(--cnsa-accent, linear-gradient(90deg, #00d2ff, #3a7bd5)); }
         .modal-header h2 { margin: 0; font-size: 1.2em; }
         .modal-close {
             background: none;
@@ -508,7 +522,7 @@
     <div class="container">
         <div class="header">
             <h1>원소 스펙트럼 퀴즈</h1>
-            <button class="dark-toggle" id="darkToggle" title="다크모드">☀️</button>
+            <button class="dark-toggle cnsa-focusable" id="darkToggle" title="화면 밝기 전환" aria-label="화면 밝기 전환" aria-pressed="false">☀️</button>
         </div>
         <div class="ref-spectrum">
             <div class="ref-spectrum-bar" id="refSpectrum"></div>
@@ -525,13 +539,13 @@
             <div class="right-panel">
                 <div class="controls">
                     <div class="control-row">
-                        <div class="toggle-group">
-                            <button class="toggle-btn active" id="toggleEmission">방출</button>
-                            <button class="toggle-btn" id="toggleAbsorption">흡수</button>
+                        <div class="toggle-group" role="group" aria-label="스펙트럼 유형 선택">
+                            <button class="toggle-btn active" id="toggleEmission" aria-pressed="true">방출</button>
+                            <button class="toggle-btn" id="toggleAbsorption" aria-pressed="false">흡수</button>
                         </div>
                         <div class="count-slider">
-                            <span style="font-size:11px;color:var(--text-dim)">원소</span>
-                            <input type="range" id="countSlider" min="2" max="6" value="3">
+                            <span style="font-size:11px;color:var(--text-dim)" id="countSliderLabel">원소</span>
+                            <input type="range" id="countSlider" min="2" max="6" value="3" aria-labelledby="countSliderLabel countLabel">
                             <span class="count-label" id="countLabel">3개</span>
                         </div>
                     </div>
@@ -561,16 +575,16 @@
 
     <div class="footer-container">
         <div class="copyright">ⓒ 2025 충남삼성고등학교 신도경T<br><a href="mailto:pantarei01@cnsa.hs.kr">pantarei01@cnsa.hs.kr</a></div>
-        <button class="footer-btn" id="TutorialBtn">사용법</button>
-        <button class="footer-btn" id="DevLogBtn">개발자 로그</button>
-        <button class="footer-btn" onclick="location.href='battle.html'" style="background:linear-gradient(135deg,#e74c3c,#8e44ad)">⚔️ 배틀</button>
+        <button class="footer-btn cnsa-focusable" id="TutorialBtn">사용법</button>
+        <button class="footer-btn cnsa-focusable" id="DevLogBtn">개발자 로그</button>
+        <button class="footer-btn cnsa-focusable" onclick="location.href='battle.html'" aria-label="스펙트럼 배틀로 이동" style="background:linear-gradient(135deg,#e74c3c,#8e44ad);color:#fff;border-color:rgba(255,255,255,0.25)">⚔️ 배틀</button>
     </div>
 
-    <div class="modal" id="tutorialModal">
+    <div class="modal" id="tutorialModal" role="dialog" aria-modal="true" aria-labelledby="tutorialModalTitle">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>사용법 안내</h2>
-                <button class="modal-close" id="closeTutorialModal">×</button>
+                <h2 id="tutorialModalTitle">사용법 안내</h2>
+                <button class="modal-close cnsa-focusable" id="closeTutorialModal" aria-label="사용법 안내 닫기">×</button>
             </div>
             <div class="modal-body">
                 <div class="log-entry">
@@ -614,11 +628,11 @@
         </div>
     </div>
 
-    <div class="modal" id="devLogModal">
+    <div class="modal" id="devLogModal" role="dialog" aria-modal="true" aria-labelledby="devLogModalTitle">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>개발자 로그</h2>
-                <button class="modal-close" id="closeModal">×</button>
+                <h2 id="devLogModalTitle">개발자 로그</h2>
+                <button class="modal-close cnsa-focusable" id="closeModal" aria-label="개발자 로그 닫기">×</button>
             </div>
             <div class="modal-body">
                 <div class="log-entry">
@@ -724,7 +738,11 @@
             grid.innerHTML = '';
             allElements.forEach(function(element) {
                 var div = document.createElement('div');
-                div.className = 'element-spectrum';
+                div.className = 'element-spectrum cnsa-focusable';
+                div.setAttribute('role', 'button');
+                div.setAttribute('tabindex', '0');
+                div.setAttribute('aria-label', element + ' ' + ELEMENT_NAMES[element] + ' 스펙트럼 비교');
+                div.setAttribute('aria-pressed', overlayElement === element ? 'true' : 'false');
                 if (highlight && selectedElements.indexOf(element) !== -1) div.classList.add('highlighted');
                 if (overlayElement === element) div.classList.add('overlay-active');
                 div.dataset.element = element;
@@ -747,11 +765,15 @@
                 div.appendChild(bar);
                 div.appendChild(scale);
 
-                div.addEventListener('click', function() {
+                function toggleOverlay() {
                     if (!selectedElements.length) return;
                     overlayElement = overlayElement === element ? null : element;
                     showAllSpectra(highlight);
                     updateOverlay();
+                }
+                div.addEventListener('click', toggleOverlay);
+                div.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleOverlay(); }
                 });
 
                 grid.appendChild(div);
@@ -845,14 +867,25 @@
             checkboxDiv.innerHTML = '';
             allElements.forEach(function(el) {
                 var item = document.createElement('div');
-                item.className = 'checkbox-item';
+                item.className = 'checkbox-item cnsa-focusable';
                 item.dataset.element = el;
+                item.setAttribute('role', 'button');
+                item.setAttribute('tabindex', '0');
+                item.setAttribute('aria-pressed', 'false');
+                item.setAttribute('aria-label', el + ' ' + ELEMENT_NAMES[el] + ' 선택');
                 var name = document.createElement('span');
                 name.className = 'cb-name';
                 name.textContent = el + '(' + ELEMENT_NAMES[el] + ')';
                 item.appendChild(name);
                 item.appendChild(buildMiniSpectrum(el));
-                item.addEventListener('click', function() { this.classList.toggle('selected'); });
+                function toggleSel() {
+                    var on = item.classList.toggle('selected');
+                    item.setAttribute('aria-pressed', on ? 'true' : 'false');
+                }
+                item.addEventListener('click', toggleSel);
+                item.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSel(); }
+                });
                 checkboxDiv.appendChild(item);
             });
         }
@@ -867,13 +900,15 @@
             var isCorrect = matched.length === correct.length && matched.length === selected.length;
 
             if (isCorrect) {
-                resultDiv.innerHTML = '<div class="result-message result-success">정답! (' + matched.sort().join(', ') + ')</div>';
+                resultDiv.innerHTML = '<div class="result-message result-success">✓ 정답! (' + matched.sort().join(', ') + ')</div>';
                 spawnConfetti();
+                if (window.CNSA) CNSA.srAnnounce('정답입니다. ' + matched.sort().join(', '));
             } else {
                 var section = document.getElementById('quizSection');
                 section.classList.add('shake');
                 setTimeout(function() { section.classList.remove('shake'); }, 400);
-                resultDiv.innerHTML = '<div class="result-message result-partial">' + matched.length + '/' + correct.length + ' 정답. 맞춘: ' + (matched.length > 0 ? matched.sort().join(', ') : '없음') + ' | 정답: ' + correct.sort().join(', ') + '</div>';
+                resultDiv.innerHTML = '<div class="result-message result-partial">✕ ' + matched.length + '/' + correct.length + ' 정답. 맞춘: ' + (matched.length > 0 ? matched.sort().join(', ') : '없음') + ' | 정답: ' + correct.sort().join(', ') + '</div>';
+                if (window.CNSA) CNSA.srAnnounce(correct.length + '개 중 ' + matched.length + '개 정답. 정답은 ' + correct.sort().join(', '));
             }
         }
 
@@ -922,11 +957,13 @@
             if (localStorage.getItem('spectrum-dark-mode') === 'true') {
                 document.body.classList.add('dark-mode');
                 btn.textContent = '🌙';
+                btn.setAttribute('aria-pressed', 'true');
             }
             btn.addEventListener('click', function() {
                 document.body.classList.toggle('dark-mode');
                 var isDark = document.body.classList.contains('dark-mode');
                 btn.textContent = isDark ? '🌙' : '☀️';
+                btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
                 localStorage.setItem('spectrum-dark-mode', isDark);
             });
         }
@@ -934,11 +971,17 @@
         function initControls() {
             document.getElementById('toggleEmission').addEventListener('click', function() {
                 this.classList.add('active');
-                document.getElementById('toggleAbsorption').classList.remove('active');
+                this.setAttribute('aria-pressed', 'true');
+                var other = document.getElementById('toggleAbsorption');
+                other.classList.remove('active');
+                other.setAttribute('aria-pressed', 'false');
             });
             document.getElementById('toggleAbsorption').addEventListener('click', function() {
                 this.classList.add('active');
-                document.getElementById('toggleEmission').classList.remove('active');
+                this.setAttribute('aria-pressed', 'true');
+                var other = document.getElementById('toggleEmission');
+                other.classList.remove('active');
+                other.setAttribute('aria-pressed', 'false');
             });
             document.getElementById('countSlider').addEventListener('input', function() {
                 document.getElementById('countLabel').textContent = this.value + '개';
@@ -950,12 +993,31 @@
         }
 
         function initModals() {
-            document.getElementById('TutorialBtn').addEventListener('click', function() { document.getElementById('tutorialModal').classList.add('show'); });
-            document.getElementById('closeTutorialModal').addEventListener('click', function() { document.getElementById('tutorialModal').classList.remove('show'); });
-            document.getElementById('tutorialModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
-            document.getElementById('DevLogBtn').addEventListener('click', function() { document.getElementById('devLogModal').classList.add('show'); });
-            document.getElementById('closeModal').addEventListener('click', function() { document.getElementById('devLogModal').classList.remove('show'); });
-            document.getElementById('devLogModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
+            var releaseTrap = null;
+            var lastFocus = null;
+            function openModal(modal) {
+                lastFocus = document.activeElement;
+                modal.classList.add('show');
+                if (window.CNSA) releaseTrap = CNSA.trapFocus(modal);
+            }
+            function closeModal(modal) {
+                modal.classList.remove('show');
+                if (releaseTrap) { releaseTrap(); releaseTrap = null; }
+                if (lastFocus && lastFocus.focus) lastFocus.focus();
+            }
+            function wire(btnId, closeId, modalId) {
+                var modal = document.getElementById(modalId);
+                document.getElementById(btnId).addEventListener('click', function() { openModal(modal); });
+                document.getElementById(closeId).addEventListener('click', function() { closeModal(modal); });
+                modal.addEventListener('click', function(e) { if (e.target === this) closeModal(modal); });
+            }
+            wire('TutorialBtn', 'closeTutorialModal', 'tutorialModal');
+            wire('DevLogBtn', 'closeModal', 'devLogModal');
+            document.addEventListener('keydown', function(e) {
+                if (e.key !== 'Escape') return;
+                var open = document.querySelector('.modal.show');
+                if (open) closeModal(open);
+            });
         }
 
         function init() {
@@ -969,5 +1031,7 @@
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
         else init();
     </script>
+    <script src="/assets/sim-ui.js"></script>
+    <script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
 </body>
 </html>

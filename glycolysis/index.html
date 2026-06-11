@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="cnsa-sim" content="세포 호흡|생명과학">
+<link rel="stylesheet" href="/assets/sim-ui.css">
 <title>세포 호흡 시뮬레이션</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,17 +19,21 @@
   --enzyme: #2E7D32;
   --co2: #5D4037;
   --gtp: #00897B;
-  --bg-dark: #f0f2f5;
-  --bg-card: rgba(255,255,255,0.85);
-  --border: rgba(0,0,0,0.1);
-  --text: #1a1a2e;
-  --text-dim: rgba(0,0,0,0.5);
+  --diagram-bg: #ffffff;
+  --diagram-border: rgba(0,0,0,0.1);
+  --diagram-text: #1a1a2e;
+  --diagram-text-dim: rgba(0,0,0,0.5);
+  --bg-card: var(--cnsa-surface);
+  --border: var(--cnsa-border);
+  --text: var(--cnsa-text);
+  --text-dim: var(--cnsa-text-dim);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
-  font-family:'Noto Sans KR',-apple-system,sans-serif;
-  background:linear-gradient(135deg,#f0f2f5 0%,#e8edf2 50%,#dfe5ec 100%);
-  color:var(--text);
+  font-family:var(--cnsa-font);
+  background:var(--cnsa-bg);
+  background-attachment:fixed;
+  color:var(--cnsa-text);
   min-height:100vh;
   overflow-x:hidden;
 }
@@ -51,49 +57,60 @@ body {
 .header h1 {
   font-size:1.6rem;
   font-weight:700;
-  color:#1a1a2e;
+  color:var(--cnsa-text);
+  letter-spacing:-0.01em;
 }
 .tabs {
   display:flex;
-  gap:4px;
+  gap:6px;
 }
 .tab {
   padding:10px 22px;
-  border:1px solid var(--border);
-  background:transparent;
-  color:var(--text-dim);
-  border-radius:8px;
+  border:1px solid var(--cnsa-border);
+  background:var(--cnsa-surface);
+  color:var(--cnsa-text-dim);
+  border-radius:var(--cnsa-radius-sm);
   cursor:pointer;
   font-size:1rem;
   font-family:inherit;
-  font-weight:500;
-  transition:all 0.2s;
+  font-weight:600;
+  transition:all 0.2s var(--cnsa-ease);
 }
 .tab.active {
-  background:rgba(58,123,213,0.15);
-  color:#2a5db0;
-  border-color:rgba(58,123,213,0.4);
+  background:var(--cnsa-accent);
+  color:#fff;
+  border-color:transparent;
+  box-shadow:0 4px 14px rgba(0,130,200,0.32);
 }
 .tab:hover:not(.active) {
-  background:rgba(0,0,0,0.04);
-  color:var(--text);
+  background:var(--cnsa-surface-strong);
+  border-color:var(--cnsa-border-strong);
+  color:var(--cnsa-text);
+}
+.tab:focus-visible {
+  outline:3px solid var(--cnsa-accent-1);
+  outline-offset:2px;
 }
 .header-btns {
   display:flex;
   gap:8px;
 }
 .icon-btn {
-  width:36px;height:36px;
-  border:1px solid var(--border);
-  background:transparent;
-  color:var(--text-dim);
-  border-radius:8px;
+  width:40px;height:40px;
+  border:1px solid var(--cnsa-border);
+  background:var(--cnsa-surface);
+  color:var(--cnsa-text-dim);
+  border-radius:var(--cnsa-radius-sm);
   cursor:pointer;
   font-size:1.1rem;
   display:flex;align-items:center;justify-content:center;
-  transition:all 0.2s;
+  transition:all 0.2s var(--cnsa-ease);
 }
-.icon-btn:hover { background:rgba(0,0,0,0.06); color:var(--text); }
+.icon-btn:hover { background:var(--cnsa-surface-strong); border-color:var(--cnsa-border-strong); color:var(--cnsa-text); }
+.icon-btn:focus-visible {
+  outline:3px solid var(--cnsa-accent-1);
+  outline-offset:2px;
+}
 
 .progress-bar {
   display:flex;
@@ -102,23 +119,29 @@ body {
   padding:10px 0;
   justify-content:center;
   flex-shrink:0;
+  flex-wrap:wrap;
 }
 .dot {
   width:16px;height:16px;
+  padding:0;
   border-radius:50%;
-  background:rgba(0,0,0,0.08);
-  border:2px solid rgba(0,0,0,0.12);
-  transition:all 0.3s;
+  background:rgba(255,255,255,0.12);
+  border:2px solid rgba(255,255,255,0.22);
+  transition:all 0.3s var(--cnsa-ease);
   cursor:pointer;
 }
+.dot:focus-visible {
+  outline:3px solid var(--cnsa-accent-1);
+  outline-offset:2px;
+}
 .dot.done {
-  background:rgba(58,123,213,0.5);
-  border-color:rgba(58,123,213,0.7);
+  background:rgba(0,210,255,0.5);
+  border-color:rgba(0,210,255,0.7);
 }
 .dot.current {
-  background:#3a7bd5;
-  border-color:#5a9be5;
-  box-shadow:0 0 8px rgba(58,123,213,0.6);
+  background:var(--cnsa-accent-1);
+  border-color:#7fe6ff;
+  box-shadow:0 0 10px rgba(0,210,255,0.65);
   transform:scale(1.2);
 }
 
@@ -131,9 +154,12 @@ body {
 }
 
 .side-panel {
-  background:var(--bg-card);
-  border:1px solid var(--border);
-  border-radius:12px;
+  background:var(--cnsa-surface);
+  backdrop-filter:var(--cnsa-blur);
+  -webkit-backdrop-filter:var(--cnsa-blur);
+  border:1px solid var(--cnsa-border);
+  border-radius:var(--cnsa-radius);
+  box-shadow:var(--cnsa-shadow);
   padding:16px 12px;
   display:flex;
   flex-direction:column;
@@ -144,7 +170,7 @@ body {
   font-size:0.85rem;
   text-transform:uppercase;
   letter-spacing:1px;
-  color:var(--text-dim);
+  color:var(--cnsa-text-dim);
   margin-bottom:6px;
 }
 .counter-value {
@@ -155,14 +181,14 @@ body {
 }
 .counter-sub {
   font-size:0.8rem;
-  color:var(--text-dim);
+  color:var(--cnsa-text-dim);
   margin-top:4px;
 }
-.atp-color { color:var(--atp); }
-.nadh-color { color:var(--nadh); }
-.fadh2-color { color:var(--fadh2); }
-.gtp-color { color:var(--gtp); }
-.co2-color { color:var(--co2); }
+.atp-color { color:#FFD54F; }
+.nadh-color { color:#64B5F6; }
+.fadh2-color { color:#CE93D8; }
+.gtp-color { color:#4DB6AC; }
+.co2-color { color:#BCAAA4; }
 
 @keyframes pulseRed {
   0% { transform:scale(1); }
@@ -189,9 +215,10 @@ body {
 }
 
 .center-stage {
-  background:var(--bg-card);
-  border:1px solid var(--border);
-  border-radius:12px;
+  background:var(--diagram-bg);
+  border:1px solid var(--cnsa-border-strong);
+  border-radius:var(--cnsa-radius);
+  box-shadow:var(--cnsa-shadow);
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -303,7 +330,7 @@ body {
   position:absolute;
   inset:3px;
   clip-path:polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%);
-  background:var(--bg-card);
+  background:var(--diagram-bg);
 }
 
 .mol-circle .mol-shape-bg {
@@ -349,7 +376,7 @@ body {
 .mol-name {
   font-size:0.95rem;
   font-weight:600;
-  color:var(--text);
+  color:var(--diagram-text);
 }
 .mol-structure {
   width:180px;
@@ -574,26 +601,31 @@ body {
 }
 
 .info-panel {
-  background:var(--bg-card);
-  border:1px solid var(--border);
-  border-radius:12px;
+  background:var(--cnsa-surface);
+  backdrop-filter:var(--cnsa-blur);
+  -webkit-backdrop-filter:var(--cnsa-blur);
+  border:1px solid var(--cnsa-border);
+  border-radius:var(--cnsa-radius);
+  box-shadow:var(--cnsa-shadow);
   padding:16px 20px;
   margin-top:12px;
   flex-shrink:0;
 }
 .info-step {
   font-size:0.9rem;
-  color:var(--text-dim);
+  color:var(--cnsa-accent-1);
+  font-weight:600;
   margin-bottom:4px;
 }
 .info-title {
   font-size:1.2rem;
-  font-weight:600;
+  font-weight:700;
+  color:var(--cnsa-text);
   margin-bottom:6px;
 }
 .info-desc {
   font-size:1rem;
-  color:rgba(0,0,0,0.6);
+  color:var(--cnsa-text-dim);
   line-height:1.6;
 }
 
@@ -606,26 +638,34 @@ body {
 }
 .nav-btn {
   padding:12px 36px;
-  border:1px solid var(--border);
-  background:transparent;
-  color:var(--text);
-  border-radius:10px;
+  border:1px solid var(--cnsa-border);
+  background:var(--cnsa-surface);
+  color:var(--cnsa-text-dim);
+  border-radius:var(--cnsa-radius-sm);
   cursor:pointer;
   font-size:1rem;
   font-family:inherit;
-  font-weight:500;
-  transition:all 0.2s;
+  font-weight:600;
+  min-height:44px;
+  transition:all 0.18s var(--cnsa-ease);
 }
-.nav-btn:hover { background:rgba(0,0,0,0.05); }
+.nav-btn:hover:not(:disabled) { background:var(--cnsa-surface-strong); border-color:var(--cnsa-border-strong); color:var(--cnsa-text); }
+.nav-btn:focus-visible {
+  outline:3px solid var(--cnsa-accent-1);
+  outline-offset:2px;
+}
 .nav-btn:disabled { opacity:0.3; cursor:default; }
 .nav-btn.primary {
-  background:rgba(58,123,213,0.25);
-  border-color:rgba(58,123,213,0.5);
+  background:var(--cnsa-accent);
+  border-color:transparent;
+  color:#fff;
+  box-shadow:0 4px 14px rgba(0,130,200,0.32);
 }
-.nav-btn.primary:hover { background:rgba(58,123,213,0.35); }
+.nav-btn.primary:hover:not(:disabled) { filter:brightness(1.07); transform:translateY(-1px); }
 .nav-counter {
   font-size:0.85rem;
-  color:var(--text-dim);
+  color:var(--cnsa-text-dim);
+  font-variant-numeric:tabular-nums;
 }
 
 .tab-content { display:none; flex:1; flex-direction:column; min-height:0; }
@@ -650,19 +690,22 @@ body {
   max-width:700px;
 }
 .summary-stage {
-  background:var(--bg-card);
-  border:1px solid var(--border);
-  border-radius:14px;
+  background:var(--cnsa-surface);
+  backdrop-filter:var(--cnsa-blur);
+  -webkit-backdrop-filter:var(--cnsa-blur);
+  border:1px solid var(--cnsa-border);
+  border-radius:var(--cnsa-radius);
+  box-shadow:var(--cnsa-shadow);
   padding:20px 28px;
   width:100%;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  transition:all 0.3s;
+  transition:all 0.3s var(--cnsa-ease);
 }
 .summary-stage:hover {
-  background:rgba(255,255,255,0.95);
-  border-color:rgba(0,0,0,0.15);
+  background:var(--cnsa-surface-strong);
+  border-color:var(--cnsa-border-strong);
 }
 .summary-stage-left {
   display:flex;
@@ -700,13 +743,14 @@ body {
 .summary-arrow-down {
   text-align:center;
   padding:6px 0;
-  color:rgba(0,0,0,0.2);
+  color:var(--cnsa-text-dimmer);
   font-size:1.2rem;
 }
 .summary-total {
-  background:linear-gradient(135deg,rgba(58,123,213,0.2),rgba(0,210,255,0.15));
-  border:1px solid rgba(58,123,213,0.4);
-  border-radius:14px;
+  background:linear-gradient(135deg,rgba(58,123,213,0.28),rgba(0,210,255,0.2));
+  border:1px solid rgba(0,210,255,0.45);
+  border-radius:var(--cnsa-radius);
+  box-shadow:var(--cnsa-shadow);
   padding:24px 28px;
   width:100%;
   text-align:center;
@@ -734,20 +778,24 @@ body {
   max-width:700px;
   border-collapse:separate;
   border-spacing:0;
-  background:var(--bg-card);
-  border:1px solid var(--border);
-  border-radius:12px;
+  background:var(--cnsa-surface);
+  backdrop-filter:var(--cnsa-blur);
+  -webkit-backdrop-filter:var(--cnsa-blur);
+  border:1px solid var(--cnsa-border);
+  border-radius:var(--cnsa-radius);
+  box-shadow:var(--cnsa-shadow);
   overflow:hidden;
 }
 .summary-table th, .summary-table td {
   padding:10px 14px;
   text-align:center;
-  border-bottom:1px solid var(--border);
+  border-bottom:1px solid var(--cnsa-border);
   font-size:0.8rem;
+  color:var(--cnsa-text);
 }
 .summary-table th {
-  background:rgba(0,0,0,0.03);
-  color:var(--text-dim);
+  background:rgba(255,255,255,0.06);
+  color:var(--cnsa-text-dim);
   font-weight:600;
   font-size:0.7rem;
   text-transform:uppercase;
@@ -755,7 +803,7 @@ body {
 }
 .summary-table tr:last-child td { border-bottom:none; }
 .summary-table tr:last-child {
-  background:rgba(58,123,213,0.1);
+  background:rgba(0,210,255,0.12);
   font-weight:700;
 }
 
@@ -763,37 +811,51 @@ body {
   display:none;
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.7);
-  z-index:100;
+  background:rgba(8,12,26,0.72);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  z-index:2147483000;
   align-items:center;
   justify-content:center;
 }
 .help-modal.open { display:flex; }
 .help-content {
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:16px;
+  background:linear-gradient(135deg,rgba(26,26,46,0.96),rgba(15,52,96,0.96));
+  backdrop-filter:var(--cnsa-blur);
+  -webkit-backdrop-filter:var(--cnsa-blur);
+  border:1px solid var(--cnsa-border-strong);
+  border-radius:var(--cnsa-radius);
   padding:32px;
   max-width:480px;
   width:90%;
   position:relative;
-  box-shadow:0 20px 60px rgba(0,0,0,0.2);
+  box-shadow:var(--cnsa-shadow-lg);
 }
-.help-content h2 { margin-bottom:16px; font-size:1.2rem; color:var(--text); }
-.help-content p { font-size:0.85rem; color:rgba(0,0,0,0.6); line-height:1.8; margin-bottom:8px; }
+.help-content h2 { margin-bottom:16px; font-size:1.2rem; color:var(--cnsa-text); }
+.help-content p { font-size:0.85rem; color:var(--cnsa-text-dim); line-height:1.8; margin-bottom:8px; }
 .help-close {
   position:absolute;
-  top:12px;right:16px;
+  top:8px;right:12px;
+  width:40px;height:40px;
+  display:flex;align-items:center;justify-content:center;
   background:none;border:none;
-  color:var(--text-dim);font-size:1.5rem;cursor:pointer;
+  color:var(--cnsa-text-dim);font-size:1.6rem;cursor:pointer;
+  border-radius:var(--cnsa-radius-sm);
+  transition:all 0.18s var(--cnsa-ease);
+}
+.help-close:hover { background:var(--cnsa-surface-strong); color:#fff; }
+.help-close:focus-visible {
+  outline:3px solid var(--cnsa-accent-1);
+  outline-offset:2px;
 }
 kbd {
-  background:rgba(0,0,0,0.06);
-  border:1px solid rgba(0,0,0,0.12);
+  background:var(--cnsa-surface-strong);
+  border:1px solid var(--cnsa-border-strong);
+  color:var(--cnsa-text);
   border-radius:4px;
   padding:2px 6px;
   font-size:0.75rem;
-  font-family:inherit;
+  font-family:var(--cnsa-mono);
 }
 
 .aux-molecule {
@@ -803,25 +865,82 @@ kbd {
   transform:scale(0.6);
   opacity:0.7;
 }
+
+@media (max-width:900px) {
+  .app { padding:14px; }
+  .header {
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+  }
+  .header h1 { font-size:1.3rem; width:100%; text-align:center; order:1; }
+  .tabs { order:3; width:100%; justify-content:center; flex-wrap:wrap; }
+  .header-btns { order:2; }
+  .tab { flex:1 1 auto; min-width:96px; text-align:center; min-height:44px; }
+  .main-area {
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .side-panel {
+    flex-direction:row;
+    flex-wrap:wrap;
+    justify-content:space-around;
+    gap:12px;
+  }
+  .counter-block {
+    flex:1 1 auto;
+    min-width:88px;
+    border-top:none !important;
+    padding-top:0 !important;
+  }
+  .counter-value { font-size:2rem; }
+  .center-stage { order:-1; min-height:280px; }
+  .reaction-display {
+    flex-wrap:wrap;
+    gap:12px;
+    min-height:0;
+  }
+  .reaction-panel { min-width:160px; max-width:100%; }
+  .nav-btn { padding:12px 20px; flex:1 1 auto; }
+  .nav-bar { gap:8px; }
+}
+
+@media (max-width:560px) {
+  .header h1 { font-size:1.15rem; }
+  .mol-shape { width:96px; height:96px; }
+  .mol-structure { width:140px; height:108px; }
+  .reaction-display { gap:10px; }
+  .summary-stage { flex-direction:column; align-items:flex-start; gap:12px; padding:16px 18px; }
+  .summary-stage-right { flex-wrap:wrap; }
+  .summary-table { display:block; overflow-x:auto; white-space:nowrap; }
+  .help-content { padding:24px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab, .icon-btn, .nav-btn, .dot, .summary-stage,
+  .molecule, .mol-structure, .counter-value, .help-close { transition:none !important; }
+  .pulse-red, .pulse-gold, .pulse-blue,
+  .panel-pulse-red, .panel-pulse-green, .panel-pulse-blue { animation:none !important; }
+}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
     <h1>세포 호흡 시뮬레이션</h1>
-    <div class="tabs">
-      <button class="tab active" data-tab="glycolysis">해당과정</button>
-      <button class="tab" data-tab="tca">TCA 회로</button>
-      <button class="tab" data-tab="summary">전체 연결</button>
+    <div class="tabs" role="tablist" aria-label="세포 호흡 단계 선택">
+      <button class="tab active" data-tab="glycolysis" role="tab" id="tabbtn-glycolysis" aria-selected="true" aria-controls="tab-glycolysis">해당과정</button>
+      <button class="tab" data-tab="tca" role="tab" id="tabbtn-tca" aria-selected="false" aria-controls="tab-tca">TCA 회로</button>
+      <button class="tab" data-tab="summary" role="tab" id="tabbtn-summary" aria-selected="false" aria-controls="tab-summary">전체 연결</button>
     </div>
     <div class="header-btns">
-      <button class="icon-btn" id="helpBtn" title="도움말">?</button>
-      <button class="icon-btn" id="resetBtn" title="처음으로">↺</button>
+      <button class="icon-btn" id="helpBtn" title="도움말" aria-label="도움말 열기" aria-haspopup="dialog">?</button>
+      <button class="icon-btn" id="resetBtn" title="처음으로" aria-label="처음으로 되돌리기">↺</button>
     </div>
   </div>
 
-  <div class="tab-content active" id="tab-glycolysis">
-    <div class="progress-bar" id="glycolysis-progress"></div>
+  <div class="tab-content active" id="tab-glycolysis" role="tabpanel" aria-labelledby="tabbtn-glycolysis">
+    <div class="progress-bar" id="glycolysis-progress" role="tablist" aria-label="해당과정 단계 이동"></div>
     <div class="main-area">
       <div class="side-panel">
         <div class="counter-block">
@@ -857,14 +976,14 @@ kbd {
     </div>
 
     <div class="nav-bar">
-      <button class="nav-btn" id="g-prev" disabled>◀ 이전</button>
+      <button class="nav-btn" id="g-prev" aria-label="해당과정 이전 단계" disabled>◀ 이전</button>
       <span class="nav-counter" id="g-nav-counter"></span>
-      <button class="nav-btn primary" id="g-next">다음 ▶</button>
+      <button class="nav-btn primary" id="g-next" aria-label="해당과정 다음 단계">다음 ▶</button>
     </div>
   </div>
 
-  <div class="tab-content" id="tab-tca">
-    <div class="progress-bar" id="tca-progress"></div>
+  <div class="tab-content" id="tab-tca" role="tabpanel" aria-labelledby="tabbtn-tca">
+    <div class="progress-bar" id="tca-progress" role="tablist" aria-label="TCA 회로 단계 이동"></div>
     <div class="main-area">
       <div class="side-panel">
         <div class="counter-block">
@@ -909,13 +1028,13 @@ kbd {
     </div>
 
     <div class="nav-bar">
-      <button class="nav-btn" id="t-prev" disabled>◀ 이전</button>
+      <button class="nav-btn" id="t-prev" aria-label="TCA 회로 이전 단계" disabled>◀ 이전</button>
       <span class="nav-counter" id="t-nav-counter"></span>
-      <button class="nav-btn primary" id="t-next">다음 ▶</button>
+      <button class="nav-btn primary" id="t-next" aria-label="TCA 회로 다음 단계">다음 ▶</button>
     </div>
   </div>
 
-  <div class="tab-content" id="tab-summary">
+  <div class="tab-content" id="tab-summary" role="tabpanel" aria-labelledby="tabbtn-summary">
     <div class="summary-content">
       <div class="summary-flow">
         <div class="summary-stage">
@@ -986,10 +1105,10 @@ kbd {
   </div>
 </div>
 
-<div class="help-modal" id="helpModal">
+<div class="help-modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
   <div class="help-content">
-    <button class="help-close" id="helpClose">&times;</button>
-    <h2>사용법</h2>
+    <button class="help-close" id="helpClose" aria-label="도움말 닫기">&times;</button>
+    <h2 id="helpTitle">사용법</h2>
     <p><kbd>→</kbd> 또는 <kbd>Space</kbd> : 다음 단계</p>
     <p><kbd>←</kbd> : 이전 단계</p>
     <p><kbd>R</kbd> : 처음으로</p>
@@ -1400,14 +1519,21 @@ function init() {
   jumpTCA(0);
 }
 
+const TAB_LABELS = { glycolysis:'해당과정', tca:'TCA 회로', summary:'전체 연결' };
+
 function setupTabs() {
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
       tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
       activeTab = tab.dataset.tab;
       document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
       document.getElementById('tab-' + activeTab).classList.add('active');
+      if (window.CNSA) CNSA.srAnnounce(TAB_LABELS[activeTab] + ' 탭으로 이동했습니다.');
     });
   });
 }
@@ -1423,6 +1549,11 @@ function setupNav() {
 function setupKeyboard() {
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT') return;
+    if (e.key === 'Escape') {
+      closeHelp();
+      return;
+    }
+    if (document.getElementById('helpModal').classList.contains('open')) return;
     if (e.key === 'ArrowRight' || e.key === ' ') {
       e.preventDefault();
       if (activeTab === 'glycolysis') glyStep(1);
@@ -1440,15 +1571,29 @@ function setupKeyboard() {
   });
 }
 
+let helpUntrap = null;
+let helpLastFocus = null;
+
+function openHelp() {
+  const modal = document.getElementById('helpModal');
+  helpLastFocus = document.activeElement;
+  modal.classList.add('open');
+  if (window.CNSA) helpUntrap = CNSA.trapFocus(modal);
+}
+
+function closeHelp() {
+  const modal = document.getElementById('helpModal');
+  if (!modal.classList.contains('open')) return;
+  modal.classList.remove('open');
+  if (helpUntrap) { helpUntrap(); helpUntrap = null; }
+  if (helpLastFocus && helpLastFocus.focus) helpLastFocus.focus();
+}
+
 function setupHelp() {
-  document.getElementById('helpBtn').addEventListener('click', () => {
-    document.getElementById('helpModal').classList.add('open');
-  });
-  document.getElementById('helpClose').addEventListener('click', () => {
-    document.getElementById('helpModal').classList.remove('open');
-  });
+  document.getElementById('helpBtn').addEventListener('click', openHelp);
+  document.getElementById('helpClose').addEventListener('click', closeHelp);
   document.getElementById('helpModal').addEventListener('click', e => {
-    if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+    if (e.target === e.currentTarget) closeHelp();
   });
 }
 
@@ -1551,14 +1696,22 @@ function renderGlycolysis() {
   document.getElementById('g-nav-counter').textContent = `${gStep+1} / ${GLYCOLYSIS_STEPS.length}`;
 
   renderProgressDots('glycolysis-progress', GLYCOLYSIS_STEPS.length, gStep);
+
+  if (window.CNSA) {
+    CNSA.srAnnounce(`해당과정 ${gStep+1}단계: ${subName}에서 ${prodName}, ${s.enzyme}. 누적 순이익 ATP ${atpVal}, NADH ${gNadhMade}.`);
+  }
 }
 
 function renderProgressDots(containerId, total, current) {
   const c = document.getElementById(containerId);
   c.innerHTML = '';
   for (let i = 0; i < total; i++) {
-    const d = document.createElement('div');
-    d.className = 'dot' + (i < current ? ' done' : '') + (i === current ? ' current' : '');
+    const d = document.createElement('button');
+    const isCurrent = i === current;
+    d.type = 'button';
+    d.className = 'dot' + (i < current ? ' done' : '') + (isCurrent ? ' current' : '');
+    d.setAttribute('aria-label', (i + 1) + '단계' + (isCurrent ? ' (현재)' : i < current ? ' (완료)' : ''));
+    if (isCurrent) d.setAttribute('aria-current', 'step');
     d.addEventListener('click', () => {
       if (containerId.startsWith('gly')) jumpGlycolysis(i);
       else jumpTCA(i);
@@ -1698,9 +1851,15 @@ function renderTCA() {
   document.getElementById('t-nav-counter').textContent = `${tStep+1} / ${totalSteps}`;
 
   renderProgressDots('tca-progress', totalSteps, tStep);
+
+  if (window.CNSA) {
+    CNSA.srAnnounce(`${stepLabel} ${turnLabel}: ${fromName}에서 ${toName}, ${s.enzyme}. 누적 NADH ${tNadh}, FADH₂ ${tFadh2}, GTP ${tGtp}, CO₂ ${tCo2}.`);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
+<script src="/assets/sim-ui.js"></script>
+<script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
 </body>
 </html>

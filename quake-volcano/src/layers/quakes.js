@@ -20,6 +20,14 @@ function radiusForMagnitude(magnitude) {
   return Math.max(1.8, Math.min(10, 1.35 + mag * 1.22));
 }
 
+function shapeForDepth(depth) {
+  const d = Number(depth);
+  if (!Number.isFinite(d)) return { weight: 0.55, fillOpacity: 0.72 };
+  if (d < 70) return { weight: 0.55, fillOpacity: 0.78 };
+  if (d < 300) return { weight: 1.4, fillOpacity: 0.55 };
+  return { weight: 1.8, fillOpacity: 0.12 };
+}
+
 function featureKey(feature) {
   return feature.id || `${feature.properties?.time}-${feature.properties?.place}`;
 }
@@ -34,14 +42,16 @@ async function loadFeed(kind) {
 function buildMarker(feature, offset, renderer) {
   const [lon, lat, depth] = feature.geometry?.coordinates ?? [];
   const mag = feature.properties?.mag ?? 0;
+  const shape = shapeForDepth(depth);
+  const depthColor = colorForDepth(depth);
   const marker = L.circleMarker([lat, lon + offset], {
     renderer,
     radius: radiusForMagnitude(mag),
-    fillColor: colorForDepth(depth),
-    color: '#ffffff',
-    weight: 0.55,
-    opacity: 0.9,
-    fillOpacity: 0.72,
+    fillColor: depthColor,
+    color: shape.fillOpacity < 0.2 ? depthColor : '#ffffff',
+    weight: shape.weight,
+    opacity: 0.92,
+    fillOpacity: shape.fillOpacity,
   });
   marker.bindPopup(quakePopup(feature));
   return marker;

@@ -3,50 +3,82 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="cnsa-sim" content="별의 진화|통합과학1">
+<link rel="stylesheet" href="/assets/sim-ui.css">
 <title>별의 진화</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#05050f;font-family:-apple-system,'Pretendard',sans-serif;color:#fff}
-canvas{position:fixed;top:0;left:0;width:100%;height:100%}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--cnsa-bg-1,#05050f);font-family:var(--cnsa-font);color:var(--cnsa-text,#fff)}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%;touch-action:none}
 .ov{position:fixed;z-index:10;left:0;right:0;pointer-events:none}
 .ov>*{pointer-events:auto}
-#top{top:0;display:flex;justify-content:space-between;align-items:center;padding:16px 24px}
-#stage{font-size:1.6rem;font-weight:700;letter-spacing:.08em;text-shadow:0 0 30px rgba(255,255,255,.25);transition:opacity .4s}
-.btns{display:flex;gap:8px}
-.btn{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:background .2s}
-.btn:hover{background:rgba(255,255,255,.18)}
-.btn.active{background:rgba(255,200,100,.2);border-color:rgba(255,200,100,.5)}
-#bot{bottom:0;padding:16px 24px 28px;background:linear-gradient(transparent,rgba(5,5,15,.85))}
-#mass{display:flex;gap:12px;justify-content:center;margin-bottom:14px}
-.mo{padding:8px 20px;border-radius:20px;border:1px solid rgba(255,255,255,.2);font-size:.88rem;cursor:pointer;transition:all .3s;user-select:none}
-.mo.on{border-color:rgba(255,200,100,.6);background:rgba(255,200,100,.12);color:#ffe0a0}
-#tl-wrap{position:relative;padding-bottom:20px}
-#tl{-webkit-appearance:none;width:100%;height:3px;background:rgba(255,255,255,.15);outline:none;border-radius:2px;cursor:pointer}
-#tl::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 0 10px rgba(255,255,255,.4)}
-#marks{display:flex;position:absolute;bottom:0;left:0;right:0;font-size:.68rem;color:rgba(255,255,255,.4)}
-#marks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
-#info{position:fixed;z-index:10;top:60px;left:24px;font-size:.72rem;color:rgba(255,255,255,.35);pointer-events:none;line-height:1.6}
-#footer{position:fixed;z-index:10;bottom:18px;right:20px;font-size:.78rem;color:rgba(255,255,255,.75);letter-spacing:.04em;padding:6px 16px;border-radius:16px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);backdrop-filter:blur(8px);cursor:default;user-select:none}
+#top{top:var(--cnsa-bar-h,48px);display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 24px}
+#stage{font-size:1.6rem;font-weight:700;letter-spacing:.04em;text-shadow:0 0 30px rgba(0,0,0,.5),0 0 24px rgba(255,255,255,.18)}
+.btns{display:flex;gap:10px}
+.btn{width:44px;height:44px;min-width:44px;border-radius:50%;border:1px solid var(--cnsa-border-strong);background:var(--cnsa-surface-2);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:var(--cnsa-blur);-webkit-backdrop-filter:var(--cnsa-blur);transition:transform .18s var(--cnsa-ease),background .2s var(--cnsa-ease),border-color .2s var(--cnsa-ease)}
+.btn:hover{background:var(--cnsa-surface-strong);border-color:#fff;transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn.active{background:linear-gradient(135deg,rgba(0,210,255,.28),rgba(58,123,213,.28));border-color:var(--cnsa-accent-1)}
+.btn:focus-visible{outline:3px solid var(--cnsa-accent-1);outline-offset:2px}
+#bot{bottom:0;padding:16px 24px 26px;background:linear-gradient(transparent,rgba(10,14,28,.9))}
+#mass{display:flex;gap:12px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+.mo{padding:10px 22px;min-height:44px;display:flex;align-items:center;gap:7px;border-radius:var(--cnsa-radius-pill);border:1px solid var(--cnsa-border);background:var(--cnsa-surface);color:var(--cnsa-text-dim);font-size:.9rem;font-weight:600;cursor:pointer;transition:all .25s var(--cnsa-ease);user-select:none}
+.mo:hover{color:#fff;background:var(--cnsa-surface-strong);border-color:var(--cnsa-border-strong)}
+.mo.on{border-color:var(--cnsa-accent-1);background:linear-gradient(135deg,rgba(0,210,255,.18),rgba(58,123,213,.18));color:#cdeffd}
+.mo:focus-visible{outline:3px solid var(--cnsa-accent-1);outline-offset:2px}
+.mo .dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto}
+.mo[data-m="small"] .dot{background:#ffd27a}
+.mo[data-m="big"] .dot{background:#9ec4ff}
+#tl-wrap{position:relative;padding-bottom:26px}
+#tl{-webkit-appearance:none;appearance:none;width:100%;height:6px;background:transparent;outline:none;cursor:pointer;position:relative;z-index:2}
+#tl-track{position:absolute;top:0;left:0;right:0;height:6px;border-radius:var(--cnsa-radius-pill);background:var(--cnsa-surface-2);pointer-events:none;overflow:hidden}
+#tl-ms{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,rgba(0,210,255,.22),rgba(58,123,213,.22));border-left:1px solid rgba(0,210,255,.4);border-right:1px solid rgba(0,210,255,.4)}
+#tl::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 0 0 3px rgba(0,210,255,.35),0 2px 8px rgba(0,0,0,.4);margin-top:-8px}
+#tl::-moz-range-thumb{width:22px;height:22px;border:none;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 0 0 3px rgba(0,210,255,.35),0 2px 8px rgba(0,0,0,.4)}
+#tl:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px var(--cnsa-accent-1),0 2px 8px rgba(0,0,0,.4)}
+#marks{display:flex;position:absolute;bottom:0;left:0;right:0;font-size:.68rem;color:var(--cnsa-text-dimmer)}
+#marks span{position:absolute;bottom:0;transform:translateX(-50%);white-space:nowrap}
+#tl-note{text-align:center;font-size:.72rem;color:var(--cnsa-text-dimmer);margin-top:16px;letter-spacing:.01em}
+#info{position:fixed;z-index:10;top:calc(var(--cnsa-bar-h,48px) + 56px);left:24px;font-size:.72rem;color:var(--cnsa-text-dimmer);pointer-events:none;line-height:1.6}
+#footer{position:fixed;z-index:10;bottom:16px;right:20px;font-size:.76rem;color:var(--cnsa-text-dim);letter-spacing:.02em;padding:7px 15px;border-radius:var(--cnsa-radius-pill);border:1px solid var(--cnsa-border);background:var(--cnsa-surface);backdrop-filter:var(--cnsa-blur);-webkit-backdrop-filter:var(--cnsa-blur);cursor:default;user-select:none}
+@media (max-width:900px){
+  #top{padding:12px 16px}
+  #stage{font-size:1.25rem}
+  #bot{padding:14px 14px 22px}
+  #mass{gap:9px}
+  .mo{padding:9px 16px;font-size:.84rem}
+  #info{display:none}
+  #footer{bottom:88px;right:12px;font-size:.68rem;padding:6px 12px}
+}
+@media (max-width:520px){
+  #top{top:var(--cnsa-bar-h,44px)}
+  #info{top:calc(var(--cnsa-bar-h,44px) + 50px)}
+}
+@media (prefers-reduced-motion:reduce){
+  .btn,.mo{transition:none}
+}
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
+<canvas id="c" role="img" aria-label="별의 진화 시뮬레이션 애니메이션"></canvas>
 <div class="ov" id="top">
-    <div id="stage">성간운</div>
+    <div id="stage" role="status" aria-live="polite">성간운</div>
     <div class="btns">
-        <button class="btn" id="bp" title="재생/정지">▶</button>
-        <button class="btn" id="br" title="처음으로">↺</button>
+        <button class="btn" id="bp" title="재생/정지" aria-label="재생 또는 정지">▶</button>
+        <button class="btn" id="br" title="처음으로" aria-label="처음으로 되돌리기">↺</button>
     </div>
 </div>
 <div class="ov" id="bot">
-    <div id="mass">
-        <div class="mo on" data-m="small">태양보다 작은 별</div>
-        <div class="mo" data-m="big">태양보다 큰 별</div>
+    <div id="mass" role="radiogroup" aria-label="별의 질량 선택">
+        <button class="mo on" data-m="small" role="radio" aria-checked="true"><span class="dot" aria-hidden="true"></span>태양보다 작은 별</button>
+        <button class="mo" data-m="big" role="radio" aria-checked="false"><span class="dot" aria-hidden="true"></span>태양보다 큰 별</button>
     </div>
     <div id="tl-wrap">
-        <input type="range" id="tl" min="0" max="10000" value="0">
-        <div id="marks"></div>
+        <div id="tl-track"><div id="tl-ms"></div></div>
+        <input type="range" id="tl" min="0" max="10000" value="0" aria-label="진화 단계 타임라인" aria-valuetext="성간운">
+        <div id="marks" aria-hidden="true"></div>
     </div>
+    <div id="tl-note">※ 시간 막대는 실제 수명 비율이 아닙니다 (주계열이 별 일생의 약 90%)</div>
 </div>
 <div id="info"></div>
 <div id="footer">© 충남삼성고등학교 신도경T</div>
@@ -65,6 +97,9 @@ let progress = 0;
 let playing = false;
 let speed = 0.00018;
 let prevStage = '';
+let lastAnnounced = '';
+
+const UIFONT = "'Pretendard','Noto Sans KR',-apple-system,'Malgun Gothic',sans-serif";
 
 const L5 = (a,b,c,d,e) => [a,b,c,d,e];
 
@@ -140,11 +175,11 @@ const SMALL = [
     ], temp:2800, ct:1.5e8, sht:1.2e7, fc:.1},
     {t:.90,  n:"행성상성운",r:.025, ly:[
         {fr:0,to:1, c:[200,230,255], lb:""}
-    ], ring:1.0, temp:0, ct:0, fc:0},
+    ], ring:1.0, temp:50000, ct:0, fc:0},
     {t:.96,  n:"행성상성운",r:.012, ly:[
         {fr:0,to:1, c:[180,210,245], lb:""}
-    ], ring:1.5, temp:0, ct:0, fc:0},
-    {t:1,    n:"",         r:0, ly:[], ring:2.0, temp:0, ct:0, fc:0},
+    ], ring:1.5, temp:80000, ct:0, fc:0},
+    {t:1,    n:"백색왜성",   r:0, ly:[], ring:2.0, temp:80000, ct:0, fc:0},
 ];
 
 const BIG = [
@@ -285,7 +320,7 @@ const BIG = [
     ], temp:10000, ct:1e11, fc:1},
     {t:.86,  n:"초신성",     r:0, ly:[], boom:1, temp:0, ct:0, fc:0},
     {t:.93,  n:"초신성",     r:0, ly:[], boom:2, temp:0, ct:0, fc:0},
-    {t:1,    n:"",           r:0, ly:[], temp:0, ct:0, fc:0},
+    {t:1,    n:"중성자별 / 블랙홀", r:0, ly:[], temp:0, ct:0, fc:0},
 ];
 
 const bgStars = Array.from({length:300}, () => ({
@@ -387,16 +422,15 @@ function interp(t) {
     };
 }
 
-function resize(){C.width=W=innerWidth;C.height=H=innerHeight;CX=W/2;CY=H/2;MR=Math.min(W,H)*.42;}
+function resize(){C.width=W=innerWidth;C.height=H=innerHeight;CX=W/2;CY=H/2;MR=Math.min(W,H)*(H>W?.32:.42);}
 
 let bgCanvas;
 function drawBgOnce(){
     bgCanvas=document.createElement('canvas');bgCanvas.width=W;bgCanvas.height=H;
     const bx=bgCanvas.getContext('2d');bx.fillStyle='#05050f';bx.fillRect(0,0,W,H);
-    const t=performance.now()*.0003;
-    for(const s of bgStars){const tw=Math.sin(t+s.tw)*.3+.7;bx.fillStyle=rgb([255,255,255],s.b*tw);bx.beginPath();bx.arc(s.x*W,s.y*H,s.s,0,Math.PI*2);bx.fill();}
+    for(const s of bgStars){bx.fillStyle=rgb([255,255,255],s.b);bx.beginPath();bx.arc(s.x*W,s.y*H,s.s,0,Math.PI*2);bx.fill();}
 }
-function drawBg(){if(!bgCanvas||bgCanvas.width!==W)drawBgOnce();X.drawImage(bgCanvas,0,0);}
+function drawBg(){if(!bgCanvas||bgCanvas.width!==W||bgCanvas.height!==H)drawBgOnce();X.drawImage(bgCanvas,0,0);}
 
 function drawNebula(opacity){
     const t=performance.now()*.001;
@@ -449,19 +483,32 @@ function drawStar(st){
     X.strokeStyle='rgba(255,255,255,.3)';X.lineWidth=Math.max(1.5,r*.008);
     X.beginPath();X.arc(CX,CY,r,0,Math.PI*2);X.stroke();
 
+    const reacting=layers.filter(L=>L.lb&&L.lb.indexOf('→')>=0);
+    if(reacting.length){
+        const L=reacting[0];
+        X.font='800 17px '+UIFONT;X.textAlign='center';X.textBaseline='alphabetic';
+        const ty=CY-r-Math.max(22,r*.18);
+        const tw=X.measureText(L.lb).width;
+        X.fillStyle='rgba(255,210,120,.18)';
+        X.beginPath();X.roundRect?X.roundRect(CX-tw/2-10,ty-18,tw+20,26,8):X.rect(CX-tw/2-10,ty-18,tw+20,26);X.fill();
+        X.fillStyle='rgba(255,225,150,.98)';X.fillText('핵융합: '+L.lb,CX,ty);
+    }
     for(let i=0;i<layers.length;i++){
         const L=layers[i];if(!L.lb)continue;
         const midR=r*(L.fr+L.to)/2, px=r*(L.to-L.fr);
-        if(px<14){
-            const fs=Math.max(10,Math.min(14,12));
-            X.font=`600 ${fs}px -apple-system,sans-serif`;X.textAlign='left';X.textBaseline='middle';
-            const lx=CX+midR,ly2=CY-r*.25+i*20,lx2=CX+r+18+i*10;
-            X.strokeStyle='rgba(255,255,255,.25)';X.lineWidth=1;X.beginPath();X.moveTo(lx,CY);X.lineTo(lx2-4,ly2);X.stroke();
-            X.fillStyle='rgba(255,255,255,.85)';X.fillText(L.lb,lx2,ly2);
+        if(px<16){
+            const fs=Math.max(11,Math.min(14,r*.05));
+            X.font=`700 ${fs}px ${UIFONT}`;X.textAlign='left';X.textBaseline='middle';
+            const lx=CX+midR,ly2=CY-r*.25+i*20;
+            let lx2=CX+r+18+i*10;
+            const tw=X.measureText(L.lb).width;
+            if(lx2+tw+8>W) lx2=Math.max(CX-r-tw-18-i*10,8);
+            X.strokeStyle='rgba(255,255,255,.4)';X.lineWidth=1;X.beginPath();X.moveTo(lx,CY);X.lineTo(lx2<CX?lx2+tw+4:lx2-4,ly2);X.stroke();
+            X.fillStyle='rgba(255,255,255,.96)';X.fillText(L.lb,lx2,ly2);
         } else {
-            const fs=Math.max(11,Math.min(20,px*.35));
-            X.font=`700 ${fs}px -apple-system,sans-serif`;X.textAlign='center';X.textBaseline='middle';
-            X.fillStyle='rgba(255,255,255,.9)';X.fillText(L.lb,CX,CY-midR);
+            const fs=Math.max(12,Math.min(20,px*.35));
+            X.font=`700 ${fs}px ${UIFONT}`;X.textAlign='center';X.textBaseline='middle';
+            X.fillStyle='rgba(255,255,255,.97)';X.fillText(L.lb,CX,CY-midR);
         }
     }
 }
@@ -484,11 +531,11 @@ function drawForces(st){
         if(inL>3) drawArrow(CX+cos*(gap+inL),CY+sin*(gap+inL),CX+cos*gap,CY+sin*gap,`rgba(100,180,255,${.25+inS*.4})`,5+inS*4);
         if(outL>3) drawArrow(CX+cos*(gap+1),CY+sin*(gap+1),CX+cos*(gap+outL+1),CY+sin*(gap+outL+1),`rgba(255,180,80,${.25+outS*.4})`,5+outS*4);
     }
-    X.font='600 11px -apple-system,sans-serif';X.textAlign='center';
-    const ly=CY+r+Math.max(inL,outL)+28;
-    if(absF<.12){X.fillStyle='rgba(255,255,255,.45)';X.fillText('중력 = 복사압 (평형)',CX,ly);}
-    else if(fc<-.12){X.fillStyle='rgba(100,180,255,.75)';X.fillText('중력 수축 → 온도 상승',CX,ly);}
-    else{X.fillStyle='rgba(255,180,80,.75)';X.fillText('복사압 > 중력 → 팽창',CX,ly);}
+    X.font=`700 12px ${UIFONT}`;X.textAlign='center';
+    const ly=Math.min(CY+r+Math.max(inL,outL)+28,H-12);
+    if(absF<.12){X.fillStyle='rgba(255,255,255,.7)';X.fillText('중력 = 복사압 (평형)',CX,ly);}
+    else if(fc<-.12){X.fillStyle='rgba(130,195,255,.95)';X.fillText('중력 수축 → 온도 상승',CX,ly);}
+    else{X.fillStyle='rgba(255,195,100,.95)';X.fillText('복사압 > 중력 → 팽창',CX,ly);}
 }
 
 function fmtTemp(k){
@@ -504,30 +551,34 @@ function fmtTemp(k){
 function drawTemp(st){
     const r=st.r*MR;if(r<5)return;
     const hasCt=st.ct>1e5,hasSht=st.sht>1e5,hasT=st.temp>100;if(!hasCt&&!hasT)return;
-    const bx=CX-r-16;let by=CY-r-8;
+    let maxW=0;
+    if(hasCt){X.font=`700 ${st.ct>=1e8?15:13}px ${UIFONT}`;maxW=Math.max(maxW,X.measureText('중심부  '+fmtTemp(st.ct)+' K').width);}
+    if(hasSht){X.font=`600 12px ${UIFONT}`;maxW=Math.max(maxW,X.measureText('수소연소각  '+fmtTemp(st.sht)+' K').width);}
+    if(hasT){X.font=`600 11px ${UIFONT}`;maxW=Math.max(maxW,X.measureText('표면  '+fmtTemp(st.temp)+' K').width);}
+    const bx=Math.max(maxW+16,CX-r-16);let by=Math.max(CY-r-8,116);
     X.textAlign='right';X.textBaseline='middle';
     if(hasCt){
         const s='중심부  '+fmtTemp(st.ct)+' K',hot=st.ct>=1e8;
-        X.font=`700 ${hot?15:13}px -apple-system,sans-serif`;
+        X.font=`700 ${hot?15:13}px ${UIFONT}`;
         const tw=X.measureText(s).width;
-        X.fillStyle=hot?'rgba(255,80,50,.12)':'rgba(255,255,255,.08)';
+        X.fillStyle=hot?'rgba(255,80,50,.16)':'rgba(255,255,255,.1)';
         X.fillRect(bx-tw-8,by-12,tw+14,24);
-        X.fillStyle=hot?'rgba(255,120,60,.95)':'rgba(255,200,100,.75)';
+        X.fillStyle=hot?'rgba(255,135,75,1)':'rgba(255,210,120,.92)';
         X.fillText(s,bx,by);by+=26;
     }
     if(hasSht){
         const s='수소연소각  '+fmtTemp(st.sht)+' K';
-        X.font='600 12px -apple-system,sans-serif';
+        X.font=`600 12px ${UIFONT}`;
         const tw=X.measureText(s).width;
-        X.fillStyle='rgba(255,160,40,.1)';X.fillRect(bx-tw-8,by-11,tw+14,22);
-        X.fillStyle='rgba(255,180,60,.8)';X.fillText(s,bx,by);by+=24;
+        X.fillStyle='rgba(255,160,40,.14)';X.fillRect(bx-tw-8,by-11,tw+14,22);
+        X.fillStyle='rgba(255,190,80,.92)';X.fillText(s,bx,by);by+=24;
     }
     if(hasT){
         const s='표면  '+fmtTemp(st.temp)+' K';
-        X.font='600 11px -apple-system,sans-serif';
+        X.font=`600 11px ${UIFONT}`;
         const tw=X.measureText(s).width;
-        X.fillStyle='rgba(255,255,255,.06)';X.fillRect(bx-tw-8,by-10,tw+14,20);
-        X.fillStyle='rgba(255,255,255,.5)';X.fillText(s,bx,by);
+        X.fillStyle='rgba(255,255,255,.1)';X.fillRect(bx-tw-8,by-10,tw+14,20);
+        X.fillStyle='rgba(255,255,255,.72)';X.fillText(s,bx,by);
     }
 }
 
@@ -556,24 +607,45 @@ function drawSupernova(st){
         if(p.label&&p.life>.4&&!labelShown.has(p.label)){
             const dist=Math.sqrt(p.x*p.x+p.y*p.y);
             if(dist>80&&dist<350){
-                X.font='bold 11px -apple-system,sans-serif';X.textAlign='center';X.fillStyle=rgb(p.c,.9);
+                X.font=`800 12px ${UIFONT}`;X.textAlign='center';X.fillStyle=rgb(p.c,1);
                 X.fillText(p.label,CX+p.x,CY+p.y-p.s*p.life-6);
                 labelShown.add(p.label);
             }
         }
     }
     if(phase>1&&phase<2.5){
-        X.font='600 14px -apple-system,sans-serif';X.textAlign='center';
+        X.font=`700 15px ${UIFONT}`;X.textAlign='center';
         X.fillStyle=`rgba(255,255,200,${Math.max(0,1-(phase-1)*.7)})`;
         X.fillText('Au, Pt, U 등 중원소 생성',CX,CY+MR*.35);
     }
+}
+
+function drawFinalProduct(name){
+    if(!name)return;
+    const small=W<560;
+    X.textAlign='center';X.textBaseline='middle';
+    X.font=`800 ${small?13:15}px ${UIFONT}`;
+    X.fillStyle='rgba(205,239,253,.85)';
+    X.fillText('최종 산물',CX,CY-(small?34:42));
+    X.font=`800 ${small?26:36}px ${UIFONT}`;
+    const tw=X.measureText(name).width;
+    const g=X.createLinearGradient(CX-tw/2,0,CX+tw/2,0);
+    g.addColorStop(0,'#00d2ff');g.addColorStop(1,'#9ec4ff');
+    X.fillStyle='rgba(0,210,255,.16)';
+    if(X.roundRect){X.beginPath();X.roundRect(CX-tw/2-22,CY-(small?14:18),tw+44,small?40:48,14);X.fill();}
+    X.fillStyle=g;
+    X.fillText(name,CX,CY+(small?6:6));
 }
 
 let lastBoomState=0,lastRingState=0;
 
 function render(){
     const st=interp(progress);
-    if(st.n!==prevStage){$stage.textContent=st.n||'';prevStage=st.n;}
+    if(st.n!==prevStage){
+        $stage.textContent=st.n||'';prevStage=st.n;
+        $tl.setAttribute('aria-valuetext',(st.n||'')+(st.temp>100?' · 표면 '+fmtTemp(st.temp)+' K':''));
+        if(st.n&&st.n!==lastAnnounced){lastAnnounced=st.n;const extra=st.temp>100?', 표면 온도 약 '+fmtTemp(st.temp)+' 켈빈':'';if(window.CNSA)CNSA.srAnnounce(st.n+extra);}
+    }
     drawBg();
 
     const nebOp=Math.max(0,1-st.r/.12);
@@ -594,34 +666,77 @@ function render(){
     if(st.r>0&&st.ly&&st.ly.length>0&&st.boom===0&&st.ring===0){
         drawStar(st);drawForces(st);drawTemp(st);
     }
+
+    const P=getPath(),finalName=P[P.length-1].n;
+    if(progress>=.985&&finalName){
+        drawFinalProduct(finalName);
+    }
 }
 
-function animate(){
-    if(playing){progress=Math.min(1,progress+speed);$tl.value=Math.round(progress*10000);if(progress>=1){playing=false;$bp.textContent='▶';}}
-    const t=performance.now()*.0003;
-    for(const s of bgStars) s.b=(Math.sin(t+s.tw)*.15+.85)*(s.b*.5+.5);
-    bgCanvas=null;render();requestAnimationFrame(animate);
+let rafId=0;
+function particlesAlive(){
+    if(lastRingState>0){for(const p of ringP)if(p.life>0)return true;}
+    if(lastBoomState>0){for(const p of boomP)if(p.life>0)return true;}
+    return false;
 }
+function animate(){
+    if(playing){progress=Math.min(1,progress+speed);$tl.value=Math.round(progress*10000);if(progress>=1){playing=false;$bp.textContent='▶';$bp.classList.remove('active');$bp.setAttribute('aria-pressed','false');}}
+    render();
+    if(playing||particlesAlive()){rafId=requestAnimationFrame(animate);}
+    else{rafId=0;}
+}
+function kick(){if(!rafId)rafId=requestAnimationFrame(animate);}
 
 function updateMarks(){
     const P=getPath(),names=[];let last='';
     for(const s of P){if(s.n&&s.n!==last){names.push({n:s.n,t:s.t});last=s.n;}}
-    $marks.innerHTML=names.map(m=>`<span style="left:${m.t*100}%">${m.n}</span>`).join('');
+    $marks.innerHTML=names.map(m=>{
+        if(m.t>=.985)return `<span style="left:auto;right:0;transform:none">${m.n}</span>`;
+        if(m.t<=.02)return `<span style="left:0;transform:none">${m.n}</span>`;
+        return `<span style="left:${m.t*100}%">${m.n}</span>`;
+    }).join('');
+    let msFr=null,msTo=null;
+    for(let i=0;i<P.length;i++){if(P[i].n==='주계열성'){if(msFr===null)msFr=P[i].t;msTo=P[i].t;}}
+    const $ms=document.getElementById('tl-ms');
+    if($ms){
+        if(msFr!==null){$ms.style.display='block';$ms.style.left=(msFr*100)+'%';$ms.style.width=((msTo-msFr)*100)+'%';}
+        else $ms.style.display='none';
+    }
 }
 
-$bp.onclick=()=>{if(progress>=1){progress=0;$tl.value=0;}playing=!playing;$bp.textContent=playing?'⏸':'▶';$bp.classList.toggle('active',playing);};
-document.getElementById('br').onclick=()=>{progress=0;playing=false;$tl.value=0;$bp.textContent='▶';$bp.classList.remove('active');lastBoomState=0;lastRingState=0;};
-$tl.addEventListener('input',()=>{progress=$tl.value/10000;playing=false;$bp.textContent='▶';$bp.classList.remove('active');});
-document.querySelectorAll('.mo').forEach(el=>{el.onclick=()=>{mass=el.dataset.m;document.querySelectorAll('.mo').forEach(e=>e.classList.toggle('on',e.dataset.m===mass));progress=0;$tl.value=0;playing=false;$bp.textContent='▶';$bp.classList.remove('active');lastBoomState=0;lastRingState=0;updateMarks();};});
-window.addEventListener('resize',()=>{resize();bgCanvas=null;});
+function syncAria(){
+    const st=interp(progress);
+    const label=(st.n||'')+(st.temp>100?' · 표면 '+fmtTemp(st.temp)+' K':'');
+    $tl.setAttribute('aria-valuetext',label);
+}
+function announceStage(){
+    const st=interp(progress);
+    const name=st.n||'';
+    if(name&&name!==lastAnnounced){
+        lastAnnounced=name;
+        const extra=st.temp>100?', 표면 온도 약 '+fmtTemp(st.temp)+' 켈빈':'';
+        if(window.CNSA)CNSA.srAnnounce(name+extra);
+    }
+    syncAria();
+}
+
+function setPlaying(p){playing=p;$bp.textContent=p?'⏸':'▶';$bp.classList.toggle('active',p);$bp.setAttribute('aria-pressed',p?'true':'false');}
+
+$bp.onclick=()=>{if(progress>=1){progress=0;$tl.value=0;lastBoomState=0;lastRingState=0;}setPlaying(!playing);announceStage();kick();};
+document.getElementById('br').onclick=()=>{progress=0;setPlaying(false);$tl.value=0;lastBoomState=0;lastRingState=0;lastAnnounced='';announceStage();kick();};
+$tl.addEventListener('input',()=>{progress=$tl.value/10000;setPlaying(false);announceStage();kick();});
+document.querySelectorAll('.mo').forEach(el=>{el.onclick=()=>{mass=el.dataset.m;document.querySelectorAll('.mo').forEach(e=>{const on=e.dataset.m===mass;e.classList.toggle('on',on);e.setAttribute('aria-checked',on?'true':'false');});progress=0;$tl.value=0;setPlaying(false);lastBoomState=0;lastRingState=0;lastAnnounced='';updateMarks();announceStage();kick();};});
+window.addEventListener('resize',()=>{resize();bgCanvas=null;kick();});
 document.addEventListener('keydown',e=>{
     if(e.code==='Space'){e.preventDefault();$bp.click();}
     if(e.code==='KeyR')document.getElementById('br').click();
-    if(e.code==='ArrowRight'){progress=Math.min(1,progress+.01);$tl.value=Math.round(progress*10000);}
-    if(e.code==='ArrowLeft'){progress=Math.max(0,progress-.01);$tl.value=Math.round(progress*10000);}
+    if(e.code==='ArrowRight'){progress=Math.min(1,progress+.01);$tl.value=Math.round(progress*10000);setPlaying(false);announceStage();kick();}
+    if(e.code==='ArrowLeft'){progress=Math.max(0,progress-.01);$tl.value=Math.round(progress*10000);setPlaying(false);announceStage();kick();}
 });
 
-resize();updateMarks();animate();
+resize();updateMarks();syncAria();kick();
 </script>
+<script src="/assets/sim-ui.js"></script>
+<script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar({pad:false});});</script>
 </body>
 </html>
