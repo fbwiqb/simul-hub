@@ -17,7 +17,7 @@
 | **GitHub** | github.com/fbwiqb/simul-hub |
 | **Stack** | Static HTML/JS (vanilla) + Vercel Edge Middleware |
 | **Backend** | None (except `spectrum/`: Firebase Firestore) |
-| **Count** | 11 simulations (3 sections) |
+| **Count** | 12 simulations (3 sections) |
 
 ## Architecture
 
@@ -32,6 +32,7 @@
 ├── spectrum/           # Element emission/absorption spectra + Firebase realtime quiz/battle
 ├── stellar-evolution/  # Star life cycle and internal structure by mass
 ├── quake-volcano/      # Global earthquake/volcano/plate map (Leaflet + geojson; added 2026-06-12)
+├── central-dogma/      # DNA→RNA→protein dice activity (transcription/translation, pair+solo; added 2026-06-12)
 │  # 통합과학2 (시스템과 상호작용)
 ├── thermalbalance/     # Earth radiation balance
 ├── magnet/             # Magnetic field + Faraday's law (7 images)
@@ -54,7 +55,7 @@
 
 ## Simulations by Subject
 
-> Mirrors the live hub `index.html` (3 sections, 11 simulations).
+> Mirrors the live hub `index.html` (3 sections, 12 simulations).
 
 ### 통합과학1 (물질과 에너지)
 | Simulation | Path | Description |
@@ -62,6 +63,7 @@
 | 스펙트럼 | `/spectrum/` | Element emission/absorption spectra + Firebase realtime quiz & battle (index/play/quiz/battle.html, spectrum-core.js) |
 | 별의 진화 | `/stellar-evolution/` | Star life cycle and internal structure by mass |
 | 지진·화산 | `/quake-volcano/` | Global earthquake/volcano/plate-boundary map (Leaflet, geojson) |
+| 유전정보의 흐름 | `/central-dogma/` | DNA→RNA→protein dice activity, transcription/translation drag+tap, pair/solo modes (self-contained; integrated from a shared file 2026-06-12) |
 
 ### 통합과학2 (시스템과 상호작용)
 | Simulation | Path | Description |

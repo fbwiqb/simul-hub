@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="cnsa-sim" content="유전정보의 흐름|통합과학1">
+<link rel="stylesheet" href="/assets/sim-ui.css">
+<title>세포 내 유전정보의 흐름 확인하기</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--cnsa-font);
+    background: var(--cnsa-bg);
+    background-attachment: fixed;
+    color: var(--cnsa-text); min-height: 100vh; padding: 20px;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+  header {
+    background: var(--cnsa-surface);
+    backdrop-filter: var(--cnsa-blur);
+    -webkit-backdrop-filter: var(--cnsa-blur);
+    border: 1px solid var(--cnsa-border);
+    color: var(--cnsa-text); padding: 22px 28px; border-radius: var(--cnsa-radius);
+    box-shadow: var(--cnsa-shadow); margin-bottom: 20px;
+  }
+  header h1 { font-size: 1.6rem; margin-bottom: 4px; letter-spacing: -0.01em; }
+  header p { color: var(--cnsa-text-dim); font-size: 0.95rem; }
+
+  .grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: white; border-radius: 16px; padding: 22px;
+    box-shadow: var(--cnsa-shadow-lg); margin-bottom: 16px;
+    color: #2d2d2d;
+  }
+  .card h2 {
+    font-size: 1.15rem; color: #ee5a52; margin-bottom: 14px;
+    padding-bottom: 8px; border-bottom: 2px solid #ffe8e6;
+  }
+
+  .setup-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .setup-row label { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
+  .setup-row label span { font-size: 0.85rem; color: #666; font-weight: 600; }
+  .setup-row input, .setup-row select {
+    padding: 10px 12px; border: 2px solid #ffd6d3; border-radius: 8px;
+    font-size: 1rem; font-family: inherit; background: #fff; color: #2d2d2d;
+  }
+  .setup-row input:focus, .setup-row select:focus { outline: none; border-color: #ee5a52; }
+
+  .mode-seg {
+    display: inline-flex; gap: 4px; padding: 4px; background: #f1f3f5;
+    border-radius: 12px; margin-bottom: 4px;
+  }
+  .mode-seg button {
+    padding: 9px 20px; border: none; border-radius: 9px; cursor: pointer;
+    font-size: 0.95rem; font-weight: 600; font-family: inherit;
+    background: transparent; color: #868e96; transition: all 0.15s;
+  }
+  .mode-seg button.active {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52); color: white;
+    box-shadow: 0 2px 8px rgba(238,90,82,0.3);
+  }
+  .mode-field { display: flex; flex-direction: column; gap: 4px; }
+  .mode-field > span { font-size: 0.85rem; color: #666; font-weight: 600; }
+
+  .btn {
+    padding: 12px 22px; border: none; border-radius: var(--cnsa-radius-sm); cursor: pointer;
+    font-size: 1rem; font-weight: 600; font-family: inherit;
+    transition: transform 0.1s, box-shadow 0.2s, filter 0.2s;
+  }
+  .btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .btn:active:not(:disabled) { transform: translateY(0); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary { background: linear-gradient(135deg, #ff6b6b, #ee5a52); color: white; }
+  .btn-success { background: linear-gradient(135deg, #51cf66, #40c057); color: white; }
+  .btn-info    { background: linear-gradient(135deg, #4dabf7, #339af0); color: white; }
+  .btn-warn    { background: linear-gradient(135deg, #ffa94d, #ff922b); color: white; }
+  .btn-ghost   { background: #f1f3f5; color: #495057; }
+  .btn-danger  { background: linear-gradient(135deg, #fa5252, #e03131); color: white; }
+
+  .progress {
+    display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .progress .pip {
+    flex: 1; min-width: 18px; height: 8px; background: #ffe8e6; border-radius: 4px;
+    transition: background 0.3s;
+  }
+  .progress .pip.done { background: linear-gradient(90deg, #ff6b6b, #ee5a52); }
+
+  .dice-area { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .dice {
+    width: 90px; height: 90px;
+    background: white;
+    border-radius: 18px;
+    border: 2px solid #ffd6d3;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    padding: 14px;
+    gap: 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    transition: transform 0.1s;
+  }
+  .dice .pip {
+    width: 100%; height: 100%; border-radius: 50%;
+    background: #ee5a52;
+    visibility: hidden;
+  }
+  .dice .pip.on { visibility: visible; }
+  .dice.rolling { animation: rollAnim 0.6s ease-in-out; }
+  @keyframes rollAnim {
+    0%   { transform: rotate(0deg)   scale(1); }
+    25%  { transform: rotate(180deg) scale(0.9); }
+    50%  { transform: rotate(360deg) scale(1.1); }
+    75%  { transform: rotate(540deg) scale(0.95); }
+    100% { transform: rotate(720deg) scale(1); }
+  }
+
+  .turn-info { font-size: 1.05rem; font-weight: 600; color: #495057; }
+  .turn-info strong { color: #ee5a52; }
+
+  .strand-container { margin-top: 14px; }
+  .strand-label {
+    display: inline-block; padding: 4px 12px; border-radius: 6px;
+    font-weight: 700; font-size: 0.9rem; margin-bottom: 8px;
+  }
+  .label-dna { background: #ffe8e6; color: #c92a2a; }
+  .label-rna { background: #e7f5ff; color: #1971c2; }
+  .label-pro { background: #f3f0ff; color: #5f3dc4; }
+
+  .strand {
+    display: flex; flex-wrap: wrap; gap: 4px; padding: 12px;
+    background: #fafafa; border-radius: 10px; min-height: 70px;
+    border: 2px dashed #e9ecef;
+  }
+  .codon-group {
+    display: flex; gap: 2px; padding: 4px; border-radius: 8px;
+    background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 2px solid transparent;
+  }
+  .codon-group.start-codon { border-color: #51cf66; background: #ebfbee; }
+  .base, .base-slot {
+    width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.1rem; border-radius: 6px;
+    font-family: 'Courier New', monospace;
+  }
+  .base-A { background: #ffe8e6; color: #c92a2a; }
+  .base-T { background: #fff3bf; color: #856404; }
+  .base-G { background: #d3f9d8; color: #2b8a3e; }
+  .base-C { background: #e7f5ff; color: #1864ab; }
+  .base-U { background: #f3f0ff; color: #5f3dc4; }
+  .base-slot {
+    background: #fff; border: 2px dashed #adb5bd; color: #adb5bd; font-size: 0.85rem;
+    transition: all 0.15s; cursor: pointer;
+  }
+  .base-slot.drag-over { background: #fff5f5; border-color: #ee5a52; transform: scale(1.05); }
+  .base-slot.tap-target { background: #fff5f5; border-color: #ee5a52; box-shadow: 0 0 0 3px rgba(238,90,82,0.2); }
+  .base-slot.filled { cursor: pointer; border-style: solid; font-size: 1.1rem; }
+  .base-slot.filled.base-A { background: #ffe8e6; color: #c92a2a; border-color: #ffc9c9; }
+  .base-slot.filled.base-U { background: #f3f0ff; color: #5f3dc4; border-color: #d0bfff; }
+  .base-slot.filled.base-G { background: #d3f9d8; color: #2b8a3e; border-color: #a3e9b0; }
+  .base-slot.filled.base-C { background: #e7f5ff; color: #1864ab; border-color: #a5d8ff; }
+  .base-slot:focus-visible, .amino-slot:focus-visible, .chip:focus-visible {
+    outline: 3px solid #ee5a52; outline-offset: 2px;
+  }
+  .base-slot.shake { animation: shake 0.4s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); background: #ffe3e3; border-color: #fa5252; }
+    75% { transform: translateX(4px);  background: #ffe3e3; border-color: #fa5252; }
+  }
+
+  .protein-chain {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 14px;
+    background: #faf7ff; border-radius: 10px; min-height: 70px;
+    border: 2px dashed #d0bfff;
+  }
+  .amino-slot {
+    width: 56px; height: 56px; border-radius: 12px;
+    border: 2px dashed #b197fc; background: white;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; cursor: pointer;
+  }
+  .amino-slot.drag-over { background: #f3f0ff; border-color: #7048e8; transform: scale(1.05); }
+  .amino-slot.tap-target { background: #f3f0ff; border-color: #7048e8; box-shadow: 0 0 0 3px rgba(112,72,232,0.2); }
+  .amino-slot.filled { border-style: solid; cursor: pointer; }
+  .amino-slot.shake { animation: shake 0.4s; }
+
+  .chip-tray {
+    display: flex; flex-wrap: wrap; gap: 8px; padding: 12px;
+    background: #f8f9fa; border-radius: 10px; margin-top: 10px;
+  }
+  .chip {
+    width: 50px; height: 50px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.15rem; cursor: grab;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1); user-select: none;
+    transition: transform 0.1s, box-shadow 0.15s;
+  }
+  .chip:hover { transform: translateY(-2px) scale(1.05); }
+  .chip:active { cursor: grabbing; }
+  .chip.selected { transform: scale(1.12); box-shadow: 0 0 0 3px #ee5a52, 0 4px 10px rgba(0,0,0,0.18); }
+  .chip.amino-chip {
+    background: white; width: 56px; height: 56px;
+  }
+  .chip.amino-chip.selected { box-shadow: 0 0 0 3px #7048e8, 0 4px 10px rgba(0,0,0,0.18); }
+  .tap-hint {
+    margin-top: 8px; font-size: 0.82rem; color: #868e96;
+  }
+
+  .ref-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .ref-table th, .ref-table td { padding: 8px 6px; text-align: center; border-bottom: 1px solid #ffe8e6; }
+  .ref-table th { background: #fff5f5; color: #ee5a52; font-weight: 700; }
+  .ref-table td.dna { color: #c92a2a; font-weight: 700; font-family: 'Courier New', monospace; }
+  .ref-table td.rna { color: #1971c2; font-weight: 700; font-family: 'Courier New', monospace; }
+  .ref-table td.amino { display: flex; align-items: center; justify-content: center; }
+
+  .toast-container {
+    position: fixed; top: calc(var(--cnsa-bar-h) + 12px); left: 50%; transform: translateX(-50%);
+    z-index: 1000; pointer-events: none;
+  }
+  .toast {
+    background: #fa5252; color: white; padding: 14px 22px; border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2); margin-bottom: 8px; font-weight: 600;
+    animation: toastIn 0.3s, toastOut 0.3s 2.2s forwards;
+  }
+  .toast.success { background: #51cf66; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes toastOut { to { opacity: 0; transform: translateY(-20px); } }
+
+  .stage-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .stage-tab {
+    flex: 1; padding: 10px; text-align: center; border-radius: 8px;
+    background: #f1f3f5; color: #adb5bd; font-weight: 600; font-size: 0.9rem;
+  }
+  .stage-tab.active { background: linear-gradient(135deg, #ff6b6b, #ee5a52); color: white; }
+  .stage-tab.done { background: linear-gradient(135deg, #51cf66, #40c057); color: white; }
+
+  .button-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .hidden { display: none !important; }
+
+  .reset-row { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+
+  .site-footer {
+    text-align: center; color: var(--cnsa-text-dim);
+    font-size: 0.85rem; padding: 18px 0 8px;
+  }
+
+  @media (max-width: 900px) {
+    body { padding: 14px; }
+    .base, .base-slot { width: 42px; height: 42px; }
+    .amino-slot { width: 58px; height: 58px; }
+    .chip { width: 52px; height: 52px; }
+    .chip.amino-chip { width: 58px; height: 58px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🧬 세포 내 유전정보의 흐름 확인하기</h1>
+    <p>DNA → RNA → 단백질, 주사위로 만드는 우리들의 단백질!</p>
+  </header>
+
+  <!-- 토스트 -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ===== 설정 화면 ===== -->
+  <div id="setupScreen">
+    <div class="card">
+      <h2>👥 게임 설정</h2>
+      <div class="mode-field" style="margin-bottom:14px;">
+        <span>게임 모드</span>
+        <div class="mode-seg" role="radiogroup" aria-label="게임 모드 선택">
+          <button type="button" id="modePair" class="active" role="radio" aria-checked="true" onclick="setMode('pair')">👥 페어 (2인)</button>
+          <button type="button" id="modeSolo" role="radio" aria-checked="false" onclick="setMode('solo')">🙋 개인 (1인)</button>
+        </div>
+      </div>
+      <div class="setup-row" id="pairNames">
+        <label><span>학생 A 이름</span><input id="p1" type="text" value="학생 A" maxlength="10"></label>
+        <label><span>학생 B 이름</span><input id="p2" type="text" value="학생 B" maxlength="10"></label>
+      </div>
+      <div class="setup-row hidden" id="soloName">
+        <label><span>이름 (선택)</span><input id="pSolo" type="text" value="" maxlength="10" placeholder="이름을 입력하세요"></label>
+      </div>
+      <div class="setup-row">
+        <label><span>주사위 굴림 횟수 (5~15회)</span>
+          <select id="rollCount">
+            <option value="5">5회</option>
+            <option value="6" selected>6회</option>
+            <option value="7">7회</option>
+            <option value="8">8회</option>
+            <option value="9">9회</option>
+            <option value="10">10회</option>
+            <option value="11">11회</option>
+            <option value="12">12회</option>
+            <option value="13">13회</option>
+            <option value="14">14회</option>
+            <option value="15">15회</option>
+          </select>
+        </label>
+      </div>
+      <div class="button-row">
+        <button class="btn btn-primary" onclick="startGame()">🎮 게임 시작</button>
+      </div>
+      <p style="margin-top:12px; font-size:0.88rem; color:#868e96;">
+        💡 첫 코돈은 시작 코돈(DNA: TAC → RNA: AUG → ★)으로 자동 설정됩니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- ===== 게임 화면 ===== -->
+  <div id="gameScreen" class="hidden">
+    <div class="grid">
+      <div>
+        <!-- 처음부터 다시 하기 버튼 -->
+        <div class="reset-row">
+          <button class="btn btn-danger" onclick="confirmRestart()">🔄 처음부터 다시 하기</button>
+        </div>
+
+        <!-- 단계 탭 -->
+        <div class="stage-tabs">
+          <div class="stage-tab" id="tab1">1️⃣ 주사위·DNA</div>
+          <div class="stage-tab" id="tab2">2️⃣ 전사 (RNA)</div>
+          <div class="stage-tab" id="tab3">3️⃣ 번역 (단백질)</div>
+        </div>
+
+        <!-- 1단계: 주사위 -->
+        <div class="card" id="stage1Card">
+          <h2>🎲 1단계 — 주사위 굴려 DNA 만들기</h2>
+          <div class="progress" id="progress"></div>
+          <div class="dice-area">
+            <div class="dice" id="dice">
+              <div class="pip" data-pos="1"></div><div class="pip" data-pos="2"></div><div class="pip" data-pos="3"></div>
+              <div class="pip" data-pos="4"></div><div class="pip" data-pos="5"></div><div class="pip" data-pos="6"></div>
+              <div class="pip" data-pos="7"></div><div class="pip" data-pos="8"></div><div class="pip" data-pos="9"></div>
+            </div>
+            <div class="turn-info" id="turnInfo">학생 A님 차례 (1/6)</div>
+            <button class="btn btn-primary" id="rollBtn" onclick="rollDice()">🎲 주사위 굴리기</button>
+          </div>
+          <div class="strand-container">
+            <span class="strand-label label-dna">DNA 가닥</span>
+            <div class="strand" id="dnaStrand"></div>
+          </div>
+          <div class="button-row">
+            <button class="btn btn-success hidden" id="goToStage2" onclick="goToStage2()">➡️ 전사 단계로</button>
+          </div>
+        </div>
+
+        <!-- 2단계: 전사 -->
+        <div class="card hidden" id="stage2Card">
+          <h2>📝 2단계 — 전사 (DNA → RNA)</h2>
+          <p style="margin-bottom:10px; color:#666; font-size:0.92rem;">
+            DNA 가닥을 보고 아래 RNA 칸에 알맞은 염기 칩(A, U, G, C)을 <strong>드래그</strong>하거나, 칩을 <strong>탭</strong>해 고른 뒤 빈 칸을 <strong>탭</strong>해 채워 주세요.
+          </p>
+          <div class="strand-container">
+            <span class="strand-label label-dna">DNA 가닥</span>
+            <div class="strand" id="dnaStrand2"></div>
+          </div>
+          <div class="strand-container">
+            <span class="strand-label label-rna">RNA 가닥 (직접 채우세요)</span>
+            <div class="strand" id="rnaStrand"></div>
+          </div>
+          <div class="chip-tray" id="rnaChipTray">
+            <div class="chip base-A" draggable="true" data-base="A" tabindex="0" role="button" aria-label="RNA 염기 A" aria-pressed="false">A</div>
+            <div class="chip base-U" draggable="true" data-base="U" tabindex="0" role="button" aria-label="RNA 염기 U" aria-pressed="false">U</div>
+            <div class="chip base-G" draggable="true" data-base="G" tabindex="0" role="button" aria-label="RNA 염기 G" aria-pressed="false">G</div>
+            <div class="chip base-C" draggable="true" data-base="C" tabindex="0" role="button" aria-label="RNA 염기 C" aria-pressed="false">C</div>
+          </div>
+          <p class="tap-hint">💡 칩을 탭(또는 Enter)해 선택 후 빈 칸을 탭하면 채워집니다. 채워진 칸을 탭하면 비웁니다.</p>
+          <div class="button-row">
+            <button class="btn btn-ghost" onclick="clearRNA()">🔄 모두 지우기</button>
+            <button class="btn btn-success" onclick="checkRNA()">✅ 전사 확인</button>
+          </div>
+        </div>
+
+        <!-- 3단계: 번역 -->
+        <div class="card hidden" id="stage3Card">
+          <h2>🔬 3단계 — 번역 (RNA → 단백질)</h2>
+          <p style="margin-bottom:10px; color:#666; font-size:0.92rem;">
+            RNA 코돈에 해당하는 아미노산 모형을 <strong>드래그</strong>하거나, 모형을 <strong>탭</strong>해 고른 뒤 빈 칸을 <strong>탭</strong>해 단백질 사슬을 완성하세요.
+          </p>
+          <div class="strand-container">
+            <span class="strand-label label-rna">RNA 가닥</span>
+            <div class="strand" id="rnaStrand2"></div>
+          </div>
+          <div class="strand-container">
+            <span class="strand-label label-pro">단백질 (아미노산 사슬)</span>
+            <div class="protein-chain" id="proteinChain"></div>
+          </div>
+          <div class="chip-tray" id="aminoChipTray"></div>
+          <p class="tap-hint">💡 모형을 탭(또는 Enter)해 선택 후 빈 칸을 탭하면 채워집니다. 채워진 칸을 탭하면 비웁니다.</p>
+          <div class="button-row">
+            <button class="btn btn-ghost" onclick="clearProtein()">🔄 모두 지우기</button>
+            <button class="btn btn-success" onclick="checkProtein()">✅ 번역 확인</button>
+          </div>
+        </div>
+
+        <!-- 결과 -->
+        <div class="card hidden" id="resultCard">
+          <h2>🎉 완성! 결과 확인</h2>
+          <div class="strand-container">
+            <span class="strand-label label-dna">DNA 가닥</span>
+            <div class="strand" id="finalDNA"></div>
+          </div>
+          <div class="strand-container">
+            <span class="strand-label label-rna">RNA 가닥</span>
+            <div class="strand" id="finalRNA"></div>
+          </div>
+          <div class="strand-container">
+            <span class="strand-label label-pro">단백질 사슬</span>
+            <div class="protein-chain" id="finalProtein"></div>
+          </div>
+          <div class="button-row">
+            <button class="btn btn-info" onclick="saveAsImage()">📥 결과 이미지 저장 (PNG)</button>
+            <button class="btn btn-warn" onclick="confirmRestart()">🔄 처음부터 다시 하기</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 사이드: 코돈 참조표 -->
+      <div>
+        <div class="card">
+          <h2>📋 코돈 참조표</h2>
+          <table class="ref-table">
+            <thead>
+              <tr><th>주사위</th><th>DNA</th><th>RNA</th><th>아미노산</th></tr>
+            </thead>
+            <tbody id="refTable"></tbody>
+          </table>
+          <p style="margin-top:10px; font-size:0.82rem; color:#868e96;">
+            ⭐ 시작 코돈: TAC → AUG (자동 입력)
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">충남삼성고 과학 시뮬레이션</footer>
+</div>
+
+<script>
+// ============== 데이터 ==============
+const CODON_TABLE = {
+  1: { dna:'AGC', rna:'UCG', shape:'circle',   color:'#ee5a52' },
+  2: { dna:'ACG', rna:'UGC', shape:'diamond',  color:'#4dabf7' },
+  3: { dna:'GTA', rna:'CAU', shape:'square',   color:'#9775fa' },
+  4: { dna:'CTG', rna:'GAC', shape:'triangle', color:'#ffa94d' },
+  5: { dna:'CCA', rna:'GGU', shape:'heart',    color:'#f06595' },
+  6: { dna:'TAC', rna:'AUG', shape:'star',     color:'#51cf66' }
+};
+
+// 주사위 점 패턴 (3x3 grid 위치 1~9)
+const PIP_POSITIONS = {
+  1: [5],
+  2: [1, 9],
+  3: [1, 5, 9],
+  4: [1, 3, 7, 9],
+  5: [1, 3, 5, 7, 9],
+  6: [1, 3, 4, 6, 7, 9]
+};
+
+// ============== 상태 ==============
+let state = {
+  mode: 'pair',
+  p1: '학생 A', p2: '학생 B',
+  solo: '',
+  totalRolls: 6,
+  currentTurn: 0,
+  rolls: [],
+  rnaInputs: [],
+  proteinInputs: [],
+  stage: 1
+};
+
+let selectedChip = null;
+
+// ============== 효과음 (Web Audio) ==============
+let audioCtx = null;
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playTone(freq, duration, type='sine', volume=0.2, delay=0) {
+  const ctx = getCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type; osc.frequency.value = freq;
+  osc.connect(gain); gain.connect(ctx.destination);
+  const t = ctx.currentTime + delay;
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(volume, t + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  osc.start(t); osc.stop(t + duration);
+}
+function playNoise(duration, volume=0.15) {
+  const ctx = getCtx();
+  const buf = ctx.createBuffer(1, ctx.sampleRate * duration, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i=0; i<data.length; i++) data[i] = (Math.random()*2-1) * (1 - i/data.length);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const gain = ctx.createGain(); gain.gain.value = volume;
+  src.connect(gain); gain.connect(ctx.destination);
+  src.start();
+}
+function sfxDice()  { playNoise(0.5, 0.12); playTone(880, 0.15, 'triangle', 0.18, 0.5); }
+function sfxOK()    { playTone(523, 0.1, 'sine', 0.2, 0); playTone(659, 0.1, 'sine', 0.2, 0.1); playTone(784, 0.15, 'sine', 0.2, 0.2); }
+function sfxFail()  { playTone(220, 0.25, 'sawtooth', 0.18, 0); playTone(180, 0.3, 'sawtooth', 0.15, 0.1); }
+function sfxTrans() { playTone(440, 0.1, 'sine', 0.18, 0); playTone(554, 0.1, 'sine', 0.18, 0.1); playTone(659, 0.15, 'sine', 0.18, 0.2); }
+function sfxTrans2(){ playTone(523, 0.12, 'triangle', 0.18, 0); playTone(659, 0.15, 'triangle', 0.18, 0.12); }
+
+// ============== 유틸 ==============
+function showToast(msg, type='') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type; t.textContent = msg;
+  c.appendChild(t);
+  if (window.CNSA) CNSA.srAnnounce(msg);
+  setTimeout(() => t.remove(), 2700);
+}
+function shapeSVG(shape, color, size=28) {
+  const s = size, c = s/2;
+  const starR = c - 2;
+  const starPoints = [];
+  for (let i=0; i<10; i++) {
+    const ang = (Math.PI/5)*i - Math.PI/2;
+    const rad = (i % 2 === 0) ? starR : starR * 0.45;
+    const x = c + Math.cos(ang) * rad;
+    const y = c + Math.sin(ang) * rad;
+    starPoints.push(x.toFixed(2) + ',' + y.toFixed(2));
+  }
+  const shapes = {
+    circle:   `<circle cx="${c}" cy="${c}" r="${c-2}" fill="${color}"/>`,
+    diamond:  `<polygon points="${c},2 ${s-2},${c} ${c},${s-2} 2,${c}" fill="${color}"/>`,
+    square:   `<rect x="3" y="3" width="${s-6}" height="${s-6}" fill="${color}" rx="2"/>`,
+    triangle: `<polygon points="${c},3 ${s-2},${s-3} 2,${s-3}" fill="${color}"/>`,
+    heart:    `<path d="M${c},${s-4} C${c},${s-4} 2,${c-2} 2,${c/1.5} A${c/2.5},${c/2.5} 0 0 1 ${c},${c/2} A${c/2.5},${c/2.5} 0 0 1 ${s-2},${c/1.5} C${s-2},${c-2} ${c},${s-4} ${c},${s-4} Z" fill="${color}"/>`,
+    star:     `<polygon points="${starPoints.join(' ')}" fill="${color}"/>`
+  };
+  return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">${shapes[shape]}</svg>`;
+}
+const SHAPE_NAME = { circle:'원', diamond:'마름모', square:'정사각형', triangle:'삼각형', heart:'하트', star:'별' };
+
+// ============== 모드 ==============
+function setMode(m) {
+  state.mode = m;
+  const pairBtn = document.getElementById('modePair');
+  const soloBtn = document.getElementById('modeSolo');
+  const isPair = (m === 'pair');
+  pairBtn.classList.toggle('active', isPair);
+  soloBtn.classList.toggle('active', !isPair);
+  pairBtn.setAttribute('aria-checked', isPair ? 'true' : 'false');
+  soloBtn.setAttribute('aria-checked', !isPair ? 'true' : 'false');
+  document.getElementById('pairNames').classList.toggle('hidden', !isPair);
+  document.getElementById('soloName').classList.toggle('hidden', isPair);
+}
+
+// ============== 참조표 ==============
+function renderRefTable() {
+  const tb = document.getElementById('refTable');
+  tb.innerHTML = '';
+  for (let i=1; i<=6; i++) {
+    const c = CODON_TABLE[i];
+    tb.innerHTML += `<tr>
+      <td><strong>${i}</strong></td>
+      <td class="dna">${c.dna}</td>
+      <td class="rna">${c.rna}</td>
+      <td><div style="display:flex;justify-content:center;align-items:center;">${shapeSVG(c.shape, c.color, 26)}</div></td>
+    </tr>`;
+  }
+}
+
+// ============== 게임 시작 ==============
+function startGame() {
+  state.p1 = document.getElementById('p1').value || '학생 A';
+  state.p2 = document.getElementById('p2').value || '학생 B';
+  state.solo = document.getElementById('pSolo').value.trim();
+  state.totalRolls = parseInt(document.getElementById('rollCount').value);
+  state.currentTurn = 1;
+  state.rolls = [6];
+  state.rnaInputs = [];
+  state.proteinInputs = [];
+  state.stage = 1;
+  selectedChip = null;
+
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('gameScreen').classList.remove('hidden');
+  document.getElementById('stage2Card').classList.add('hidden');
+  document.getElementById('stage3Card').classList.add('hidden');
+  document.getElementById('resultCard').classList.add('hidden');
+  document.getElementById('stage1Card').classList.remove('hidden');
+  document.getElementById('goToStage2').classList.add('hidden');
+  document.getElementById('rollBtn').disabled = false;
+
+  setStageTab(1);
+  renderProgress();
+  renderDNA();
+  updateTurnInfo();
+}
+
+function confirmRestart() {
+  if (confirm('처음부터 다시 시작할까요? 현재 진행 상황은 사라집니다.')) {
+    document.getElementById('gameScreen').classList.add('hidden');
+    document.getElementById('setupScreen').classList.remove('hidden');
+  }
+}
+
+function setStageTab(n) {
+  for (let i=1; i<=3; i++) {
+    const tab = document.getElementById('tab'+i);
+    tab.classList.remove('active','done');
+    if (i < n) tab.classList.add('done');
+    else if (i === n) tab.classList.add('active');
+  }
+}
+
+// ============== 진행도 ==============
+function renderProgress() {
+  const p = document.getElementById('progress');
+  p.innerHTML = '';
+  for (let i=0; i<state.totalRolls; i++) {
+    const d = document.createElement('div');
+    d.className = 'pip' + (i < state.rolls.length ? ' done' : '');
+    p.appendChild(d);
+  }
+}
+
+function updateTurnInfo() {
+  const info = document.getElementById('turnInfo');
+  const remaining = state.totalRolls - state.rolls.length;
+  if (remaining <= 0) {
+    info.innerHTML = `<strong>모든 주사위 굴림 완료!</strong>`;
+    document.getElementById('rollBtn').disabled = true;
+    document.getElementById('goToStage2').classList.remove('hidden');
+    return;
+  }
+  if (state.mode === 'solo') {
+    const who = state.solo ? `<strong>${state.solo}</strong>님` : '내';
+    info.innerHTML = `${who} 차례 (${state.rolls.length+1}/${state.totalRolls})`;
+    return;
+  }
+  const actualRollIdx = state.rolls.length - 1;
+  const isP1 = (actualRollIdx % 2 === 0);
+  const name = isP1 ? state.p1 : state.p2;
+  info.innerHTML = `<strong>${name}</strong>님 차례 (${state.rolls.length+1}/${state.totalRolls})`;
+}
+
+// ============== 주사위 ==============
+function setDicePips(num) {
+  const positions = PIP_POSITIONS[num];
+  const pips = document.querySelectorAll('#dice .pip');
+  pips.forEach(p => {
+    const pos = parseInt(p.dataset.pos);
+    p.classList.toggle('on', positions.includes(pos));
+  });
+}
+
+function rollDice() {
+  const btn = document.getElementById('rollBtn');
+  btn.disabled = true;
+  const dice = document.getElementById('dice');
+  dice.classList.add('rolling');
+  sfxDice();
+
+  let flicker = setInterval(() => {
+    setDicePips(Math.floor(Math.random()*6)+1);
+  }, 80);
+
+  setTimeout(() => {
+    clearInterval(flicker);
+    dice.classList.remove('rolling');
+    const result = Math.floor(Math.random()*6)+1;
+    setDicePips(result);
+    state.rolls.push(result);
+    renderProgress();
+    renderDNA();
+    updateTurnInfo();
+    if (window.CNSA) CNSA.srAnnounce(`주사위 ${result} 나옴. DNA 코돈 ${CODON_TABLE[result].dna} 추가.`);
+    if (state.rolls.length < state.totalRolls) btn.disabled = false;
+  }, 600);
+}
+
+// ============== DNA 렌더 ==============
+function renderDNA() {
+  const dna = document.getElementById('dnaStrand');
+  dna.innerHTML = '';
+  state.rolls.forEach((r, idx) => {
+    const codon = CODON_TABLE[r];
+    const grp = document.createElement('div');
+    grp.className = 'codon-group' + (idx === 0 ? ' start-codon' : '');
+    for (const ch of codon.dna) {
+      const b = document.createElement('div');
+      b.className = 'base base-' + ch;
+      b.textContent = ch;
+      grp.appendChild(b);
+    }
+    dna.appendChild(grp);
+  });
+}
+
+// ============== 칩 선택 (탭-투-플레이스) ==============
+function selectChip(chip, kind) {
+  const selector = kind === 'rna' ? '#rnaChipTray .chip' : '#aminoChipTray .chip';
+  if (selectedChip && selectedChip.el === chip) {
+    deselectChip();
+    return;
+  }
+  document.querySelectorAll(selector).forEach(c => {
+    c.classList.remove('selected');
+    c.setAttribute('aria-pressed', 'false');
+  });
+  chip.classList.add('selected');
+  chip.setAttribute('aria-pressed', 'true');
+  const data = kind === 'rna' ? chip.dataset.base : chip.dataset.shape;
+  selectedChip = { el: chip, kind: kind, data: data };
+  clearTapTargets();
+  highlightTapTargets(kind);
+  const label = kind === 'rna' ? data + ' 염기' : (SHAPE_NAME[data] || data) + ' 아미노산';
+  if (window.CNSA) CNSA.srAnnounce(`${label} 선택됨. 빈 칸을 탭해 채우세요.`);
+}
+function deselectChip() {
+  if (selectedChip) {
+    selectedChip.el.classList.remove('selected');
+    selectedChip.el.setAttribute('aria-pressed', 'false');
+  }
+  selectedChip = null;
+  clearTapTargets();
+}
+function highlightTapTargets(kind) {
+  const sel = kind === 'rna' ? '#rnaStrand .base-slot' : '#proteinChain .amino-slot';
+  document.querySelectorAll(sel).forEach(slot => {
+    if (!slot.classList.contains('filled')) slot.classList.add('tap-target');
+  });
+}
+function clearTapTargets() {
+  document.querySelectorAll('.tap-target').forEach(s => s.classList.remove('tap-target'));
+}
+
+// ============== 단계 2: 전사 ==============
+function goToStage2() {
+  state.stage = 2;
+  setStageTab(2);
+  deselectChip();
+  document.getElementById('stage1Card').classList.add('hidden');
+  document.getElementById('stage2Card').classList.remove('hidden');
+
+  const dna2 = document.getElementById('dnaStrand2');
+  dna2.innerHTML = '';
+  state.rolls.forEach((r, idx) => {
+    const codon = CODON_TABLE[r];
+    const grp = document.createElement('div');
+    grp.className = 'codon-group' + (idx === 0 ? ' start-codon' : '');
+    for (const ch of codon.dna) {
+      const b = document.createElement('div');
+      b.className = 'base base-' + ch;
+      b.textContent = ch;
+      grp.appendChild(b);
+    }
+    dna2.appendChild(grp);
+  });
+
+  const rna = document.getElementById('rnaStrand');
+  rna.innerHTML = '';
+  state.rnaInputs = state.rolls.map((r, idx) => {
+    if (idx === 0) return CODON_TABLE[r].rna.split('');
+    return ['', '', ''];
+  });
+  state.rnaInputs.forEach((codonArr, cIdx) => {
+    const grp = document.createElement('div');
+    grp.className = 'codon-group' + (cIdx === 0 ? ' start-codon' : '');
+    codonArr.forEach((b, bIdx) => {
+      const slot = document.createElement('div');
+      slot.dataset.codon = cIdx;
+      slot.dataset.idx = bIdx;
+      if (cIdx === 0) {
+        slot.className = 'base base-' + b;
+        slot.textContent = b;
+      } else {
+        slot.className = 'base-slot' + (b ? ' filled base-' + b : '');
+        slot.textContent = b || '?';
+        if (b) slot.classList.add('base-' + b);
+        slot.setAttribute('role', 'button');
+        slot.setAttribute('tabindex', '0');
+        slot.setAttribute('aria-label', `코돈 ${cIdx+1} ${bIdx+1}번째 RNA 슬롯`);
+        attachDropTarget(slot, 'rna');
+      }
+      grp.appendChild(slot);
+    });
+    rna.appendChild(grp);
+  });
+  attachDragSources('#rnaChipTray .chip', 'rna');
+}
+
+function attachDragSources(selector, kind) {
+  document.querySelectorAll(selector).forEach(chip => {
+    chip.addEventListener('dragstart', e => {
+      const data = kind === 'rna' ? chip.dataset.base : chip.dataset.shape;
+      e.dataTransfer.setData('text/plain', data);
+      e.dataTransfer.setData('kind', kind);
+    });
+    if (!chip.dataset.tapBound) {
+      chip.dataset.tapBound = '1';
+      chip.addEventListener('click', () => selectChip(chip, kind));
+      chip.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          selectChip(chip, kind);
+        }
+      });
+    }
+  });
+}
+
+function attachDropTarget(slot, kind) {
+  slot.addEventListener('dragover', e => {
+    e.preventDefault(); slot.classList.add('drag-over');
+  });
+  slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+  slot.addEventListener('drop', e => {
+    e.preventDefault();
+    slot.classList.remove('drag-over');
+    const data = e.dataTransfer.getData('text/plain');
+    if (kind === 'rna') fillRNASlot(slot, data);
+    else fillProteinSlot(slot, data);
+  });
+  slot.addEventListener('click', () => handleSlotTap(slot, kind));
+  slot.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleSlotTap(slot, kind);
+    }
+  });
+}
+
+function handleSlotTap(slot, kind) {
+  if (slot.classList.contains('filled')) {
+    if (kind === 'rna') clearRNASlot(slot);
+    else clearProteinSlot(slot);
+    if (selectedChip) { clearTapTargets(); highlightTapTargets(selectedChip.kind); }
+    return;
+  }
+  if (selectedChip && selectedChip.kind === kind) {
+    if (kind === 'rna') fillRNASlot(slot, selectedChip.data);
+    else fillProteinSlot(slot, selectedChip.data);
+    clearTapTargets();
+    highlightTapTargets(kind);
+  }
+}
+
+function fillRNASlot(slot, base) {
+  const c = parseInt(slot.dataset.codon);
+  const i = parseInt(slot.dataset.idx);
+  state.rnaInputs[c][i] = base;
+  slot.className = 'base-slot filled base-' + base;
+  slot.textContent = base;
+  slot.dataset.codon = c; slot.dataset.idx = i;
+  if (window.CNSA) CNSA.srAnnounce(`${base} 염기 배치됨.`);
+}
+function clearRNASlot(slot) {
+  const c = parseInt(slot.dataset.codon);
+  const i = parseInt(slot.dataset.idx);
+  state.rnaInputs[c][i] = '';
+  slot.className = 'base-slot';
+  slot.textContent = '?';
+}
+function clearRNA() {
+  state.rnaInputs.forEach((arr, idx) => {
+    if (idx === 0) return;
+    arr[0]=arr[1]=arr[2]='';
+  });
+  deselectChip();
+  goToStage2();
+}
+
+function checkRNA() {
+  let allCorrect = true; let anyEmpty = false;
+  document.querySelectorAll('#rnaStrand .codon-group').forEach((grp, cIdx) => {
+    const slots = grp.querySelectorAll('.base-slot');
+    slots.forEach((slot, bIdx) => {
+      const expected = CODON_TABLE[state.rolls[cIdx]].rna[bIdx];
+      const actual = state.rnaInputs[cIdx][bIdx];
+      if (!actual) anyEmpty = true;
+      else if (actual !== expected) {
+        allCorrect = false;
+        slot.classList.add('shake');
+        setTimeout(() => {
+          slot.classList.remove('shake', 'filled', 'base-A','base-U','base-G','base-C');
+          slot.className = 'base-slot';
+          slot.textContent = '?';
+          state.rnaInputs[cIdx][bIdx] = '';
+        }, 400);
+      }
+    });
+  });
+  if (anyEmpty) { showToast('⚠️ 아직 비어 있는 칸이 있어요!'); sfxFail(); return; }
+  if (!allCorrect) { showToast('⚠️ 다시 한 번 생각해 보세요!'); sfxFail(); return; }
+  sfxOK(); sfxTrans();
+  showToast('✅ 전사 완료! 번역 단계로 넘어갑니다.', 'success');
+  setTimeout(goToStage3, 800);
+}
+
+// ============== 단계 3: 번역 ==============
+function goToStage3() {
+  state.stage = 3;
+  setStageTab(3);
+  deselectChip();
+  document.getElementById('stage2Card').classList.add('hidden');
+  document.getElementById('stage3Card').classList.remove('hidden');
+
+  const rna2 = document.getElementById('rnaStrand2');
+  rna2.innerHTML = '';
+  state.rolls.forEach((r, idx) => {
+    const codon = CODON_TABLE[r];
+    const grp = document.createElement('div');
+    grp.className = 'codon-group' + (idx === 0 ? ' start-codon' : '');
+    for (const ch of codon.rna) {
+      const b = document.createElement('div');
+      b.className = 'base base-' + ch;
+      b.textContent = ch;
+      grp.appendChild(b);
+    }
+    rna2.appendChild(grp);
+  });
+
+  state.proteinInputs = state.rolls.map((r, idx) => idx === 0 ? CODON_TABLE[r].shape : '');
+  const chain = document.getElementById('proteinChain');
+  chain.innerHTML = '';
+  state.proteinInputs.forEach((shape, idx) => {
+    const slot = document.createElement('div');
+    slot.dataset.codon = idx;
+    if (idx === 0) {
+      slot.className = 'amino-slot filled';
+      slot.style.borderColor = CODON_TABLE[state.rolls[idx]].color;
+      slot.innerHTML = shapeSVG(shape, CODON_TABLE[state.rolls[idx]].color, 36);
+    } else {
+      slot.className = 'amino-slot';
+      slot.setAttribute('role', 'button');
+      slot.setAttribute('tabindex', '0');
+      slot.setAttribute('aria-label', `${idx+1}번째 아미노산 슬롯`);
+      attachDropTarget(slot, 'amino');
+    }
+    chain.appendChild(slot);
+  });
+
+  const tray = document.getElementById('aminoChipTray');
+  tray.innerHTML = '';
+  for (let i=1; i<=6; i++) {
+    const c = CODON_TABLE[i];
+    const chip = document.createElement('div');
+    chip.className = 'chip amino-chip';
+    chip.draggable = true;
+    chip.dataset.shape = c.shape;
+    chip.dataset.color = c.color;
+    chip.setAttribute('tabindex', '0');
+    chip.setAttribute('role', 'button');
+    chip.setAttribute('aria-label', `${SHAPE_NAME[c.shape] || c.shape} 아미노산`);
+    chip.setAttribute('aria-pressed', 'false');
+    chip.innerHTML = shapeSVG(c.shape, c.color, 36);
+    tray.appendChild(chip);
+  }
+  attachDragSources('#aminoChipTray .chip', 'amino');
+}
+
+function fillProteinSlot(slot, shape) {
+  const c = parseInt(slot.dataset.codon);
+  state.proteinInputs[c] = shape;
+  const entry = Object.values(CODON_TABLE).find(v => v.shape === shape);
+  slot.className = 'amino-slot filled';
+  slot.style.borderColor = entry.color;
+  slot.innerHTML = shapeSVG(shape, entry.color, 36);
+  slot.dataset.codon = c;
+  if (window.CNSA) CNSA.srAnnounce(`${SHAPE_NAME[shape] || shape} 아미노산 배치됨.`);
+}
+function clearProteinSlot(slot) {
+  const c = parseInt(slot.dataset.codon);
+  state.proteinInputs[c] = '';
+  slot.className = 'amino-slot';
+  slot.style.borderColor = '';
+  slot.innerHTML = '';
+}
+function clearProtein() {
+  state.proteinInputs = state.proteinInputs.map((s, i) => i === 0 ? s : '');
+  deselectChip();
+  goToStage3();
+}
+
+function checkProtein() {
+  let allCorrect = true; let anyEmpty = false;
+  document.querySelectorAll('#proteinChain .amino-slot').forEach((slot, idx) => {
+    const expected = CODON_TABLE[state.rolls[idx]].shape;
+    const actual = state.proteinInputs[idx];
+    if (idx === 0) return;
+    if (!actual) anyEmpty = true;
+    else if (actual !== expected) {
+      allCorrect = false;
+      slot.classList.add('shake');
+      setTimeout(() => {
+        slot.classList.remove('shake');
+        slot.className = 'amino-slot';
+        slot.style.borderColor = '';
+        slot.innerHTML = '';
+        state.proteinInputs[idx] = '';
+      }, 400);
+    }
+  });
+  if (anyEmpty) { showToast('⚠️ 아직 비어 있는 칸이 있어요!'); sfxFail(); return; }
+  if (!allCorrect) { showToast('⚠️ 다시 한 번 생각해 보세요!'); sfxFail(); return; }
+  sfxOK(); sfxTrans2();
+  showToast('🎉 모든 단계 완료!', 'success');
+  setTimeout(showResult, 800);
+}
+
+// ============== 결과 ==============
+function showResult() {
+  setStageTab(3);
+  document.getElementById('tab3').classList.remove('active');
+  document.getElementById('tab3').classList.add('done');
+  document.getElementById('stage3Card').classList.add('hidden');
+  document.getElementById('resultCard').classList.remove('hidden');
+
+  const renderStrand = (id, type) => {
+    const el = document.getElementById(id);
+    el.innerHTML = '';
+    state.rolls.forEach((r, idx) => {
+      const codon = CODON_TABLE[r];
+      const grp = document.createElement('div');
+      grp.className = 'codon-group' + (idx === 0 ? ' start-codon' : '');
+      const seq = type === 'dna' ? codon.dna : codon.rna;
+      for (const ch of seq) {
+        const b = document.createElement('div');
+        b.className = 'base base-' + ch;
+        b.textContent = ch;
+        grp.appendChild(b);
+      }
+      el.appendChild(grp);
+    });
+  };
+  renderStrand('finalDNA', 'dna');
+  renderStrand('finalRNA', 'rna');
+
+  const fp = document.getElementById('finalProtein');
+  fp.innerHTML = '';
+  state.rolls.forEach((r, idx) => {
+    const c = CODON_TABLE[r];
+    const slot = document.createElement('div');
+    slot.className = 'amino-slot filled';
+    slot.style.borderColor = c.color;
+    slot.innerHTML = shapeSVG(c.shape, c.color, 36);
+    fp.appendChild(slot);
+  });
+}
+
+// ============== 이미지 저장 ==============
+function saveAsImage() {
+  const canvas = document.createElement('canvas');
+  const W = 1100;
+  const codonsPerRow = 12;
+  const rows = Math.ceil(state.rolls.length / codonsPerRow);
+  const rowH = 100;
+  const H = 250 + rows * rowH * 3 + 80;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const grad = ctx.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0,'#fff5f5'); grad.addColorStop(1,'#ffe8e6');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+
+  ctx.fillStyle = '#ee5a52';
+  ctx.fillRect(20,20,W-40,80);
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 26px Pretendard, sans-serif';
+  ctx.fillText('🧬 세포 내 유전정보의 흐름', 40, 55);
+  ctx.font = '16px Pretendard, sans-serif';
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const whoStr = state.mode === 'solo' ? (state.solo || '개인') : `${state.p1} & ${state.p2}`;
+  ctx.fillText(`${whoStr}  |  ${dateStr}  |  굴림 ${state.totalRolls}회`, 40, 85);
+
+  let y = 130;
+  const drawSection = (label, labelColor, drawFn) => {
+    ctx.fillStyle = labelColor;
+    ctx.font = 'bold 18px Pretendard, sans-serif';
+    ctx.fillText(label, 30, y);
+    y += 14;
+    drawFn();
+    y += 20;
+  };
+
+  const drawBaseStrand = (type) => {
+    const startY = y;
+    state.rolls.forEach((r, idx) => {
+      const codon = CODON_TABLE[r];
+      const seq = type === 'dna' ? codon.dna : codon.rna;
+      const rowIdx = Math.floor(idx / codonsPerRow);
+      const colIdx = idx % codonsPerRow;
+      const baseX = 30 + colIdx * 85;
+      const baseY = startY + rowIdx * rowH;
+      ctx.fillStyle = idx === 0 ? '#ebfbee' : 'white';
+      ctx.strokeStyle = idx === 0 ? '#51cf66' : '#dee2e6';
+      ctx.lineWidth = 2;
+      ctx.fillRect(baseX, baseY, 80, 50);
+      ctx.strokeRect(baseX, baseY, 80, 50);
+      const colors = { A:'#c92a2a', T:'#856404', G:'#2b8a3e', C:'#1864ab', U:'#5f3dc4' };
+      const bgs    = { A:'#ffe8e6', T:'#fff3bf', G:'#d3f9d8', C:'#e7f5ff', U:'#f3f0ff' };
+      seq.split('').forEach((ch, i) => {
+        const bx = baseX + 6 + i * 23;
+        const by = baseY + 8;
+        ctx.fillStyle = bgs[ch]; ctx.fillRect(bx, by, 22, 34);
+        ctx.fillStyle = colors[ch];
+        ctx.font = 'bold 18px Courier New, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(ch, bx + 11, by + 24);
+        ctx.textAlign = 'left';
+      });
+    });
+    y = startY + rows * rowH;
+  };
+
+  drawSection('DNA 가닥', '#c92a2a', () => drawBaseStrand('dna'));
+  drawSection('RNA 가닥', '#1971c2', () => drawBaseStrand('rna'));
+
+  drawSection('단백질 (아미노산 사슬)', '#5f3dc4', () => {
+    const startY = y;
+    state.rolls.forEach((r, idx) => {
+      const c = CODON_TABLE[r];
+      const rowIdx = Math.floor(idx / codonsPerRow);
+      const colIdx = idx % codonsPerRow;
+      const cx = 30 + colIdx * 85 + 40;
+      const cy = startY + rowIdx * rowH + 30;
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = c.color; ctx.lineWidth = 3;
+      ctx.fillRect(cx-30, cy-30, 60, 60);
+      ctx.strokeRect(cx-30, cy-30, 60, 60);
+      drawShape(ctx, c.shape, c.color, cx, cy, 22);
+    });
+    y = startY + rows * rowH;
+  });
+
+  ctx.fillStyle = '#868e96';
+  ctx.font = '13px Pretendard, sans-serif';
+  ctx.fillText('🧬 세포 내 유전정보 흐름 학습 결과지', 30, H - 25);
+
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const ts = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}_${String(today.getHours()).padStart(2,'0')}${String(today.getMinutes()).padStart(2,'0')}`;
+    const fileWho = state.mode === 'solo' ? (state.solo || '개인') : `${state.p1}_${state.p2}`;
+    a.download = `유전정보흐름_${fileWho}_${ts}.png`;
+    a.href = url; a.click();
+    URL.revokeObjectURL(url);
+    showToast('📥 이미지가 저장되었습니다!', 'success');
+  });
+}
+
+function drawShape(ctx, shape, color, cx, cy, r) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  if (shape === 'circle') {
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+  } else if (shape === 'diamond') {
+    ctx.moveTo(cx, cy-r); ctx.lineTo(cx+r, cy); ctx.lineTo(cx, cy+r); ctx.lineTo(cx-r, cy);
+  } else if (shape === 'square') {
+    ctx.rect(cx-r, cy-r, r*2, r*2);
+  } else if (shape === 'triangle') {
+    ctx.moveTo(cx, cy-r); ctx.lineTo(cx+r, cy+r); ctx.lineTo(cx-r, cy+r);
+  } else if (shape === 'heart') {
+    const s = r;
+    ctx.moveTo(cx, cy + s*0.7);
+    ctx.bezierCurveTo(cx+s*1.2, cy, cx+s*0.8, cy-s*0.9, cx, cy-s*0.3);
+    ctx.bezierCurveTo(cx-s*0.8, cy-s*0.9, cx-s*1.2, cy, cx, cy+s*0.7);
+  } else if (shape === 'star') {
+    for (let i=0; i<10; i++) {
+      const ang = (Math.PI/5)*i - Math.PI/2;
+      const rad = i%2===0 ? r : r*0.45;
+      const x = cx + Math.cos(ang)*rad;
+      const yy = cy + Math.sin(ang)*rad;
+      if (i===0) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
+    }
+    ctx.closePath();
+  }
+  ctx.fill();
+}
+
+// ============== 초기화 ==============
+renderRefTable();
+setDicePips(1);
+</script>
+<script src="/assets/sim-ui.js"></script>
+<script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
+</body>
+</html>
