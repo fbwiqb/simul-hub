@@ -79,6 +79,34 @@
             font-weight: 700;
         }
         body.dark-mode .header h1 { color: #7b8ed6; }
+        .mode-nav {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .mode-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 11px;
+            border-radius: var(--cnsa-radius-pill, 999px);
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.18s, background 0.18s;
+        }
+        .mode-pill:hover { background: rgba(127,127,127,0.14); transform: translateY(-1px); }
+        .mode-pill.on { background: var(--primary); color: #fff; border-color: transparent; cursor: default; }
+        .mode-pill.battle { background: linear-gradient(135deg,#e74c3c,#8e44ad); color: #fff; border-color: transparent; }
+        @media (max-width: 640px) {
+            .mode-pill { font-size: 10px; padding: 5px 9px; }
+        }
         .dark-toggle {
             background: none;
             border: 2px solid var(--primary);
@@ -522,6 +550,12 @@
     <div class="container">
         <div class="header">
             <h1>원소 스펙트럼 퀴즈</h1>
+            <nav class="mode-nav" aria-label="스펙트럼 모드 선택">
+                <span class="mode-pill on" aria-current="page">🔬 혼자 풀기</span>
+                <a class="mode-pill cnsa-focusable" href="play.html">🙋 퀴즈 참여</a>
+                <a class="mode-pill cnsa-focusable" href="quiz.html">📡 퀴즈 출제</a>
+                <a class="mode-pill battle cnsa-focusable" href="battle.html">⚔️ 배틀</a>
+            </nav>
             <button class="dark-toggle cnsa-focusable" id="darkToggle" title="화면 밝기 전환" aria-label="화면 밝기 전환" aria-pressed="false">☀️</button>
         </div>
         <div class="ref-spectrum">
@@ -577,7 +611,6 @@
         <div class="copyright">ⓒ 2025 충남삼성고등학교 신도경T<br><a href="mailto:pantarei01@cnsa.hs.kr">pantarei01@cnsa.hs.kr</a></div>
         <button class="footer-btn cnsa-focusable" id="TutorialBtn">사용법</button>
         <button class="footer-btn cnsa-focusable" id="DevLogBtn">개발자 로그</button>
-        <button class="footer-btn cnsa-focusable" onclick="location.href='battle.html'" aria-label="스펙트럼 배틀로 이동" style="background:linear-gradient(135deg,#e74c3c,#8e44ad);color:#fff;border-color:rgba(255,255,255,0.25)">⚔️ 배틀</button>
     </div>
 
     <div class="modal" id="tutorialModal" role="dialog" aria-modal="true" aria-labelledby="tutorialModalTitle">
