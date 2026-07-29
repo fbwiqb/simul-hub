@@ -23,8 +23,7 @@
 
 ```
 과학-시뮬레이션/
-├── index.html          # Hub page - simulation catalog (password-protected)
-├── middleware.js        # Password auth for hub only (POST form, cookie-based)
+├── index.html          # Hub page - simulation catalog (public)
 ├── vercel.json          # Static config
 ├── .gitignore
 │
@@ -47,11 +46,9 @@
 
 ## Auth
 
-- Hub page (`/`) only: password `9544` via POST form (see `middleware.js`)
-- Individual simulations (`/spectrum/`, etc.): public, no auth
-- Cookie `hub_auth=1` (24-hour expiry)
-- Students receive direct simulation URLs, cannot browse hub
-- Middleware matcher: `['/', '/index.html']` — only the hub is gated
+- No auth anywhere. The hub (`/`) and every simulation are fully public.
+- The former `middleware.js` password gate (`9544`, cookie `hub_auth=1`) was removed 2026-07-29.
+- Only remaining gate: `spectrum/` teacher mode (`battle.html`, `quiz.html`) — client-side SHA-256 `TEACHER_HASH` compare, unrelated to the hub.
 
 ## Simulations by Subject
 
