@@ -596,8 +596,7 @@ select:focus { border-color: var(--accent); }
     <h1>스펙트럼 퀴즈</h1>
     <p class="subtitle">교사 대시보드</p>
     <div class="input-group">
-      <input type="password" id="pwInput" placeholder="비밀번호 입력">
-      <button class="btn btn-accent" id="loginBtn">로그인</button>
+      <button class="btn btn-accent" id="loginBtn">세션 시작</button>
     </div>
     <div class="error-msg" id="loginError"></div>
   </div>
@@ -762,8 +761,6 @@ firebase.initializeApp({
 });
 var db = firebase.firestore();
 
-var TEACHER_HASH = 'b9270ef103a6a5d4d21a75330111fd651df4f3b75b81f81dd580820e4ee9aad0';
-
 var sessionCode = null;
 var currentQuestionNumber = 0;
 var currentQuestion = null;
@@ -775,29 +772,13 @@ var playersData = {};
 var playerUnsub = null;
 var sessionUnsub = null;
 
-async function hashPw(pw) {
-  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
-  return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-}
-
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
   document.getElementById(id).classList.add('active');
 }
 
 document.getElementById('loginBtn').addEventListener('click', async function() {
-  var pw = document.getElementById('pwInput').value;
-  if (!pw) return;
-  var h = await hashPw(pw);
-  if (h === TEACHER_HASH) {
-    await startSession();
-  } else {
-    document.getElementById('loginError').textContent = '비밀번호가 올바르지 않습니다';
-  }
-});
-
-document.getElementById('pwInput').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') document.getElementById('loginBtn').click();
+  await startSession();
 });
 
 async function createSession() {
@@ -1232,7 +1213,6 @@ document.getElementById('endSessionBtn').addEventListener('click', async functio
   if (playerUnsub) playerUnsub();
   if (sessionUnsub) sessionUnsub();
   showScreen('loginScreen');
-  document.getElementById('pwInput').value = '';
   document.getElementById('loginError').textContent = '';
 });
 

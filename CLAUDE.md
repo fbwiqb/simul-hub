@@ -46,9 +46,11 @@
 
 ## Auth
 
-- No auth anywhere. The hub (`/`) and every simulation are fully public.
-- The former `middleware.js` password gate (`9544`, cookie `hub_auth=1`) was removed 2026-07-29.
-- Only remaining gate: `spectrum/` teacher mode (`battle.html`, `quiz.html`) — client-side SHA-256 `TEACHER_HASH` compare, unrelated to the hub.
+- No auth anywhere, no passwords anywhere. Removed 2026-07-29:
+  - hub gate — `middleware.js` (`9544`, cookie `hub_auth=1`), file deleted
+  - `spectrum/battle.html` teacher gate — `TEACHER_HASH` + screenPassword screen; 교사 button now calls `enterTeacher()` directly
+  - `spectrum/quiz.html` teacher gate — `TEACHER_HASH` + `hashPw`; login screen is now a 세션 시작 button
+- Anyone can host a quiz/battle session. Room codes are the only thing separating classes.
 
 ## Simulations by Subject
 

@@ -217,19 +217,7 @@ h2{font-size:1.3em;color:var(--accent);margin-bottom:12px;text-align:center;}
     <h1>스펙트럼 배틀</h1>
     <p class="subtitle">원소 스펙트럼 대전 게임</p>
     <div class="flex-col gap-12" style="width:100%;max-width:320px;">
-      <button class="btn btn-accent btn-large w-full" onclick="showPasswordPrompt()">교사</button>
-    </div>
-  </div>
-</div>
-
-<div class="screen" id="screenPassword">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
-    <h2>교사 인증</h2>
-    <input type="password" class="input-field pwd-input" id="pwdInput" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')verifyPassword()">
-    <div id="pwdError" style="color:var(--wrong);font-size:0.85em;display:none;">비밀번호가 올바르지 않습니다.</div>
-    <div class="flex-row gap-8">
-      <button class="btn btn-outline" onclick="showScreen('screenRole')">취소</button>
-      <button class="btn btn-accent" onclick="verifyPassword()">확인</button>
+      <button class="btn btn-accent btn-large w-full" onclick="enterTeacher()">교사</button>
     </div>
   </div>
 </div>
@@ -358,8 +346,6 @@ firebase.initializeApp({
 });
 var db = firebase.firestore();
 
-var TEACHER_HASH = 'b9270ef103a6a5d4d21a75330111fd651df4f3b75b81f81dd580820e4ee9aad0';
-
 var state = {
   role: null,
   roomCode: null,
@@ -398,29 +384,9 @@ function showScreen(id) {
   }
 }
 
-async function sha256(message) {
-  var msgBuffer = new TextEncoder().encode(message);
-  var hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-  var hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-}
-
-function showPasswordPrompt() {
-  showScreen('screenPassword');
-  document.getElementById('pwdInput').value = '';
-  document.getElementById('pwdError').style.display = 'none';
-  setTimeout(function() { document.getElementById('pwdInput').focus(); }, 100);
-}
-
-async function verifyPassword() {
-  var pwd = document.getElementById('pwdInput').value;
-  var hash = await sha256(pwd);
-  if (hash === TEACHER_HASH) {
-    state.role = 'teacher';
-    createRoom();
-  } else {
-    document.getElementById('pwdError').style.display = 'block';
-  }
+function enterTeacher() {
+  state.role = 'teacher';
+  createRoom();
 }
 
 function selectHP(btn) {
