@@ -1834,6 +1834,11 @@
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+
+        const eagleShadow = document.createElement('canvas');
+        eagleShadow.width = 160;
+        eagleShadow.height = 160;
+        const esCtx = eagleShadow.getContext('2d');
         
         // 시나리오별 레이블
         const scenarioLabels = {
@@ -1863,7 +1868,7 @@
                 this.angle = Math.random() * Math.PI * 2;
                 this.alive = true;
                 this.targetAngle = this.angle;
-                this.turnSpeed = 0.05;
+                this.turnSpeed = 0.045;
                 this.wobble = Math.random() * Math.PI * 2;
                 this.setupTraits();
             }
@@ -1896,11 +1901,12 @@
             update() {
                 if (!this.alive || !isRunning) return;
                 
-                if (Math.random() < 0.02) {
+                if (Math.random() < 0.01) {
                     this.targetAngle = Math.random() * Math.PI * 2;
                 }
-                
-                const angleDiff = this.targetAngle - this.angle;
+
+                let angleDiff = this.targetAngle - this.angle;
+                angleDiff = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
                 this.angle += angleDiff * this.turnSpeed;
                 
                 const actualSpeed = this.speed * simulationSpeed;
@@ -1918,7 +1924,7 @@
                     this.y = Math.max(this.size, Math.min(canvas.height - this.size, this.y));
                 }
 
-                this.wobble += 0.16 * simulationSpeed;
+                this.wobble += 0.09 * simulationSpeed;
             }
             
             draw() {
@@ -2163,17 +2169,21 @@
             draw() {
                 const flap = Math.sin(this.wingPhase) * 4;
 
-                // 부드러운 그림자 (단일 패스 = 겹침 균일, 강한 블러)
+                // 부드러운 그림자 (오프스크린 불투명 실루엣 합성 = 구멍/겹침 없음)
+                esCtx.clearRect(0, 0, 160, 160);
+                esCtx.save();
+                esCtx.translate(80, 80);
+                esCtx.rotate(this.angle);
+                esCtx.translate(9, 13);
+                esCtx.scale(1.2, 1.2);
+                esCtx.fillStyle = '#000';
+                this._fill(esCtx, flap);
+                esCtx.restore();
+
                 ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.angle);
-                ctx.translate(9, 13);
-                ctx.scale(1.2, 1.2);
-                ctx.filter = 'blur(7px)';
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
-                ctx.beginPath();
-                this._trace(ctx, flap);
-                ctx.fill();
+                ctx.globalAlpha = 0.2;
+                ctx.filter = 'blur(6px)';
+                ctx.drawImage(eagleShadow, this.x - 80, this.y - 80);
                 ctx.restore();
 
                 // 독수리 본체 (단일 패스)
