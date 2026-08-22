@@ -2132,6 +2132,34 @@
                 ctx.closePath();
             }
 
+            _fill(ctx, flap) {
+                ctx.beginPath(); ctx.ellipse(0, 0, 8, 12, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(0, -10, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(-5, -5);
+                ctx.quadraticCurveTo(-20, -8 + flap, -30, -5 + flap);
+                ctx.lineTo(-32, -2 + flap); ctx.lineTo(-33, 1 + flap); ctx.lineTo(-32, 4 + flap);
+                ctx.lineTo(-30, 6 + flap); ctx.lineTo(-27, 7 + flap);
+                ctx.quadraticCurveTo(-20, 6, -15, 8);
+                ctx.quadraticCurveTo(-10, 10, -5, 8);
+                ctx.closePath(); ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(5, -5);
+                ctx.quadraticCurveTo(20, -8 + flap, 30, -5 + flap);
+                ctx.lineTo(32, -2 + flap); ctx.lineTo(33, 1 + flap); ctx.lineTo(32, 4 + flap);
+                ctx.lineTo(30, 6 + flap); ctx.lineTo(27, 7 + flap);
+                ctx.quadraticCurveTo(20, 6, 15, 8);
+                ctx.quadraticCurveTo(10, 10, 5, 8);
+                ctx.closePath(); ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(-4, 10);
+                ctx.quadraticCurveTo(-3, 15, -5, 18);
+                ctx.lineTo(-3, 19); ctx.lineTo(-1, 20); ctx.lineTo(0, 20); ctx.lineTo(1, 20);
+                ctx.lineTo(3, 19); ctx.lineTo(5, 18);
+                ctx.quadraticCurveTo(3, 15, 4, 10);
+                ctx.closePath(); ctx.fill();
+            }
+
             draw() {
                 const flap = Math.sin(this.wingPhase) * 4;
 
@@ -2154,9 +2182,40 @@
                 ctx.rotate(this.angle);
                 ctx.scale(1.2, 1.2);
                 ctx.fillStyle = 'rgba(30, 22, 16, 0.94)';
+                this._fill(ctx, flap);
+
+                // 디테일: 날개 깃선 (밝은 갈색)
+                ctx.strokeStyle = 'rgba(120, 92, 60, 0.9)';
+                ctx.lineWidth = 1;
+                ctx.lineCap = 'round';
                 ctx.beginPath();
-                this._trace(ctx, flap);
+                ctx.moveTo(-6, -2); ctx.quadraticCurveTo(-16, -3 + flap * 0.6, -26, -3 + flap);
+                ctx.moveTo(-6, 1);  ctx.quadraticCurveTo(-15, 1, -23, 2);
+                ctx.moveTo(6, -2);  ctx.quadraticCurveTo(16, -3 + flap * 0.6, 26, -3 + flap);
+                ctx.moveTo(6, 1);   ctx.quadraticCurveTo(15, 1, 23, 2);
+                ctx.stroke();
+
+                // 몸통 하이라이트 (등줄기)
+                ctx.fillStyle = 'rgba(90, 68, 44, 0.85)';
+                ctx.beginPath();
+                ctx.ellipse(0, -1, 3, 9, 0, 0, Math.PI * 2);
                 ctx.fill();
+
+                // 머리
+                ctx.fillStyle = 'rgba(52, 40, 28, 0.95)';
+                ctx.beginPath();
+                ctx.arc(0, -10, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 부리
+                ctx.fillStyle = '#d99a2b';
+                ctx.beginPath();
+                ctx.moveTo(-2, -13.5);
+                ctx.lineTo(0, -18);
+                ctx.lineTo(2, -13.5);
+                ctx.closePath();
+                ctx.fill();
+
                 ctx.restore();
             }
         }
@@ -2492,6 +2551,26 @@ window.onclick = function(event) {
             if (currentBackground === 'grassland') {
                 offCtx.fillStyle = '#66a83f';
                 offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
+
+                // 점 텍스처 (개활지와 동일 방식, 초록 톤)
+                for (let i = 0; i < 90; i++) {
+                    const x = Math.random() * offCanvas.width;
+                    const y = Math.random() * offCanvas.height;
+                    const size = Math.random() * 3 + 1;
+                    offCtx.fillStyle = `rgba(60, 130, 45, ${Math.random() * 0.4 + 0.2})`;
+                    offCtx.beginPath();
+                    offCtx.arc(x, y, size, 0, Math.PI * 2);
+                    offCtx.fill();
+                }
+
+                offCtx.fillStyle = 'rgba(140, 200, 90, 0.35)';
+                for (let i = 0; i < 34; i++) {
+                    const x = Math.random() * offCanvas.width;
+                    const y = Math.random() * offCanvas.height;
+                    offCtx.beginPath();
+                    offCtx.ellipse(x, y, Math.random() * 8 + 3, Math.random() * 5 + 2, Math.random() * Math.PI, 0, Math.PI * 2);
+                    offCtx.fill();
+                }
             } else {
                 offCtx.fillStyle = '#8B4513';
                 offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
