@@ -499,14 +499,6 @@
             animation: screenFade 0.45s var(--ease-out) both;
         }
 
-        @keyframes valuePop {
-            0% { transform: scale(1); }
-            40% { transform: scale(1.06); }
-            100% { transform: scale(1); }
-        }
-
-        .stat-hero-value.pop { animation: valuePop 0.4s var(--ease-out); }
-
         @keyframes screenFade {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -2672,12 +2664,7 @@ window.onclick = function(event) {
                     avgValue = aliveSnails.reduce((sum, s) => sum + s.size, 0) / aliveSnails.length;
                     display = avgValue.toFixed(1) + ' mm';
                 }
-                if (avgEl.textContent !== display) {
-                    avgEl.textContent = display;
-                    avgEl.classList.remove('pop');
-                    void avgEl.offsetWidth;
-                    avgEl.classList.add('pop');
-                }
+                avgEl.textContent = display;
 
                 if (baselineAvg === null) baselineAvg = avgValue;
                 const delta = avgValue - baselineAvg;
