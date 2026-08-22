@@ -664,6 +664,47 @@
             transition: color 0.3s var(--ease-out);
         }
 
+        .hexsw {
+            display: inline-block;
+            width: 0.72em;
+            height: 0.72em;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: -0.06em;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+        }
+
+        .spectrum { margin-top: var(--s3); }
+
+        .spectrum-bar {
+            position: relative;
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, rgb(139, 69, 19), rgb(76, 175, 80));
+            border: 1px solid var(--hairline);
+        }
+
+        .spectrum-marker {
+            position: absolute;
+            top: -3px;
+            left: 50%;
+            width: 4px;
+            height: 18px;
+            border-radius: 2px;
+            background: #fff;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+            transform: translateX(-50%);
+            transition: left 0.3s var(--ease-out);
+        }
+
+        .spectrum-ends {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.625rem;
+            color: var(--cnsa-text-dimmer);
+            margin-top: 4px;
+        }
+
         .stat-hero-sub {
             display: flex;
             align-items: center;
@@ -1869,6 +1910,10 @@
                     </div>
                     <div class="stat-hero-value" id="avgValue">0</div>
                     <div class="stat-hero-sub"><svg class="ico" aria-hidden="true"><use href="#i-branch"/></svg><span id="generation">0</span>세대 진행</div>
+                    <div class="spectrum" id="colorSpectrum" style="display:none">
+                        <div class="spectrum-bar"><span class="spectrum-marker" id="spectrumMarker"></span></div>
+                        <div class="spectrum-ends"><span>토양색</span><span>초록색</span></div>
+                    </div>
                 </div>
 
                 <div class="stat-grid">
@@ -1943,24 +1988,37 @@
         let baselineAvg = null;
         let roundData = [];
 
+        function colorHexAt(cv) {
+            const br = { r: 139, g: 69, b: 19 }, gr = { r: 76, g: 175, b: 80 };
+            const r = Math.round(br.r + (gr.r - br.r) * cv);
+            const g = Math.round(br.g + (gr.g - br.g) * cv);
+            const b = Math.round(br.b + (gr.b - br.b) * cv);
+            return '#' + [r, g, b].map(function (v) { return v.toString(16).padStart(2, '0'); }).join('').toUpperCase();
+        }
+
         function snapshotCounts() {
             const alive = snails.filter(s => s.alive);
             const c = [0, 0, 0, 0, 0];
             alive.forEach(s => { c[s.level - 1]++; });
             const total = alive.length;
-            let avg = 0;
+            let avg = 0, hex = '';
             if (total > 0) {
                 if (currentScenario === 'speed') avg = alive.reduce((a, s) => a + s.speed, 0) / total;
-                else if (currentScenario === 'color') avg = alive.reduce((a, s) => a + s.level, 0) / total;
-                else avg = alive.reduce((a, s) => a + s.size, 0) / total;
+                else if (currentScenario === 'color') {
+                    avg = alive.reduce((a, s) => a + s.level, 0) / total;
+                    const cv = alive.reduce((a, s) => a + s.colorValue, 0) / total;
+                    hex = colorHexAt(cv);
+                } else avg = alive.reduce((a, s) => a + s.size, 0) / total;
             }
-            return { c: c, total: total, avg: Math.round(avg * 100) / 100 };
+            return { c: c, total: total, avg: Math.round(avg * 100) / 100, hex: hex };
         }
         
         let isRecording = false;
         let recordingData = [];
         let studentName = '';
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbyAGQ79tmQKZhJznVEWbirjFFydAK9-0__MR7IkVpMAwzttQjVCVBeAOxXU0nmWasfonQ/exec';
+        // 팩 1~15 구글 드라이브 링크 (나중에 채우기)
+        const PACK_DRIVE_URLS = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', ''];
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -2997,12 +3055,23 @@ window.onclick = function(event) {
                     display = avgValue.toFixed(2) + ' m/s';
                 } else if (currentScenario === 'color') {
                     avgValue = aliveSnails.reduce((sum, s) => sum + s.level, 0) / aliveSnails.length;
-                    display = avgValue.toFixed(1) + ' 레벨';
+                    const cv = aliveSnails.reduce((sum, s) => sum + s.colorValue, 0) / aliveSnails.length;
+                    const hex = colorHexAt(cv);
+                    display = '<span class="hexsw" style="background:' + hex + '"></span>' + hex;
+                    const sp = document.getElementById('colorSpectrum');
+                    const mk = document.getElementById('spectrumMarker');
+                    if (sp) sp.style.display = 'block';
+                    if (mk) mk.style.left = (cv * 100) + '%';
                 } else if (currentScenario === 'size') {
                     avgValue = aliveSnails.reduce((sum, s) => sum + s.size, 0) / aliveSnails.length;
                     display = avgValue.toFixed(1) + ' mm';
                 }
-                avgEl.textContent = display;
+                if (currentScenario !== 'color') {
+                    const sp = document.getElementById('colorSpectrum');
+                    if (sp) sp.style.display = 'none';
+                }
+                if (currentScenario === 'color') avgEl.innerHTML = display;
+                else avgEl.textContent = display;
 
                 if (baselineAvg === null) baselineAvg = avgValue;
                 const delta = avgValue - baselineAvg;
@@ -3327,7 +3396,7 @@ window.onclick = function(event) {
 
             const inp = function (v) { return '<input class="cin" value="' + (v === '' || v === undefined || v === null ? '' : v) + '">'; };
             const g = function (r, k, i) { const rd = roundData[r - 1]; if (!rd || !rd[k]) return ''; return i === undefined ? rd[k].total : rd[k].c[i]; };
-            const ga = function (r, k) { const rd = roundData[r - 1]; if (!rd || !rd[k]) return ''; return rd[k].avg; };
+            const ga = function (r, k) { const rd = roundData[r - 1]; if (!rd || !rd[k]) return ''; return cur === 'color' ? (rd[k].hex || '') : rd[k].avg; };
 
             let head = '<th class="y hd">형질</th>';
             for (let r = 1; r <= ROUNDS; r++) head += '<th class="y">' + r + '회차<br>시작</th><th class="y">' + r + '회차<br>끝</th>';
@@ -3388,7 +3457,8 @@ window.onclick = function(event) {
                 + '.q{margin:14px 0}.qt{font-size:13px;line-height:1.6;margin-bottom:6px}.ans{width:100%;height:120px;border:1px solid #999;border-radius:6px;padding:8px;font-family:inherit;font-size:13px;resize:vertical}'
                 + '.bar{position:sticky;bottom:0;display:flex;gap:10px;justify-content:center;padding:14px;background:#f3f4f6}'
                 + '.bar button{padding:10px 20px;font-size:14px;font-weight:600;border-radius:8px;border:none;cursor:pointer}'
-                + '.bar .pdf{background:#2563eb;color:#fff}.bar .close{background:#e5e7eb;color:#333}'
+                + '.bar .pdf{background:#2563eb;color:#fff}.bar .upload{background:#16a34a;color:#fff}.bar .close{background:#e5e7eb;color:#333}'
+                + '.umodal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}.umodal.open{display:flex}.umodal-box{background:#fff;border-radius:12px;padding:20px;width:min(92vw,440px);box-shadow:0 12px 44px rgba(0,0,0,.3)}.umodal-h{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:15px;margin-bottom:14px}.ux{border:none;background:none;font-size:22px;cursor:pointer;color:#888;line-height:1}.packs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.packs button{padding:11px 0;border:1px solid #d0d0d0;border-radius:8px;background:#f7f7f7;cursor:pointer;font-size:13px;font-weight:600}.packs button:hover{background:#eef4ff;border-color:#2563eb;color:#2563eb}.uhint{font-size:12px;color:#666;margin-top:14px;line-height:1.6}'
                 + '@media print{body{background:#fff;padding:0}.sheet{box-shadow:none;max-width:none;padding:12mm}.bar{display:none}.cin:focus{outline:none;background:transparent}@page{size:A4;margin:10mm}}';
 
             const chk = function (b) { return b ? '☑' : '☐'; };
@@ -3410,7 +3480,9 @@ window.onclick = function(event) {
                 + '<div class="scroll"><table class="grid"><thead><tr>' + head + '</tr></thead><tbody>' + body + '</tbody></table></div>'
                 + '<div class="graph"><h4>평균 형질값 변화 추이</h4>' + graph + '</div>'
                 + '<div class="step">Step 3. 시뮬레이션 결과 분석하기</div>' + qHtml
-                + '</div><div class="bar"><button class="pdf" id="pdfBtn" onclick="savePdf()">PDF로 저장</button><button class="close" onclick="window.close()">닫기</button></div>'
+                + '</div><div class="bar"><button class="pdf" id="pdfBtn" onclick="savePdf()">PDF로 저장</button><button class="upload" onclick="openUpload()">업로드</button><button class="close" onclick="window.close()">닫기</button></div>'
+                + '<div class="umodal" id="uploadModal"><div class="umodal-box"><div class="umodal-h"><span>제출할 팩을 선택하세요</span><button class="ux" onclick="closeUpload()">×</button></div><div class="packs" id="packGrid"></div><p class="uhint">선택하면 해당 팩의 구글 드라이브가 새 창에서 열려요. 저장한 PDF를 업로드하세요.</p></div></div>'
+                + '<script>var PACK_URLS=' + JSON.stringify(PACK_DRIVE_URLS) + ';function openUpload(){var g=document.getElementById("packGrid");if(!g.childElementCount){for(var i=1;i<=15;i++){var btn=document.createElement("button");btn.textContent="팩 "+i;(function(n){btn.onclick=function(){goPack(n);};})(i);g.appendChild(btn);}}document.getElementById("uploadModal").classList.add("open");}function closeUpload(){document.getElementById("uploadModal").classList.remove("open");}function goPack(n){var url=PACK_URLS[n-1];if(!url){alert("팩 "+n+"의 구글 드라이브 링크가 아직 설정되지 않았습니다.");return;}window.open(url,"_blank");closeUpload();}<\/script>'
                 + '<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>'
                 + '<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>'
                 + '<script>async function savePdf(){var b=document.getElementById("pdfBtn");if(!window.html2canvas||!window.jspdf){window.print();return;}b.disabled=true;b.textContent="PDF 생성 중...";try{await (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve());var sheet=document.querySelector(".sheet");var kids=Array.prototype.slice.call(sheet.children);var blocks=[];kids.forEach(function(el){if(el.classList.contains("scroll")){blocks.push(el.querySelector("table"));}else if(!el.classList.contains("bar")){blocks.push(el);}});var JsPDF=window.jspdf.jsPDF;var pdf=new JsPDF("p","mm","a4");var pw=210,ph=297,m=10,iw=pw-m*2,pageH=ph-m*2;var y=m,first=true;for(var i=0;i<blocks.length;i++){var el=blocks[i];if(!el||el.offsetHeight===0)continue;var oc=function(d){d.querySelectorAll("input.cin").forEach(function(i){var s=d.createElement("span");s.textContent=i.value||"";s.style.cssText="display:block;text-align:center;font-size:12px;line-height:1.4";i.replaceWith(s);});d.querySelectorAll(".top input").forEach(function(i){var s=d.createElement("span");s.textContent=i.value||"";s.style.cssText="display:inline-block;width:90px;text-align:center;border-bottom:1px solid #999";i.replaceWith(s);});d.querySelectorAll("textarea").forEach(function(t){var v=t.value||"";var dv=d.createElement("div");dv.textContent=v;dv.style.cssText="white-space:pre-wrap;min-height:110px;border:1px solid #999;border-radius:6px;padding:8px;font-size:13px;text-align:left;line-height:1.6";t.replaceWith(dv);});};var canvas=await html2canvas(el,{scale:2,backgroundColor:"#ffffff",scrollX:0,scrollY:0,windowWidth:Math.max(document.documentElement.clientWidth,el.scrollWidth),onclone:oc});var h=canvas.height*iw/canvas.width;var img=canvas.toDataURL("image/jpeg",0.95);if(h<=pageH){if(!first&&y+h>m+pageH){pdf.addPage();y=m;}pdf.addImage(img,"JPEG",m,y,iw,h);y+=h+3;}else{if(!first){pdf.addPage();}var yy=m,hLeft=h;pdf.addImage(img,"JPEG",m,yy,iw,h);hLeft-=pageH;while(hLeft>0){pdf.addPage();yy=yy-pageH;pdf.addImage(img,"JPEG",m,yy,iw,h);hLeft-=pageH;}pdf.addPage();y=m;}first=false;}pdf.save("실험보고서_' + labels.title + '.pdf");}catch(e){window.print();}b.disabled=false;b.textContent="PDF로 저장";}<\/script>'
