@@ -2615,21 +2615,19 @@ window.onclick = function(event) {
             const aliveCount = snails.filter(s => s.alive).length;
             const halfPopulation = Math.floor(initialPopulation / 2);
             
-            // 자동 모드에서만 절반에서 정지
-            if (currentMode === 'auto' && aliveCount <= halfPopulation) {
-                // 자동 모드: 절반 이하가 되면 자동 정지
+            // 자동/수동 모두 절반 이하가 되면 정지하고 번식 유도
+            if (isRunning && aliveCount <= halfPopulation) {
                 isRunning = false;
                 setBtnLabel('startBtn', 'play', '시작');
                 document.getElementById('startBtn').className = 'btn-success';
                 document.getElementById('reproduceBtn').disabled = false;
-                
+
                 if (animationId) {
                     cancelAnimationFrame(animationId);
                 }
-                
+
                 showToast(`개체수가 절반(${halfPopulation}마리) 이하! 번식 버튼을 눌러주세요.`, 4000);
             }
-            // 수동 모드에서는 정지하지 않음
         }
         
         // 번식
