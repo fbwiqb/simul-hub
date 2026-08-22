@@ -3354,7 +3354,7 @@ window.onclick = function(event) {
             let initCells = '';
             for (let i = 0; i < 5; i++) initCells += '<td class="y">' + L[i] + '<span class="lv">(' + (i + 1) + '레벨)</span></td>';
             let initVals = '';
-            for (let i = 0; i < 5; i++) initVals += '<td>' + inp(initial.c[i]) + '</td>';
+            for (let i = 0; i < 5; i++) initVals += '<td rowspan="4" class="tv">' + inp(initial.c[i]) + '</td>';
 
             const Q = [
                 '시뮬레이션 결과, 형질에 따른 개체 수의 변화는 어떻게 나타났는가? 그 이유를 자연선택의 관점에서 설명해보자. (수동모드와 자동모드에서 결과가 달랐다면 그 이유도 설명해보자.)',
@@ -3380,7 +3380,7 @@ window.onclick = function(event) {
                 + '.cin{width:100%;min-width:34px;border:none;text-align:center;font-size:12px;background:transparent;padding:3px 0}'
                 + '.cin:focus{outline:2px solid #2563eb;background:#eef4ff}'
                 + '.scroll{overflow-x:auto}'
-                + '.settings{border-collapse:collapse;width:100%;font-size:12px;margin-bottom:18px}.settings td{border:1px solid #b9b9b9;padding:6px 8px;text-align:center}.settings td.hd{background:#ffe14d;font-weight:700}.settings td.y{background:#fff2a8;font-weight:600}'
+                + '.settings{border-collapse:collapse;width:100%;font-size:12px;margin-bottom:18px}.settings td{border:1px solid #b9b9b9;padding:6px 8px;text-align:center}.settings td.hd{background:#ffe14d;font-weight:700}.settings td.y{background:#fff2a8;font-weight:600}.settings td.tv{vertical-align:top;padding-top:8px}'
                 + '.graph{border:1px solid #ddd;border-radius:8px;padding:12px;margin:8px 0 22px}.graph h4{margin:0 0 6px;font-size:13px}.nograph{color:#888;font-size:13px;padding:24px;text-align:center}'
                 + '.note{font-size:12px;color:#555;line-height:1.7;margin:6px 0 16px}.note b{color:#111}'
                 + '.q{margin:14px 0}.qt{font-size:13px;line-height:1.6;margin-bottom:6px}.ans{width:100%;height:120px;border:1px solid #999;border-radius:6px;padding:8px;font-family:inherit;font-size:13px;resize:vertical}'
@@ -3401,7 +3401,7 @@ window.onclick = function(event) {
                 + '<table class="settings"><tr><td class="hd" rowspan="2">선택한 시뮬레이션</td><td class="hd" colspan="5">초기 개체군 설정</td><td class="hd">시뮬레이션 모드</td></tr>'
                 + '<tr>' + initCells + '<td class="y">' + modeText + '</td></tr>'
                 + '<tr><td class="y" rowspan="4">' + labels.title + '</td>' + initVals + '<td>유전 ' + chk(heritable) + '</td></tr>'
-                + '<tr><td rowspan="3" colspan="5"></td><td>돌연변이 ' + chk(mutation) + '</td></tr>'
+                + '<tr><td>돌연변이 ' + chk(mutation) + '</td></tr>'
                 + '<tr><td>돌연변이율 ' + mrate + '%</td></tr>'
                 + '<tr><td>배경의 색 ' + bgText + '</td></tr></table>'
                 + '<div class="note">· <b>노란 칸</b>은 자동으로 채워졌고, <b>흰 칸</b>은 직접 입력·수정할 수 있어요.<br>· 각 회차 <b>시작 = 번식 직후</b>, <b>끝 = 절반을 사냥한 뒤</b> 형질별 개체 수예요. 평균값은 현재 상태 탭 기준으로 자동 기입돼요.</div>'
