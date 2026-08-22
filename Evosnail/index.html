@@ -3373,7 +3373,8 @@ window.onclick = function(event) {
                 + '.book{width:100%;border-collapse:collapse;margin-bottom:22px;font-size:13px}.book td,.book th{border:1px solid #bbb;padding:8px;text-align:center}.book th{background:#f7f7f7}'
                 + '.step{background:#fdf6d8;font-weight:700;padding:8px 12px;margin:22px 0 14px;border-left:4px solid #e8c400}'
                 + 'table.grid{border-collapse:collapse;width:100%;font-size:12px;margin-bottom:10px}'
-                + 'table.grid th,table.grid td{border:1px solid #b9b9b9;padding:4px;text-align:center}'
+                + 'table.grid th,table.grid td{border:1px solid #b9b9b9;padding:4px 6px;text-align:center;white-space:nowrap}'
+                + 'table.grid th{min-width:54px}table.grid td{min-width:48px}table.grid th:first-child{min-width:90px}'
                 + 'table.grid th.y,table.grid td.y{background:#fff2a8;font-weight:600}'
                 + '.lv{display:block;font-size:10px;color:#666;font-weight:400}'
                 + '.cin{width:100%;min-width:34px;border:none;text-align:center;font-size:12px;background:transparent;padding:3px 0}'
@@ -3400,14 +3401,17 @@ window.onclick = function(event) {
                 + '<table class="settings"><tr><td class="hd" rowspan="2">선택한 시뮬레이션</td><td class="hd" colspan="5">초기 개체군 설정</td><td class="hd">시뮬레이션 모드</td></tr>'
                 + '<tr>' + initCells + '<td class="y">' + modeText + '</td></tr>'
                 + '<tr><td class="y" rowspan="4">' + labels.title + '</td>' + initVals + '<td>유전 ' + chk(heritable) + '</td></tr>'
-                + '<tr><td class="y" colspan="5"></td><td>돌연변이 ' + chk(mutation) + '</td></tr>'
-                + '<tr><td class="y" colspan="5"></td><td>돌연변이율 ' + mrate + '%</td></tr>'
-                + '<tr><td class="y" colspan="5"></td><td>배경의 색 ' + bgText + '</td></tr></table>'
+                + '<tr><td class="y" rowspan="3" colspan="5"></td><td>돌연변이 ' + chk(mutation) + '</td></tr>'
+                + '<tr><td>돌연변이율 ' + mrate + '%</td></tr>'
+                + '<tr><td>배경의 색 ' + bgText + '</td></tr></table>'
                 + '<div class="note">· <b>노란 칸</b>은 자동으로 채워졌고, <b>흰 칸</b>은 직접 입력·수정할 수 있어요.<br>· 각 회차 <b>시작 = 번식 직후</b>, <b>끝 = 절반을 사냥한 뒤</b> 형질별 개체 수예요. 평균값은 현재 상태 탭 기준으로 자동 기입돼요.</div>'
                 + '<div class="scroll"><table class="grid"><thead><tr>' + head + '</tr></thead><tbody>' + body + '</tbody></table></div>'
                 + '<div class="graph"><h4>📈 평균 형질값 변화 추이</h4>' + graph + '</div>'
                 + '<div class="step">Step 3. 시뮬레이션 결과 분석하기</div>' + qHtml
-                + '</div><div class="bar"><button class="pdf" onclick="window.print()">PDF로 저장</button><button class="close" onclick="window.close()">닫기</button></div></body></html>';
+                + '</div><div class="bar"><button class="pdf" id="pdfBtn" onclick="savePdf()">PDF로 저장</button><button class="close" onclick="window.close()">닫기</button></div>'
+                + '<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>'
+                + '<script>function savePdf(){var b=document.getElementById("pdfBtn");var el=document.querySelector(".sheet");var opt={margin:8,filename:"실험보고서_' + labels.title + '.pdf",image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["css","legacy"]}};var r=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();b.disabled=true;b.textContent="PDF 생성 중...";r.then(function(){if(window.html2pdf){html2pdf().set(opt).from(el).save().then(function(){b.disabled=false;b.textContent="PDF로 저장";}).catch(function(){b.disabled=false;b.textContent="PDF로 저장";window.print();});}else{b.disabled=false;b.textContent="PDF로 저장";window.print();}});}<\/script>'
+                + '</body></html>';
 
             return doc;
         }
