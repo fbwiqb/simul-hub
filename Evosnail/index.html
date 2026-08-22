@@ -721,6 +721,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: var(--s3);
+            align-items: start;
         }
 
         .canvas-wrap {
@@ -862,33 +863,108 @@
             cursor: not-allowed;
         }
 
-        .checkbox-group {
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--s2);
+        }
+
+        .toggle-row {
             display: flex;
             align-items: center;
-            gap: var(--s4);
+            justify-content: space-between;
+            gap: var(--s3);
+            padding: 12px 14px;
+            background: var(--panel);
+            border: 1px solid var(--hairline);
+            border-radius: var(--cnsa-radius-sm);
+            cursor: pointer;
+            transition: border-color 0.2s var(--ease-out), background 0.2s var(--ease-out);
         }
 
-        .checkbox-group input[type="checkbox"] {
-            width: 17px;
-            height: 17px;
-            cursor: pointer;
-            accent-color: var(--cnsa-accent-1);
+        .toggle-row:has(input:checked) {
+            border-color: rgba(0, 210, 255, 0.28);
+            background: var(--tint);
         }
 
-        .checkbox-group label {
-            cursor: pointer;
-            color: var(--cnsa-text-dim);
+        .toggle-title {
             font-size: 0.875rem;
-            font-weight: 500;
-            margin-right: var(--s2);
+            font-weight: 600;
+            color: var(--cnsa-text);
+        }
+
+        .switch {
+            position: relative;
+            flex: none;
+            width: 40px;
+            height: 22px;
+            cursor: pointer;
+        }
+
+        .switch input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .switch-track {
+            position: absolute;
+            inset: 0;
+            border-radius: var(--cnsa-radius-pill);
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid var(--hairline);
+            transition: background 0.22s var(--ease-out), border-color 0.22s var(--ease-out);
+        }
+
+        .switch-track::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #e6edf5;
+            transition: transform 0.22s var(--ease-out), background 0.22s var(--ease-out);
+        }
+
+        .switch input:checked + .switch-track {
+            background: var(--cnsa-accent-2);
+            border-color: transparent;
+        }
+
+        .switch input:checked + .switch-track::after {
+            transform: translateX(18px);
+            background: #fff;
+        }
+
+        .switch input:focus-visible + .switch-track {
+            outline: 3px solid var(--cnsa-accent-1);
+            outline-offset: 2px;
+        }
+
+        .slider-group {
+            padding: 11px 13px;
+            background: var(--panel);
+            border: 1px solid var(--hairline);
+            border-radius: var(--cnsa-radius-sm);
+        }
+
+        .slider-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: var(--s2);
+            margin-bottom: var(--s2);
         }
 
         .slider-group label {
-            display: block;
-            margin-bottom: var(--s2);
             color: var(--cnsa-text-dim);
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .slider-container {
@@ -899,11 +975,11 @@
 
         .slider-container input[type="range"] {
             flex: 1;
-            height: 4px;
+            height: 6px;
             -webkit-appearance: none;
             appearance: none;
-            background: rgba(255, 255, 255, 0.16);
-            border-radius: 2px;
+            background: linear-gradient(90deg, var(--cnsa-accent-1) 0 var(--fill, 50%), rgba(255, 255, 255, 0.14) var(--fill, 50%) 100%);
+            border-radius: 3px;
             outline: none;
         }
 
@@ -912,18 +988,30 @@
             appearance: none;
             width: 16px;
             height: 16px;
-            background: var(--cnsa-accent-1);
+            background: #fff;
+            border: 3px solid var(--cnsa-accent-1);
             border-radius: 50%;
             cursor: pointer;
+            transition: transform 0.12s var(--ease-out);
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb:active {
+            transform: scale(1.15);
         }
 
         .slider-container input[type="range"]::-moz-range-thumb {
             width: 16px;
             height: 16px;
-            background: var(--cnsa-accent-1);
+            background: #fff;
+            border: 3px solid var(--cnsa-accent-1);
             border-radius: 50%;
             cursor: pointer;
-            border: none;
+        }
+
+        .slider-container input[type="range"]::-moz-range-progress {
+            background: var(--cnsa-accent-1);
+            height: 6px;
+            border-radius: 3px;
         }
 
         .slider-value {
@@ -1582,29 +1670,43 @@
                 </div>
 
                 <div class="slider-group" id="speedControl" style="display: none;">
-                    <label for="simSpeed">시뮬레이션 속도</label>
+                    <div class="slider-head">
+                        <label for="simSpeed">시뮬레이션 속도</label>
+                        <span class="slider-value" id="simSpeedValue">1x</span>
+                    </div>
                     <div class="slider-container">
                         <input type="range" id="simSpeed" min="0.5" max="5" step="0.5" value="1">
-                        <span class="slider-value" id="simSpeedValue">1x</span>
                     </div>
                 </div>
             </div>
             
             <div class="control-section">
                 <h3><svg class="ico" aria-hidden="true"><use href="#i-branch"/></svg>진화 설정</h3>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="heritableCheck" checked>
-                    <label for="heritableCheck">유전</label>
-                    
-                    <input type="checkbox" id="mutationCheck" checked>
-                    <label for="mutationCheck">돌연변이</label>
+
+                <div class="toggle-grid">
+                    <label class="toggle-row">
+                        <span class="toggle-title">유전</span>
+                        <span class="switch">
+                            <input type="checkbox" id="heritableCheck" checked>
+                            <span class="switch-track" aria-hidden="true"></span>
+                        </span>
+                    </label>
+                    <label class="toggle-row">
+                        <span class="toggle-title">돌연변이</span>
+                        <span class="switch">
+                            <input type="checkbox" id="mutationCheck" checked>
+                            <span class="switch-track" aria-hidden="true"></span>
+                        </span>
+                    </label>
                 </div>
-                
-                <div class="slider-group">
-                    <label for="mutationRate">돌연변이율:</label>
+
+                <div class="slider-group" id="mutationRateGroup">
+                    <div class="slider-head">
+                        <label for="mutationRate">돌연변이율</label>
+                        <span class="slider-value" id="mutationRateValue">5%</span>
+                    </div>
                     <div class="slider-container">
                         <input type="range" id="mutationRate" min="0" max="20" value="5">
-                        <span class="slider-value" id="mutationRateValue">5%</span>
                     </div>
                 </div>
             </div>
@@ -2261,6 +2363,8 @@ window.onclick = function(event) {
             updateStats();
             initChart();
             updateChart();
+            paintAllRanges();
+            syncMutationRate();
             requestAnimationFrame(() => {
                 resizeCanvas();
             });
@@ -2317,6 +2421,8 @@ window.onclick = function(event) {
             // 슬라이더 초기화
             document.getElementById('mutationRate').value = 5;
             document.getElementById('mutationRateValue').textContent = '5%';
+            paintAllRanges();
+            syncMutationRate();
             document.getElementById('simSpeed').value = 1;
             document.getElementById('simSpeedValue').textContent = '1x';
             simulationSpeed = 1;
@@ -2818,6 +2924,32 @@ window.onclick = function(event) {
         for (let i = 1; i <= 5; i++) {
             document.getElementById(`level${i}Count`).addEventListener('input', updateSetupTotal);
         }
+
+        function paintRange(input) {
+            const min = parseFloat(input.min) || 0;
+            const max = parseFloat(input.max) || 100;
+            const pct = ((parseFloat(input.value) - min) / (max - min)) * 100;
+            input.style.setProperty('--fill', pct + '%');
+        }
+
+        function paintAllRanges() {
+            document.querySelectorAll('.slider-container input[type="range"]').forEach(paintRange);
+        }
+
+        document.querySelectorAll('.slider-container input[type="range"]').forEach(r => {
+            r.addEventListener('input', () => paintRange(r));
+        });
+
+        function syncMutationRate() {
+            const on = document.getElementById('mutationCheck').checked;
+            const grp = document.getElementById('mutationRateGroup');
+            grp.style.display = on ? '' : 'none';
+            if (on) paintRange(document.getElementById('mutationRate'));
+        }
+
+        document.getElementById('mutationCheck').addEventListener('change', syncMutationRate);
+        paintAllRanges();
+        syncMutationRate();
         
         let resizeTimer;
         function resizeCanvas() {
