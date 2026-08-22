@@ -2339,6 +2339,7 @@ function stopRecording() {
         scenario: currentScenario,
         mode: currentMode,
         background: currentBackground,
+        speed: simulationSpeed,
         data: recordingData.slice()
     };
     const reportBtn = document.getElementById('reportBtn');
@@ -2387,29 +2388,19 @@ function buildReportValues() {
     const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 
     const values = [];
-    values.push(['달팽이 진화 시뮬레이션 기록 보고서']);
+    values.push(['달팽이 진화 시뮬레이션 기록']);
     values.push([]);
     values.push(['이름', lastReport.studentName]);
-    values.push(['형질', labels.title]);
+    values.push(['형질(시나리오)', labels.title]);
     values.push(['모드', modeText]);
     values.push(['배경', bgText]);
+    values.push(['속도', lastReport.speed + 'x']);
     values.push(['작성일', dateStr]);
     values.push([]);
-    values.push(['■ 세대별 기록']);
     values.push(['세대', labels.levels[0], labels.levels[1], labels.levels[2], labels.levels[3], labels.levels[4], '총 개체수', '평균값', '돌연변이']);
     lastReport.data.forEach(function(r) {
         values.push([r.gen, r.lv1, r.lv2, r.lv3, r.lv4, r.lv5, r.total, r.avg, r.mutations]);
     });
-    values.push([]);
-    values.push(['■ 보고서 (아래 빈칸에 작성하세요)']);
-    values.push(['1. 평균 형질값이 세대에 따라 어떻게 변했나요?']);
-    values.push(['']);
-    values.push(['2. 왜 그렇게 변했나요? (자연선택으로 설명)']);
-    values.push(['']);
-    values.push(['3. 유전과 돌연변이는 어떤 역할을 했나요?']);
-    values.push(['']);
-    values.push(['4. 이 실험에서 새롭게 알게 된 점']);
-    values.push(['']);
     return values;
 }
 
