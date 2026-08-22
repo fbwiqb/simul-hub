@@ -1864,6 +1864,7 @@
                 this.alive = true;
                 this.targetAngle = this.angle;
                 this.turnSpeed = 0.05;
+                this.wobble = Math.random() * Math.PI * 2;
                 this.setupTraits();
             }
             
@@ -1916,60 +1917,76 @@
                     this.targetAngle = this.angle;
                     this.y = Math.max(this.size, Math.min(canvas.height - this.size, this.y));
                 }
+
+                this.wobble += 0.16 * simulationSpeed;
             }
             
             draw() {
                 if (!this.alive) return;
-                
+
+                const S = this.size;
+                const shellColor = this.getColor();
+                const w = Math.sin(this.wobble);
+
                 ctx.save();
                 ctx.translate(this.x, this.y);
+
+                // 접지 그림자 (블러, 회전 무관)
+                ctx.save();
+                ctx.filter = 'blur(3px)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.16)';
+                ctx.beginPath();
+                ctx.ellipse(S * 0.15, S * 0.35, S * 1.1, S * 0.7, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
                 ctx.rotate(this.angle);
-                
-                // 색상 가져오기
-                const shellColor = this.getColor();
-                
-                // 달팽이 껍질
+
+                // 몸체(발) - 기어가는 미세 펄스
                 ctx.fillStyle = shellColor;
                 ctx.beginPath();
-                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.ellipse(S * 0.8, 0, S * 0.6 * (1 + w * 0.06), S * 0.3, 0, 0, Math.PI * 2);
                 ctx.fill();
-                
+
+                // 더듬이 - 좌우 흔들림
+                ctx.strokeStyle = shellColor;
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                const tipY = S * 0.3 + w * 0.7;
+                ctx.beginPath();
+                ctx.moveTo(S * 1.2, -S * 0.1);
+                ctx.lineTo(S * 1.5, -tipY);
+                ctx.moveTo(S * 1.2, S * 0.1);
+                ctx.lineTo(S * 1.5, tipY);
+                ctx.stroke();
+
+                // 눈
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(S * 1.5, -tipY, 2, 0, Math.PI * 2);
+                ctx.arc(S * 1.5, tipY, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 껍질 (몸체 위)
+                ctx.fillStyle = shellColor;
+                ctx.beginPath();
+                ctx.arc(0, 0, S, 0, Math.PI * 2);
+                ctx.fill();
+
                 // 나선 무늬
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
                 ctx.lineWidth = 2;
+                ctx.lineJoin = 'round';
                 ctx.beginPath();
                 for (let i = 0; i < Math.PI * 4; i += 0.1) {
-                    const r = (this.size * 0.8) * (i / (Math.PI * 4));
+                    const r = (S * 0.8) * (i / (Math.PI * 4));
                     const x = Math.cos(i) * r;
                     const y = Math.sin(i) * r;
                     if (i === 0) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);
                 }
                 ctx.stroke();
-                
-                // 달팽이 몸체 (껍질과 같은 색상)
-                ctx.fillStyle = shellColor;
-                ctx.beginPath();
-                ctx.ellipse(this.size * 0.8, 0, this.size * 0.6, this.size * 0.3, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 더듬이 (몸체와 같은 색상)
-                ctx.strokeStyle = shellColor;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(this.size * 1.2, -this.size * 0.1);
-                ctx.lineTo(this.size * 1.5, -this.size * 0.3);
-                ctx.moveTo(this.size * 1.2, this.size * 0.1);
-                ctx.lineTo(this.size * 1.5, this.size * 0.3);
-                ctx.stroke();
-                
-                // 눈 (검은색 유지)
-                ctx.fillStyle = 'black';
-                ctx.beginPath();
-                ctx.arc(this.size * 1.5, -this.size * 0.3, 2, 0, Math.PI * 2);
-                ctx.arc(this.size * 1.5, this.size * 0.3, 2, 0, Math.PI * 2);
-                ctx.fill();
-                
+
                 ctx.restore();
             }
             
@@ -2069,19 +2086,16 @@
                 }
             }
             
-            _body(ctx, flap) {
+            _trace(ctx, flap) {
                 // 몸통
-                ctx.beginPath();
+                ctx.moveTo(8, 0);
                 ctx.ellipse(0, 0, 8, 12, 0, 0, Math.PI * 2);
-                ctx.fill();
 
                 // 머리
-                ctx.beginPath();
+                ctx.moveTo(5, -10);
                 ctx.arc(0, -10, 5, 0, Math.PI * 2);
-                ctx.fill();
 
                 // 왼쪽 날개
-                ctx.beginPath();
                 ctx.moveTo(-5, -5);
                 ctx.quadraticCurveTo(-20, -8 + flap, -30, -5 + flap);
                 ctx.lineTo(-32, -2 + flap);
@@ -2092,10 +2106,8 @@
                 ctx.quadraticCurveTo(-20, 6, -15, 8);
                 ctx.quadraticCurveTo(-10, 10, -5, 8);
                 ctx.closePath();
-                ctx.fill();
 
                 // 오른쪽 날개
-                ctx.beginPath();
                 ctx.moveTo(5, -5);
                 ctx.quadraticCurveTo(20, -8 + flap, 30, -5 + flap);
                 ctx.lineTo(32, -2 + flap);
@@ -2106,10 +2118,8 @@
                 ctx.quadraticCurveTo(20, 6, 15, 8);
                 ctx.quadraticCurveTo(10, 10, 5, 8);
                 ctx.closePath();
-                ctx.fill();
 
                 // 꼬리
-                ctx.beginPath();
                 ctx.moveTo(-4, 10);
                 ctx.quadraticCurveTo(-3, 15, -5, 18);
                 ctx.lineTo(-3, 19);
@@ -2120,30 +2130,33 @@
                 ctx.lineTo(5, 18);
                 ctx.quadraticCurveTo(3, 15, 4, 10);
                 ctx.closePath();
-                ctx.fill();
             }
 
             draw() {
                 const flap = Math.sin(this.wingPhase) * 4;
 
-                // 부드러운 그림자 (블러, 고도감)
+                // 부드러운 그림자 (단일 패스 = 겹침 균일, 강한 블러)
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle);
                 ctx.translate(9, 13);
                 ctx.scale(1.2, 1.2);
-                ctx.filter = 'blur(4px)';
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
-                this._body(ctx, flap);
+                ctx.filter = 'blur(7px)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+                ctx.beginPath();
+                this._trace(ctx, flap);
+                ctx.fill();
                 ctx.restore();
 
-                // 독수리 본체
+                // 독수리 본체 (단일 패스)
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle);
                 ctx.scale(1.2, 1.2);
-                ctx.fillStyle = 'rgba(30, 22, 16, 0.92)';
-                this._body(ctx, flap);
+                ctx.fillStyle = 'rgba(30, 22, 16, 0.94)';
+                ctx.beginPath();
+                this._trace(ctx, flap);
+                ctx.fill();
                 ctx.restore();
             }
         }
@@ -2479,28 +2492,6 @@ window.onclick = function(event) {
             if (currentBackground === 'grassland') {
                 offCtx.fillStyle = '#66a83f';
                 offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
-                
-                offCtx.strokeStyle = 'rgba(76, 175, 80, 0.6)';
-                offCtx.lineWidth = 2;
-                for (let i = 0; i < 150; i++) {
-                    const x = Math.random() * offCanvas.width;
-                    const y = Math.random() * offCanvas.height;
-                    
-                    offCtx.beginPath();
-                    const blades = Math.floor(Math.random() * 3) + 3;
-                    for (let j = 0; j < blades; j++) {
-                        const angle = (Math.PI / 4) * (j / blades - 0.5);
-                        const height = Math.random() * 15 + 10;
-                        offCtx.moveTo(x, y);
-                        offCtx.quadraticCurveTo(
-                            x + Math.sin(angle) * height/2, 
-                            y - height/2,
-                            x + Math.sin(angle) * height, 
-                            y - height
-                        );
-                    }
-                    offCtx.stroke();
-                }
             } else {
                 offCtx.fillStyle = '#8B4513';
                 offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
