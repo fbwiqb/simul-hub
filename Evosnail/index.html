@@ -7,667 +7,1003 @@
     <link rel="stylesheet" href="/assets/sim-ui.css">
     <title>달팽이 진화 시뮬레이션</title>
     <style>
+        :root {
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-soft: cubic-bezier(0.33, 0, 0.15, 1);
+            --s1: 4px;
+            --s2: 8px;
+            --s3: 12px;
+            --s4: 16px;
+            --s5: 24px;
+            --s6: 32px;
+            --s7: 48px;
+            --panel: rgba(255, 255, 255, 0.045);
+            --panel-2: rgba(255, 255, 255, 0.08);
+            --hairline: rgba(255, 255, 255, 0.09);
+            --tint: rgba(0, 210, 255, 0.12);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
-       body {
-    font-family: var(--cnsa-font);
-    background: var(--cnsa-bg);
-    background-attachment: fixed;
-    color: var(--cnsa-text);
-    min-height: 100vh;
-    padding: 10px;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-        
-        /* 초기 선택 화면 */
-        .selection-screen {
-            max-width: 1200px;
-            margin: 50px auto;
-            text-align: center;
-        }
-        
-        .selection-screen h1 {
-            color: var(--cnsa-text);
-            font-size: 3em;
-            margin-bottom: 20px;
-            text-shadow: none;
-            letter-spacing: -0.02em;
+
+        html {
+            background: #141a30;
         }
 
-        .selection-screen p {
-            color: var(--cnsa-text-dim);
-            font-size: 1.3em;
-            margin-bottom: 50px;
+        body {
+            font-family: var(--cnsa-font);
+            background: #141a30;
+            color: var(--cnsa-text);
+            min-height: 100vh;
+            margin: 0;
+            padding: var(--s5) var(--s4) var(--s6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            -webkit-font-smoothing: antialiased;
         }
-        
-        /* 홈 버튼 스타일 추가 */
+
+        .ico {
+            width: 1em;
+            height: 1em;
+            flex: none;
+            stroke: currentColor;
+            stroke-width: 1.75;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            overflow: visible;
+            vertical-align: -0.14em;
+        }
+
+        h1, h2, h3 {
+            letter-spacing: -0.02em;
+            line-height: 1.3;
+            font-weight: 700;
+        }
+
+        /* 초기 선택 화면 */
+        .selection-screen {
+            width: 100%;
+            max-width: 1080px;
+            margin: var(--s7) auto 0;
+            text-align: center;
+        }
+
+        .selection-screen h1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--s3);
+            color: var(--cnsa-text);
+            font-size: clamp(1.9rem, 4vw, 2.6rem);
+            margin-bottom: var(--s3);
+        }
+
+        .selection-screen h1 .ico {
+            width: 0.9em;
+            height: 0.9em;
+            color: var(--cnsa-accent-1);
+            stroke-width: 1.5;
+        }
+
+        .selection-screen > p {
+            color: var(--cnsa-text-dim);
+            font-size: 1.0625rem;
+            margin-bottom: var(--s6);
+        }
+
         .home-buttons {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 40px;
+            gap: var(--s2);
+            margin-bottom: var(--s7);
         }
-        
+
         .home-btn {
-            background: var(--cnsa-surface);
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: var(--panel);
             color: var(--cnsa-text-dim);
             border: 1px solid var(--cnsa-border);
-            padding: 12px 24px;
-            border-radius: var(--cnsa-radius-sm);
+            padding: 10px 16px;
+            border-radius: var(--cnsa-radius-pill);
             cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
+            font-size: 0.875rem;
+            font-weight: 600;
             font-family: var(--cnsa-font);
-            transition: all 0.3s var(--cnsa-ease);
+            transition: color 0.2s var(--cnsa-ease), background 0.2s var(--cnsa-ease), border-color 0.2s var(--cnsa-ease);
             box-shadow: none;
         }
 
         .home-btn:hover {
-            background: var(--cnsa-surface-strong);
+            background: var(--panel-2);
             color: #fff;
             border-color: var(--cnsa-border-strong);
-            transform: translateY(-3px);
-            box-shadow: var(--cnsa-shadow);
         }
 
-        .home-btn:active {
-            transform: translateY(-1px);
-        }
-        
         .scenario-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: var(--s4);
             margin: 0 auto;
-            max-width: 1000px;
+            max-width: 1080px;
         }
-        
+
         .scenario-card {
-            background: var(--cnsa-surface);
-            backdrop-filter: var(--cnsa-blur);
-            -webkit-backdrop-filter: var(--cnsa-blur);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--s3);
+            text-align: left;
+            background: var(--panel);
             border: 1px solid var(--cnsa-border);
             border-radius: var(--cnsa-radius);
-            padding: 40px 30px;
+            padding: var(--s5);
             cursor: pointer;
-            transition: all 0.4s var(--cnsa-ease);
-            box-shadow: var(--cnsa-shadow);
+            transition: transform 0.4s var(--ease-out), border-color 0.4s var(--ease-out), background 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+            animation: cardRise 0.6s var(--ease-out) both;
+        }
+
+        .scenario-card:nth-child(2) { animation-delay: 0.08s; }
+        .scenario-card:nth-child(3) { animation-delay: 0.16s; }
+
+        @keyframes cardRise {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .scenario-card:hover {
-            transform: translateY(-12px) scale(1.02);
-            box-shadow: var(--cnsa-shadow-lg);
-            background: var(--cnsa-surface-strong);
-            border-color: var(--cnsa-accent-1);
+            transform: translateY(-4px);
+            background: var(--panel-2);
+            border-color: rgba(0, 210, 255, 0.4);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
         }
 
+        .scenario-card .icon,
+        .scenario-card h2 {
+            transition: transform 0.4s var(--ease-out), color 0.3s var(--ease-out);
+        }
+
+        .scenario-card:hover .icon { transform: scale(1.08); }
+
         .scenario-card .icon {
-            font-size: 4em;
-            margin-bottom: 20px;
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            border-radius: var(--cnsa-radius-sm);
+            background: var(--tint);
+            border: 1px solid rgba(0, 210, 255, 0.22);
+            color: var(--cnsa-accent-1);
+            font-size: 22px;
         }
 
         .scenario-card h2 {
             color: var(--cnsa-text);
-            margin-bottom: 15px;
-            font-size: 1.8em;
+            font-size: 1.25rem;
         }
 
         .scenario-card p {
             color: var(--cnsa-text-dim);
-            font-size: 1em;
-            line-height: 1.6;
+            font-size: 0.9375rem;
+            line-height: 1.65;
         }
-        
+
         /* 팝업 모달 */
         .modal {
             display: none;
             position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            animation: fadeIn 0.3s;
+            z-index: 2147483000;
+            inset: 0;
+            background: rgba(6, 10, 22, 0.66);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: var(--s5) var(--s4);
+            overflow-y: auto;
+            animation: fadeIn 0.28s var(--ease-out);
         }
-        
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        
+
         .modal-content {
-            background: var(--cnsa-bg-2);
-            background-image: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0));
+            background: #16213e;
             color: var(--cnsa-text);
-            margin: 10% auto;
-            padding: 30px;
+            margin: 6vh auto;
+            padding: var(--s5);
             border-radius: var(--cnsa-radius);
-            border: 1px solid var(--cnsa-border);
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
+            border: 1px solid var(--cnsa-border-strong);
+            width: 100%;
+            max-width: 620px;
             box-shadow: var(--cnsa-shadow-lg);
-            animation: slideIn 0.4s var(--cnsa-ease);
+            animation: slideIn 0.42s var(--ease-out);
         }
-        
+
         @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from { transform: translateY(16px) scale(0.98); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
         }
-        
+
         .modal-header {
-            background: var(--cnsa-accent);
-            color: white;
-            padding: 20px;
-            margin: -30px -30px 20px -30px;
-            border-radius: var(--cnsa-radius) var(--cnsa-radius) 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-        
-        .modal-header h3 {
-            color: white;
-            margin: 0;
-            font-size: 1.8em;
-        }
-        
-        .modal-close {
-            background: none;
-            color: white;
-            border: none;
-            font-size: 30px;
-            cursor: pointer;
-            padding: 0;
-            width: 35px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s;
-            box-shadow: none;
-        }
-        
-        .modal-close:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: rotate(90deg);
-        }
-        
-        .modal-body {
-            max-height: 60vh;
-            overflow-y: auto;
-            padding: 10px;
-        }
-        
-        .log-entry {
-            margin-bottom: 25px;
-            padding: 20px;
-            background: var(--cnsa-surface);
-            border-radius: var(--cnsa-radius-sm);
-            border-left: 4px solid var(--cnsa-accent-1);
+            gap: var(--s3);
+            padding: 0 0 var(--s4);
+            margin: 0 0 var(--s4);
+            border-bottom: 1px solid var(--hairline);
         }
 
+        .modal-header h3 {
+            display: flex;
+            align-items: center;
+            gap: var(--s2);
+            color: var(--cnsa-text);
+            margin: 0;
+            font-size: 1.125rem;
+        }
+
+        .modal-header h3 .ico { color: var(--cnsa-accent-1); }
+
+        .modal-close {
+            display: grid;
+            place-items: center;
+            background: none;
+            color: var(--cnsa-text-dimmer);
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--cnsa-radius-sm);
+            transition: color 0.2s, background 0.2s;
+            box-shadow: none;
+            font-size: 18px;
+        }
+
+        .modal-close:hover {
+            background: var(--panel-2);
+            color: #fff;
+            transform: none;
+        }
+
+        .modal-body {
+            max-height: 62vh;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: var(--s4);
+            padding: var(--s4);
+            background: var(--panel);
+            border: 1px solid var(--hairline);
+            border-radius: var(--cnsa-radius-sm);
+        }
+
+        .log-entry:last-child { margin-bottom: 0; }
+
         .log-date {
+            display: flex;
+            align-items: center;
+            gap: 6px;
             color: var(--cnsa-accent-1);
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: 0.9375rem;
+            margin-bottom: var(--s2);
         }
 
         .log-text {
             color: var(--cnsa-text-dim);
+            font-size: 0.9375rem;
             line-height: 1.8;
         }
 
-        .log-text strong {
-            color: var(--cnsa-text);
-        }
+        .log-text strong { color: var(--cnsa-text); }
 
         .log-text a {
             color: var(--cnsa-accent-1);
             text-decoration: none;
         }
-        
-        .log-text a:hover {
-            text-decoration: underline;
-        }
-        
-        .distribution-setup {
-            margin: 20px 0;
-        }
-        
-        .trait-level {
-            margin: 15px 0;
-            padding: 15px;
-            background: var(--cnsa-surface);
-            border: 1px solid var(--cnsa-border);
-            border-radius: var(--cnsa-radius-sm);
+
+        .log-text a:hover { text-decoration: underline; }
+
+        .setup-hint {
+            color: var(--cnsa-text-dim);
+            font-size: 0.875rem;
+            line-height: 1.6;
+            margin-bottom: var(--s4);
         }
 
-        .trait-level label {
+        .dist-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--s2);
+            position: relative;
+            padding-bottom: var(--s4);
+        }
+
+        .dist-grid::after {
+            content: "";
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            bottom: 0;
+            height: 3px;
+            border-radius: 2px;
+            background: rgba(0, 210, 255, 0.5);
+        }
+
+        .dist-cell {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            color: var(--cnsa-text);
-            font-weight: bold;
+            gap: var(--s2);
+            padding: var(--s3) 6px;
+            background: var(--panel);
+            border: 1px solid var(--hairline);
+            border-radius: var(--cnsa-radius-sm);
+            transition: border-color 0.2s var(--cnsa-ease), background 0.2s var(--cnsa-ease);
         }
 
-        .trait-level input[type="number"] {
-            width: 80px;
-            padding: 8px;
+        .dist-cell:focus-within {
+            border-color: rgba(0, 210, 255, 0.5);
+            background: var(--panel-2);
+        }
+
+        .dist-name {
+            color: var(--cnsa-text-dim);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.3;
+            min-height: 2.1em;
+            display: flex;
+            align-items: center;
+        }
+
+        .dist-cell input[type="number"] {
+            width: 100%;
+            padding: 8px 4px;
             border: 1px solid var(--cnsa-border-strong);
             border-radius: var(--cnsa-radius-sm);
-            background: var(--cnsa-surface-2);
+            background: rgba(0, 0, 0, 0.24);
             color: var(--cnsa-text);
-            font-size: 1em;
-            font-family: var(--cnsa-font);
+            font-size: 1rem;
+            font-family: var(--cnsa-mono);
+            font-variant-numeric: tabular-nums;
             text-align: center;
+            -moz-appearance: textfield;
+            transition: border-color 0.2s var(--cnsa-ease);
         }
-        
+
+        .dist-cell input[type="number"]::-webkit-outer-spin-button,
+        .dist-cell input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .dist-cell input[type="number"]:focus {
+            outline: none;
+            border-color: var(--cnsa-accent-1);
+        }
+
+        .setup-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--s3);
+            flex-wrap: wrap;
+            margin-top: var(--s4);
+        }
+
+        .preset-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: 7px 13px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: var(--cnsa-font);
+            color: var(--cnsa-text-dim);
+            background: transparent;
+            border: 1px solid var(--cnsa-border);
+            border-radius: var(--cnsa-radius-pill);
+            cursor: pointer;
+            box-shadow: none;
+            transition: color 0.18s var(--cnsa-ease), background 0.18s var(--cnsa-ease), border-color 0.18s var(--cnsa-ease);
+        }
+
+        .preset-btn:hover {
+            color: #fff;
+            background: var(--panel-2);
+            border-color: var(--cnsa-border-strong);
+            transform: none;
+        }
+
+        .setup-total {
+            color: var(--cnsa-text-dim);
+            font-size: 0.875rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .setup-total span {
+            color: var(--cnsa-accent-1);
+            font-family: var(--cnsa-mono);
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
         .modal-buttons {
             display: flex;
-            gap: 15px;
-            margin-top: 30px;
+            gap: var(--s2);
+            margin-top: var(--s5);
         }
-        
+
         .modal-buttons button {
             flex: 1;
             padding: 12px;
             border: none;
             border-radius: var(--cnsa-radius-sm);
-            font-size: 1.1em;
-            font-weight: bold;
+            font-size: 0.9375rem;
+            font-weight: 600;
             font-family: var(--cnsa-font);
             cursor: pointer;
-            transition: all 0.3s var(--cnsa-ease);
+            transition: filter 0.2s var(--cnsa-ease), background 0.2s var(--cnsa-ease), color 0.2s var(--cnsa-ease);
         }
 
         .btn-start {
-            background: var(--cnsa-accent);
-            color: white;
-            box-shadow: 0 4px 14px rgba(0, 130, 200, 0.32);
+            background: var(--cnsa-accent-2);
+            color: #fff;
         }
 
         .btn-cancel {
-            background: var(--cnsa-surface);
+            background: transparent;
             border: 1px solid var(--cnsa-border) !important;
             color: var(--cnsa-text-dim);
         }
 
-        .btn-start:hover {
-            filter: brightness(1.07);
-            transform: translateY(-2px);
-            box-shadow: var(--cnsa-shadow);
-        }
+        .btn-start:hover { background: #4a8be0; transform: none; }
 
         .btn-cancel:hover {
-            background: var(--cnsa-surface-strong);
+            background: var(--panel-2);
             color: #fff;
+            transform: none;
         }
-        
-        /* 시뮬레이션 화면 - 수직 레이아웃 */
+
+        /* 시뮬레이션 화면 */
         .simulation-screen {
             display: none;
-            max-width: 1000px;
-            width: 90%;
-            height: auto;
-            max-height: 95vh;
-            margin: auto;
-            background: var(--cnsa-surface);
-            backdrop-filter: var(--cnsa-blur);
-            -webkit-backdrop-filter: var(--cnsa-blur);
-            border: 1px solid var(--cnsa-border);
+            width: 100%;
+            max-width: 1120px;
+            margin: var(--s4) auto 0;
             color: var(--cnsa-text);
-            border-radius: var(--cnsa-radius);
-            padding: 20px;
-            box-shadow: var(--cnsa-shadow-lg);
-            overflow-y: auto;
         }
-        
+
         .simulation-screen.active {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            gap: var(--s3);
+            animation: screenFade 0.45s var(--ease-out) both;
         }
-        
+
+        @keyframes screenFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .sim-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--cnsa-border);
+            gap: var(--s4);
+            flex-wrap: wrap;
         }
 
         .sim-title-section {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: var(--s4);
+            flex-wrap: wrap;
         }
 
         .sim-title {
-            font-size: 1.8em;
+            font-size: 1.375rem;
             color: var(--cnsa-text);
+            white-space: nowrap;
         }
-        
+
         .header-controls {
             display: flex;
-            gap: 10px;
+            gap: var(--s2);
         }
-        
+
         .header-controls button {
-            padding: 8px 16px;
-            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 14px;
+            font-size: 0.875rem;
         }
-        
+
         .btn-back {
-            padding: 10px 20px;
-            background: var(--cnsa-surface);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 14px;
+            background: transparent;
             border: 1px solid var(--cnsa-border);
             border-radius: var(--cnsa-radius-sm);
             cursor: pointer;
-            font-weight: bold;
+            font-size: 0.875rem;
+            font-weight: 600;
             font-family: var(--cnsa-font);
             color: var(--cnsa-text-dim);
-            transition: all 0.3s var(--cnsa-ease);
+            box-shadow: none;
+            transition: color 0.2s var(--cnsa-ease), background 0.2s var(--cnsa-ease), border-color 0.2s var(--cnsa-ease);
         }
 
         .btn-back:hover {
-            background: var(--cnsa-surface-strong);
+            background: var(--panel-2);
             color: #fff;
             border-color: var(--cnsa-border-strong);
+            transform: none;
+            box-shadow: none;
         }
-        
+
         .main-area {
             display: grid;
-            grid-template-columns: 3fr 1.5fr;
-            gap: 15px;
-            margin-bottom: 15px;
-            min-height: 300px;
-            max-height: 600px;
+            grid-template-columns: minmax(0, 1fr) 296px;
+            gap: var(--s3);
+            align-items: stretch;
         }
-        
+
         #gameCanvas {
-            border: 1px solid var(--cnsa-border-strong);
-            border-radius: var(--cnsa-radius-sm);
+            border: 1px solid var(--cnsa-border);
+            border-radius: var(--cnsa-radius);
             cursor: crosshair;
-            box-shadow: var(--cnsa-shadow);
             width: 100%;
-            height: 100%;
-            transition: box-shadow 0.3s ease;
+            height: auto;
+            aspect-ratio: 3 / 2;
+            display: block;
         }
 
-        #gameCanvas:hover {
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+        .sim-header .btn-danger {
+            padding: 9px 14px;
+            font-size: 0.875rem;
         }
 
-        .stats-panel, .graph-panel {
-            height: 100%;
-        }
-
-        .stats-panel {
-            background: var(--cnsa-surface);
-            padding: 15px;
-            border-radius: var(--cnsa-radius-sm);
-            box-shadow: var(--cnsa-shadow);
-            font-size: 0.9em;
-            overflow-y: auto;
-            border: 1px solid var(--cnsa-border);
-        }
-
+        .stats-panel,
         .graph-panel {
-            background: #f8f9ff;
-            padding: 15px;
-            border-radius: var(--cnsa-radius-sm);
-            box-shadow: var(--cnsa-shadow);
+            background: var(--panel);
             border: 1px solid var(--cnsa-border);
-            display: none;
+            border-radius: var(--cnsa-radius);
+            padding: var(--s4);
+            overflow-y: auto;
         }
 
+        .graph-panel { display: none; }
+
+        .stats-panel h3,
         .graph-panel h3 {
-            color: #3d4e9f;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #3d4e9f;
-            padding-bottom: 10px;
-        }
-        
-        #sideChart {
-            max-height: 250px;
-        }
-        
-        .stats-panel h3 {
-            color: var(--cnsa-text);
-            margin-bottom: 15px;
-            border-bottom: 1px solid var(--cnsa-border);
-            padding-bottom: 10px;
-        }
-
-        .stat-item {
             display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-            padding: 8px;
-            background: var(--cnsa-surface);
+            align-items: center;
+            gap: 7px;
+            color: var(--cnsa-text-dim);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: var(--s3);
+        }
+
+        .stats-panel h3 .ico,
+        .graph-panel h3 .ico { color: var(--cnsa-accent-1); }
+
+        .stat-hero {
+            padding: var(--s4);
+            margin-bottom: var(--s3);
+            background: var(--tint);
+            border: 1px solid rgba(0, 210, 255, 0.24);
             border-radius: var(--cnsa-radius-sm);
-            transition: all 0.2s ease;
         }
 
-        .stat-item:hover {
-            background: var(--cnsa-surface-strong);
-            transform: translateX(2px);
+        .stat-hero-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--s2);
+            margin-bottom: 6px;
         }
 
-        .stat-label {
-            font-weight: bold;
+        .stat-hero-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
             color: var(--cnsa-text-dim);
         }
 
-        .stat-value {
-            color: var(--cnsa-accent-1);
-            font-weight: bold;
+        .stat-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            font-family: var(--cnsa-mono);
+            font-variant-numeric: tabular-nums;
+            padding: 2px 8px;
+            border-radius: var(--cnsa-radius-pill);
+            background: var(--panel-2);
+            color: var(--cnsa-text-dimmer);
+            transition: color 0.3s var(--cnsa-ease), background 0.3s var(--cnsa-ease);
         }
-        
-        .controls {
-            background: var(--cnsa-surface);
-            padding: 10px;
-            border-radius: var(--cnsa-radius-sm);
-            box-shadow: var(--cnsa-shadow);
-            border: 1px solid var(--cnsa-border);
-            flex-shrink: 0;
+
+        .stat-trend[data-dir="up"] { color: #7fe0a0; background: rgba(34, 197, 94, 0.16); }
+        .stat-trend[data-dir="down"] { color: #f3a6ad; background: rgba(239, 68, 68, 0.16); }
+
+        .stat-hero-value {
+            font-family: var(--cnsa-mono);
+            font-variant-numeric: tabular-nums;
+            font-size: 1.9rem;
+            font-weight: 700;
+            line-height: 1.1;
+            color: #eafaff;
+            letter-spacing: -0.01em;
+            transition: color 0.3s var(--ease-out);
+        }
+
+        .stat-hero-sub {
             display: flex;
-            gap: 15px;
+            align-items: center;
+            gap: 5px;
+            margin-top: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--cnsa-text-dim);
+        }
+
+        .stat-hero-sub .ico { color: var(--cnsa-accent-1); width: 0.9em; height: 0.9em; }
+        .stat-hero-sub span {
+            font-family: var(--cnsa-mono);
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            color: var(--cnsa-text);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--s2);
+        }
+
+        .stat-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 10px 12px;
+            background: var(--panel);
+            border: 1px solid var(--hairline);
+            border-radius: var(--cnsa-radius-sm);
+            transition: background 0.3s var(--ease-out);
+        }
+
+        .stat-cell-label {
+            font-size: 0.6875rem;
+            font-weight: 500;
+            color: var(--cnsa-text-dimmer);
+        }
+
+        .stat-cell-value {
+            font-family: var(--cnsa-mono);
+            font-variant-numeric: tabular-nums;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--cnsa-text);
+        }
+
+        .stat-dist {
+            margin-top: var(--s3);
+            padding-top: var(--s4);
+            border-top: 1px solid var(--hairline);
+        }
+
+        .stat-dist-title {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--cnsa-text-dimmer);
+            margin-bottom: var(--s3);
+        }
+
+        .stat-dist-title .ico { color: var(--cnsa-accent-1); }
+
+        .stat-dist-chart {
+            height: 160px;
+        }
+
+        #sideChart {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--s3);
+            align-items: start;
+        }
+
+        .canvas-wrap {
+            min-width: 0;
+            display: flex;
         }
 
         .control-section {
-            flex: 1;
-            padding: 10px;
-            background: var(--cnsa-surface);
+            display: flex;
+            flex-direction: column;
+            gap: var(--s3);
+            padding: var(--s4);
+            background: var(--panel);
             border: 1px solid var(--cnsa-border);
-            border-radius: var(--cnsa-radius-sm);
+            border-radius: var(--cnsa-radius);
         }
 
         .control-section h3 {
-            color: var(--cnsa-text);
-            margin-bottom: 10px;
-            font-size: 0.95em;
-        }
-        
-        .mode-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .mode-button {
-            padding: 15px;
-            border: 1px solid var(--cnsa-border-strong);
-            background: var(--cnsa-surface);
-            border-radius: var(--cnsa-radius-sm);
-            cursor: pointer;
-            transition: all 0.3s var(--cnsa-ease);
-            font-weight: bold;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 7px;
             color: var(--cnsa-text-dim);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
 
-        .mode-button:hover {
-            background: var(--cnsa-surface-strong);
-            color: #fff;
-        }
+        .control-section h3 .ico { color: var(--cnsa-accent-1); }
 
-        .mode-button.active {
-            background: var(--cnsa-accent);
-            color: white;
-            border-color: transparent;
-        }
-        
+        .mode-selector,
         .bg-selector {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: var(--s2);
         }
-        
+
+        .mode-button,
         .bg-button {
-            padding: 12px;
-            border: 1px solid var(--cnsa-border-strong);
-            background: var(--cnsa-surface);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px;
+            border: 1px solid var(--cnsa-border);
+            background: transparent;
             border-radius: var(--cnsa-radius-sm);
             cursor: pointer;
-            transition: all 0.3s var(--cnsa-ease);
-            font-weight: bold;
+            transition: color 0.2s var(--cnsa-ease), background 0.2s var(--cnsa-ease), border-color 0.2s var(--cnsa-ease);
+            font-size: 0.875rem;
+            font-weight: 600;
             text-align: center;
             color: var(--cnsa-text-dim);
         }
 
+        .mode-button:hover,
         .bg-button:hover {
-            background: var(--cnsa-surface-strong);
+            background: var(--panel-2);
             color: #fff;
         }
 
+        .mode-button.active,
         .bg-button.active {
-            color: white;
-            border-color: transparent;
+            background: var(--tint);
+            border-color: rgba(0, 210, 255, 0.45);
+            color: #cdeffd;
         }
-        
+
         .bg-button.active.grassland {
-            background: #4CAF50;
+            background: rgba(76, 175, 80, 0.16);
+            border-color: rgba(76, 175, 80, 0.5);
+            color: #b6e6b8;
         }
-        
+
         .bg-button.active.openfield {
-            background: #8B4513;
+            background: rgba(200, 140, 70, 0.16);
+            border-color: rgba(200, 140, 70, 0.5);
+            color: #ecd0ab;
         }
-        
-        .control-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-        }
-        
+
         button {
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
+            padding: 10px 18px;
+            font-size: 0.9375rem;
+            font-weight: 600;
             font-family: var(--cnsa-font);
             border: none;
             border-radius: var(--cnsa-radius-sm);
             cursor: pointer;
-            transition: all 0.3s var(--cnsa-ease);
-            box-shadow: var(--cnsa-shadow);
+            transition: filter 0.2s var(--ease-out), background 0.2s var(--ease-out), color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), transform 0.12s var(--ease-out);
+            box-shadow: none;
         }
 
-        .btn-primary {
-            background: var(--cnsa-accent);
-            color: white;
-        }
-
+        .btn-primary,
         .btn-success {
-            background: var(--cnsa-accent);
-            color: white;
+            background: var(--cnsa-accent-2);
+            color: #fff;
+        }
+
+        .btn-primary:hover,
+        .btn-success:hover { background: #4a8be0; }
+
+        .btn-secondary,
+        .btn-warning,
+        .btn-record {
+            background: transparent;
+            color: var(--cnsa-text-dim);
+            border: 1px solid var(--cnsa-border);
+        }
+
+        .btn-secondary:hover,
+        .btn-warning:hover,
+        .btn-record:hover {
+            background: var(--panel-2);
+            color: #fff;
+            border-color: var(--cnsa-border-strong);
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, var(--cnsa-danger) 0%, #e85563 100%);
-            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: transparent;
+            color: #f3a6ad;
+            border: 1px solid rgba(239, 68, 68, 0.34);
         }
 
-        .btn-warning {
-            background: linear-gradient(135deg, var(--cnsa-warn) 0%, #ffd04a 100%);
-            color: #1a1a2e;
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.14);
+            color: #fff;
+            border-color: rgba(239, 68, 68, 0.6);
         }
 
-        button:hover {
-            transform: translateY(-3px);
-            filter: brightness(1.07);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
-        }
-
-        button:active {
-            transform: translateY(-1px);
-        }
+        button:hover { transform: none; }
+        button:active { transform: translateY(1px); }
 
         button:disabled {
-            opacity: 0.5;
+            opacity: 0.45;
             cursor: not-allowed;
-            transform: none;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 15px 0;
-        }
-        
-        .checkbox-group input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-        
-        .checkbox-group label {
-            cursor: pointer;
-            color: var(--cnsa-text-dim);
-            font-weight: 500;
         }
 
-        .checkbox-group input[type="checkbox"] {
-            accent-color: var(--cnsa-accent-1);
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--s2);
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--s3);
+            padding: 8px 12px;
+            background: var(--panel);
+            border: 1px solid var(--hairline);
+            border-radius: var(--cnsa-radius-sm);
+            cursor: pointer;
+            transition: border-color 0.2s var(--ease-out), background 0.2s var(--ease-out);
+        }
+
+        .toggle-row:has(input:checked) {
+            border-color: rgba(0, 210, 255, 0.28);
+            background: var(--tint);
+        }
+
+        .toggle-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--cnsa-text);
+        }
+
+        .switch {
+            position: relative;
+            flex: none;
+            width: 40px;
+            height: 22px;
+            cursor: pointer;
+        }
+
+        .switch input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .switch-track {
+            position: absolute;
+            inset: 0;
+            border-radius: var(--cnsa-radius-pill);
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid var(--hairline);
+            transition: background 0.22s var(--ease-out), border-color 0.22s var(--ease-out);
+        }
+
+        .switch-track::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #e6edf5;
+            transition: transform 0.22s var(--ease-out), background 0.22s var(--ease-out);
+        }
+
+        .switch input:checked + .switch-track {
+            background: var(--cnsa-accent-2);
+            border-color: transparent;
+        }
+
+        .switch input:checked + .switch-track::after {
+            transform: translateX(18px);
+            background: #fff;
+        }
+
+        .switch input:focus-visible + .switch-track {
+            outline: 3px solid var(--cnsa-accent-1);
+            outline-offset: 2px;
         }
 
         .slider-group {
-            margin: 15px 0;
+            padding: 11px 13px;
+            background: var(--panel);
+            border: 1px solid var(--hairline);
+            border-radius: var(--cnsa-radius-sm);
+        }
+
+        .slider-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: var(--s2);
+            margin-bottom: var(--s2);
         }
 
         .slider-group label {
-            display: block;
-            margin-bottom: 5px;
             color: var(--cnsa-text-dim);
-            font-weight: 500;
+            font-size: 0.875rem;
+            font-weight: 600;
         }
-        
+
         .slider-container {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: var(--s3);
         }
-        
+
         .slider-container input[type="range"] {
             flex: 1;
             height: 6px;
             -webkit-appearance: none;
             appearance: none;
-            background: var(--cnsa-surface-strong);
+            background: linear-gradient(90deg, var(--cnsa-accent-1) 0 var(--fill, 50%), rgba(255, 255, 255, 0.14) var(--fill, 50%) 100%);
             border-radius: 3px;
             outline: none;
         }
@@ -675,125 +1011,66 @@
         .slider-container input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px;
-            height: 20px;
-            background: var(--cnsa-accent-1);
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border: 3px solid var(--cnsa-accent-1);
             border-radius: 50%;
             cursor: pointer;
+            transition: transform 0.12s var(--ease-out);
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb:active {
+            transform: scale(1.15);
         }
 
         .slider-container input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: var(--cnsa-accent-1);
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border: 3px solid var(--cnsa-accent-1);
             border-radius: 50%;
             cursor: pointer;
-            border: none;
+        }
+
+        .slider-container input[type="range"]::-moz-range-progress {
+            background: var(--cnsa-accent-1);
+            height: 6px;
+            border-radius: 3px;
         }
 
         .slider-value {
-            min-width: 50px;
-            text-align: center;
-            font-weight: bold;
-            color: var(--cnsa-accent-1);
+            min-width: 42px;
+            text-align: right;
+            font-family: var(--cnsa-mono);
+            font-variant-numeric: tabular-nums;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--cnsa-text);
         }
+
         .keyboard-hints {
-            text-align: center;
-            padding: 6px 12px;
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
             color: var(--cnsa-text-dimmer);
-            font-size: 12px;
-            background: var(--cnsa-surface);
-            border-radius: var(--cnsa-radius-sm);
+            font-size: 0.75rem;
         }
 
-        @media (max-width: 900px) {
-            .controls {
-                display: block;
-            }
-
-            .control-section {
-                margin-bottom: 10px;
-            }
-
-            .main-area {
-                grid-template-columns: 1fr;
-                max-height: none;
-            }
-
-            .sim-header {
-                flex-direction: column;
-                gap: 10px;
-                align-items: stretch;
-            }
-
-            .sim-title-section {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 10px;
-            }
-
-            .header-controls {
-                flex-wrap: wrap;
-            }
-
-            .header-controls button {
-                flex: 1 1 auto;
-                min-height: 44px;
-            }
-
-            .scenario-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .genetics-cards.open {
-                grid-template-columns: 1fr;
-            }
-
-            .sim-title {
-                font-size: 1.4em;
-            }
-
-            .keyboard-hints {
-                display: none;
-            }
-
-            button,
-            .mode-button,
-            .bg-button,
-            .home-btn,
-            .btn-back,
-            .modal-buttons button {
-                min-height: 44px;
-            }
-
-            .modal-content {
-                margin: 6% auto;
-                padding: 24px 20px;
-            }
-
-            .selection-screen {
-                margin: 24px auto;
-            }
-
-            .selection-screen h1 {
-                font-size: 2.1em;
-            }
-
-            .selection-screen p {
-                font-size: 1.1em;
-                margin-bottom: 32px;
-            }
-
-            .modal-close {
-                width: 44px;
-                height: 44px;
-            }
+        .keyboard-hints kbd {
+            font-family: var(--cnsa-mono);
+            font-size: 0.6875rem;
+            padding: 2px 6px;
+            border-radius: 5px;
+            background: var(--panel-2);
+            border: 1px solid var(--hairline);
+            color: var(--cnsa-text-dim);
         }
 
         .genetics-section {
-            max-width: 1000px;
-            margin: 50px auto 0;
+            max-width: 1080px;
+            margin: var(--s7) auto 0;
             text-align: left;
         }
 
@@ -801,277 +1078,464 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: var(--s3);
             cursor: pointer;
-            padding: 16px 24px;
-            background: var(--cnsa-surface);
+            padding: var(--s4) var(--s5);
+            background: var(--panel);
             border: 1px solid var(--cnsa-border);
             border-radius: var(--cnsa-radius);
-            transition: all 0.3s var(--cnsa-ease);
+            transition: background 0.2s var(--cnsa-ease), border-color 0.2s var(--cnsa-ease);
             user-select: none;
         }
 
         .genetics-toggle:hover {
-            background: var(--cnsa-surface-strong);
+            background: var(--panel-2);
             border-color: var(--cnsa-border-strong);
         }
 
         .genetics-toggle h2 {
+            display: flex;
+            align-items: center;
+            gap: var(--s2);
             color: var(--cnsa-text);
-            font-size: 1.4em;
+            font-size: 1rem;
             margin: 0;
         }
 
+        .genetics-toggle h2 .ico { color: var(--cnsa-accent-1); }
+
         .genetics-toggle .toggle-arrow {
-            font-size: 1.2em;
-            transition: transform 0.3s ease;
-            color: var(--cnsa-accent-1);
+            display: inline-flex;
+            transition: transform 0.45s var(--ease-out);
+            color: var(--cnsa-text-dimmer);
+            font-size: 16px;
         }
 
-        .genetics-toggle .toggle-arrow.open {
-            transform: rotate(180deg);
-        }
+        .genetics-toggle .toggle-arrow.open { transform: rotate(180deg); }
 
         .genetics-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            margin-top: 24px;
+            gap: var(--s4);
             overflow: hidden;
             max-height: 0;
             opacity: 0;
-            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, margin 0.4s ease;
+            transition: max-height 0.6s var(--ease-out), opacity 0.5s var(--ease-out), margin 0.5s var(--ease-out);
             margin-top: 0;
         }
 
         .genetics-cards.open {
-            max-height: 1200px;
+            max-height: 1400px;
             opacity: 1;
-            margin-top: 24px;
+            margin-top: var(--s4);
         }
 
         .genetics-card {
-            background: var(--cnsa-surface);
-            backdrop-filter: var(--cnsa-blur);
-            -webkit-backdrop-filter: var(--cnsa-blur);
+            display: flex;
+            flex-direction: column;
+            gap: var(--s3);
+            background: var(--panel);
             border: 1px solid var(--cnsa-border);
             border-radius: var(--cnsa-radius);
-            padding: 28px 24px;
-            transition: all 0.3s var(--cnsa-ease);
+            padding: var(--s5);
+            transition: border-color 0.25s var(--cnsa-ease), background 0.25s var(--cnsa-ease);
         }
 
         .genetics-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--cnsa-shadow);
+            background: var(--panel-2);
             border-color: var(--cnsa-border-strong);
         }
 
         .genetics-card .card-icon {
-            font-size: 2.4em;
-            margin-bottom: 14px;
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            border-radius: var(--cnsa-radius-sm);
+            background: var(--tint);
+            border: 1px solid rgba(0, 210, 255, 0.22);
+            color: var(--cnsa-accent-1);
+            font-size: 19px;
         }
 
         .genetics-card h3 {
             color: var(--cnsa-text);
-            font-size: 1.1em;
-            line-height: 1.5;
-            margin-bottom: 14px;
+            font-size: 1rem;
+            line-height: 1.55;
         }
 
         .genetics-card .card-teaser {
             color: var(--cnsa-text-dim);
-            font-size: 0.95em;
-            line-height: 1.7;
-            margin-bottom: 16px;
+            font-size: 0.9375rem;
+            line-height: 1.75;
         }
 
         .genetics-card .card-hint {
             color: #cdeffd;
-            font-size: 0.85em;
-            font-style: italic;
-            line-height: 1.6;
-            padding-top: 12px;
-            border-top: 1px solid var(--cnsa-border);
+            font-size: 0.8125rem;
+            line-height: 1.7;
+            padding-top: var(--s3);
+            border-top: 1px solid var(--hairline);
         }
 
-        .genetics-card .card-hint strong {
-            color: var(--cnsa-accent-1);
-        }
+        .genetics-card .card-hint strong { color: var(--cnsa-accent-1); }
 
         .genetics-card .card-footer {
             color: var(--cnsa-text-dimmer);
-            font-size: 0.8em;
-            margin-top: 12px;
+            font-size: 0.75rem;
+            margin-top: auto;
             text-align: right;
         }
 
-        .btn-record {
-            background: var(--cnsa-surface);
-            color: var(--cnsa-text-dim);
-            border: 1px solid var(--cnsa-border-strong);
+        .btn-report {
+            background: var(--tint);
+            color: #cdeffd;
+            border: 1px solid rgba(0, 210, 255, 0.45);
         }
 
-        .btn-record:hover {
+        .btn-report:hover {
+            background: rgba(0, 210, 255, 0.22);
             color: #fff;
-            background: var(--cnsa-surface-strong);
+            border-color: rgba(0, 210, 255, 0.65);
         }
 
         .btn-record.active {
-            background: linear-gradient(135deg, var(--cnsa-danger) 0%, #e85563 100%);
-            color: white;
-            border-color: transparent;
+            background: rgba(239, 68, 68, 0.16);
+            color: #f3a6ad;
+            border-color: rgba(239, 68, 68, 0.5);
         }
+
 
         .recording-badge {
             display: none;
             align-items: center;
             gap: 6px;
-            background: rgba(220, 53, 69, 0.1);
-            border: 1px solid rgba(220, 53, 69, 0.3);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 13px;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.32);
+            padding: 5px 12px;
+            border-radius: var(--cnsa-radius-pill);
+            font-size: 0.75rem;
             font-weight: 600;
-            color: #dc3545;
+            color: #f3a6ad;
         }
 
-        .recording-badge.visible {
-            display: flex;
-        }
+        .recording-badge.visible { display: flex; }
 
         .recording-dot {
-            width: 8px;
-            height: 8px;
-            background: #dc3545;
+            width: 7px;
+            height: 7px;
+            background: #ef4444;
             border-radius: 50%;
             animation: pulse 1.2s ease-in-out infinite;
         }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.8); }
+            50% { opacity: 0.35; transform: scale(0.8); }
         }
 
         .name-modal-body {
-            padding: 20px 10px;
+            display: grid;
+            gap: var(--s3);
         }
 
         .name-modal-body p {
             color: var(--cnsa-text-dim);
-            margin-bottom: 15px;
-            font-size: 1em;
+            font-size: 0.9375rem;
         }
 
         .name-modal-body input[type="text"] {
             width: 100%;
-            padding: 12px 16px;
+            padding: 12px 14px;
             border: 1px solid var(--cnsa-border-strong);
             border-radius: var(--cnsa-radius-sm);
-            background: var(--cnsa-surface-2);
+            background: rgba(0, 0, 0, 0.24);
             color: var(--cnsa-text);
-            font-size: 1.1em;
+            font-size: 1rem;
             font-family: var(--cnsa-font);
             outline: none;
-            transition: border-color 0.3s;
+            transition: border-color 0.2s;
         }
 
-        .name-modal-body input[type="text"]:focus {
-            border-color: var(--cnsa-accent-1);
-        }
+        .name-modal-body input[type="text"]:focus { border-color: var(--cnsa-accent-1); }
 
-        .name-modal-body input[type="text"]::placeholder {
-            color: var(--cnsa-text-dimmer);
-        }
+        .name-modal-body input[type="text"]::placeholder { color: var(--cnsa-text-dimmer); }
 
         .toast-container {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
+            bottom: var(--s4);
+            left: var(--s4);
+            z-index: 2147483100;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            flex-direction: column-reverse;
+            gap: var(--s2);
         }
 
         .toast {
-            background: rgba(14, 22, 44, 0.92);
+            background: rgba(14, 22, 44, 0.94);
             backdrop-filter: var(--cnsa-blur);
             -webkit-backdrop-filter: var(--cnsa-blur);
             border: 1px solid var(--cnsa-border-strong);
             color: white;
-            padding: 14px 24px;
+            padding: 12px 18px;
             border-radius: var(--cnsa-radius-sm);
-            font-size: 15px;
+            font-size: 0.875rem;
             font-weight: 500;
             box-shadow: var(--cnsa-shadow-lg);
-            animation: toastIn 0.4s var(--cnsa-ease), toastOut 0.4s ease-in forwards;
+            animation: toastIn 0.3s var(--cnsa-ease), toastOut 0.4s ease-in forwards;
             animation-delay: 0s, var(--toast-duration, 2.5s);
-            max-width: 360px;
+            max-width: 340px;
         }
 
         @keyframes toastIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from { transform: translate(-24px, 8px); opacity: 0; }
+            to { transform: translate(0, 0); opacity: 1; }
         }
 
         @keyframes toastOut {
             from { opacity: 1; }
-            to { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 0; transform: translateX(-8px); }
         }
 
         .footer {
-            position: relative;
-            background: var(--cnsa-surface);
-            border: 1px solid var(--cnsa-border);
-            color: var(--cnsa-text-dim);
+            width: 100%;
+            max-width: 1080px;
+            color: var(--cnsa-text-dimmer);
             text-align: center;
-            padding: 10px 20px;
-            font-size: 14px;
-            margin-top: 30px;
-            border-radius: var(--cnsa-radius-sm);
-            max-width: 1200px;
-            width: 90%;
+            padding: var(--s4) 0 0;
+            margin-top: var(--s7);
+            border-top: 1px solid var(--hairline);
+            font-size: 0.8125rem;
+            line-height: 1.7;
         }
-        
+
         .footer a {
-            color: var(--cnsa-accent-1);
+            color: var(--cnsa-text-dim);
             text-decoration: none;
         }
-        
+
         .footer a:hover {
+            color: var(--cnsa-accent-1);
             text-decoration: underline;
+        }
+
+        @media (max-width: 960px) {
+            .controls { grid-template-columns: 1fr; }
+
+            .main-area { grid-template-columns: 1fr; }
+
+            .stats-panel, .graph-panel { max-height: none; }
+        }
+
+        @media (max-width: 720px) {
+            body { padding: var(--s4) var(--s3) var(--s5); }
+
+            .selection-screen { margin-top: var(--s5); }
+
+            .sim-header,
+            .sim-title-section {
+                flex-direction: column;
+                align-items: stretch;
+                gap: var(--s3);
+            }
+
+            .header-controls { flex-wrap: wrap; }
+
+            .header-controls button { flex: 1 1 auto; min-height: 44px; }
+
+            .scenario-cards { grid-template-columns: 1fr; }
+
+            .genetics-cards.open { grid-template-columns: 1fr; }
+
+            .keyboard-hints { display: none; }
+
+            button,
+            .mode-button,
+            .bg-button,
+            .home-btn,
+            .btn-back,
+            .modal-buttons button { min-height: 44px; }
+
+            .modal-content { margin: var(--s4) auto; padding: var(--s4); }
+        }
+
+        .tour-block {
+            position: fixed;
+            inset: 0;
+            z-index: 2147483299;
+        }
+
+        .tour-spot {
+            position: fixed;
+            border-radius: 12px;
+            box-shadow: 0 0 0 9999px rgba(6, 10, 22, 0.72);
+            transition: top 0.35s var(--ease-out), left 0.35s var(--ease-out), width 0.35s var(--ease-out), height 0.35s var(--ease-out);
+            pointer-events: none;
+            z-index: 2147483300;
+        }
+
+        .tour-tip {
+            position: fixed;
+            z-index: 2147483301;
+            width: 320px;
+            max-width: calc(100vw - 24px);
+            background: #16213e;
+            border: 1px solid var(--cnsa-border-strong);
+            border-radius: var(--cnsa-radius);
+            box-shadow: var(--cnsa-shadow-lg);
+            padding: var(--s5);
+            color: var(--cnsa-text);
+            transition: top 0.3s var(--ease-out), left 0.3s var(--ease-out);
+        }
+
+        .tour-tip h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.0625rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .tour-tip h4 .ico { color: var(--cnsa-accent-1); }
+
+        .tour-tip p {
+            font-size: 0.9375rem;
+            color: var(--cnsa-text-dim);
+            line-height: 1.65;
+        }
+
+        .tour-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--s3);
+            margin-top: var(--s5);
+        }
+
+        .tour-dots { display: flex; gap: 5px; }
+
+        .tour-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--cnsa-border-strong);
+            transition: background 0.2s var(--ease-out);
+        }
+
+        .tour-dot.on { background: var(--cnsa-accent-1); }
+
+        .tour-btns { display: flex; align-items: center; gap: 6px; }
+
+        .tour-skip {
+            background: none;
+            border: none;
+            color: var(--cnsa-text-dimmer);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 7px 4px;
+        }
+
+        .tour-skip:hover { color: var(--cnsa-text-dim); }
+
+        .tour-btn {
+            padding: 7px 14px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: var(--cnsa-font);
+            border-radius: var(--cnsa-radius-sm);
+            cursor: pointer;
+            border: 1px solid var(--cnsa-border);
+            background: transparent;
+            color: var(--cnsa-text-dim);
+            transition: background 0.18s var(--ease-out), color 0.18s var(--ease-out), border-color 0.18s var(--ease-out);
+        }
+
+        .tour-btn:hover { color: #fff; background: var(--panel-2); border-color: var(--cnsa-border-strong); }
+
+        .tour-btn.primary { background: var(--cnsa-accent-2); color: #fff; border-color: transparent; }
+        .tour-btn.primary:hover { background: #4a8be0; }
+
+        .cnsa-simbar .cnsa-unit {
+            background: rgba(0, 210, 255, 0.12);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
         }
     </style>
 </head>
 <body>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+        <symbol id="i-snail" viewBox="0 0 24 24"><path d="M2 13a6 6 0 1 0 12 0 4 4 0 1 0-8 0 2 2 0 0 0 4 0"/><circle cx="10" cy="13" r="8"/><path d="M2 21h12c4.4 0 8-3.6 8-8V7a2 2 0 1 0-4 0v6"/><path d="M18 3l1.1 2.2"/><path d="M22 3l-1.1 2.2"/></symbol>
+        <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></symbol>
+        <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></symbol>
+        <symbol id="i-log" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></symbol>
+        <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 4.5 13.5a.5.5 0 0 0 .4.8H11l-1 7.7 8.5-11.5a.5.5 0 0 0-.4-.8H12z"/></symbol>
+        <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5S12.5 4.5 12 2c-.5 2.5-2 4.9-4 6.5C6 10.1 5 12 5 15a7 7 0 0 0 7 7z"/></symbol>
+        <symbol id="i-ruler" viewBox="0 0 24 24"><path d="M21.3 8.7 8.7 21.3a1 1 0 0 1-1.4 0l-4.6-4.6a1 1 0 0 1 0-1.4L15.3 2.7a1 1 0 0 1 1.4 0l4.6 4.6a1 1 0 0 1 0 1.4z"/><path d="m7.5 10.5 2 2"/><path d="m10.5 7.5 2 2"/><path d="m13.5 4.5 2 2"/><path d="m4.5 13.5 2 2"/></symbol>
+        <symbol id="i-microscope" viewBox="0 0 24 24"><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></symbol>
+        <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+        <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+        <symbol id="i-branch" viewBox="0 0 24 24"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol>
+        <symbol id="i-spiral" viewBox="0 0 24 24"><path d="M14 11a2 2 0 1 1-4 0 4 4 0 0 1 8 0 6 6 0 0 1-12 0 8 8 0 0 1 16 0 10 10 0 1 1-20 0 11.93 11.93 0 0 1 2.42-7.22 2 2 0 1 1 3.16 2.44"/></symbol>
+        <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7z"/></symbol>
+        <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+        <symbol id="i-play" viewBox="0 0 24 24"><path d="m6 3 14 9-14 9z"/></symbol>
+        <symbol id="i-pause" viewBox="0 0 24 24"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></symbol>
+        <symbol id="i-stop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></symbol>
+        <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol>
+        <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+        <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+        <symbol id="i-report" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M8 9h2"/></symbol>
+        <symbol id="i-clipboard" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></symbol>
+        <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10.6 3.09V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+        <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></symbol>
+        <symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+        <symbol id="i-pointer" viewBox="0 0 24 24"><path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.04 9.69a.5.5 0 0 1 .65-.65l11 4.5a.5.5 0 0 1-.07.95l-4.35 1.04a1 1 0 0 0-.74.74l-1.04 4.35a.5.5 0 0 1-.95.07z"/></symbol>
+        <symbol id="i-bird" viewBox="0 0 24 24"><path d="M16 7h.01"/><path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20"/><path d="m20 7 2 .5-2 .5"/><path d="M10 18v3"/><path d="M14 17.75V21"/><path d="M7 18a6 6 0 0 0 3.84-10.61"/></symbol>
+        <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></symbol>
+        <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+        <symbol id="i-copyright" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M14.83 14.83a4 4 0 1 1 0-5.66"/></symbol>
+        <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+        <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></symbol>
+        <symbol id="i-keyboard" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.01"/><path d="M10 8h.01"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/><path d="M7 16h10"/></symbol>
+    </svg>
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- 초기 선택 화면 -->
     <div class="selection-screen" id="selectionScreen">
-        <h1>🐌 달팽이 진화 시뮬레이션</h1>
+        <h1><svg class="ico" aria-hidden="true"><use href="#i-snail"/></svg>달팽이 진화 시뮬레이션</h1>
         <p>어떤 형질의 진화를 관찰하시겠습니까?</p>
         
         <!-- 홈 버튼 섹션 추가 -->
         <div class="home-buttons">
-            <button class="home-btn cnsa-focusable" onclick="showTutorial()">📖 사용법</button>
-            <button class="home-btn cnsa-focusable" onclick="showDevLog()">📝 개발자 로그</button>
+            <button class="home-btn cnsa-focusable" onclick="startTutorial()"><svg class="ico" aria-hidden="true"><use href="#i-compass"/></svg>튜토리얼</button>
+            <button class="home-btn cnsa-focusable" onclick="showTutorial()"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg>사용법</button>
+            <button class="home-btn cnsa-focusable" onclick="showDevLog()"><svg class="ico" aria-hidden="true"><use href="#i-log"/></svg>개발자 로그</button>
         </div>
 
         <div class="scenario-cards">
             <div class="scenario-card speed-card cnsa-focusable" role="button" tabindex="0" aria-label="속도의 진화 시나리오 시작" onclick="openModal('speed')">
-                <div class="icon" aria-hidden="true">⚡</div>
+                <div class="icon" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg></div>
                 <h2>속도의 진화</h2>
                 <p>포식자로부터 도망치는 속도가 생존에 미치는 영향을 관찰합니다. 빠른 달팽이가 살아남을까요?</p>
             </div>
 
             <div class="scenario-card color-card cnsa-focusable" role="button" tabindex="0" aria-label="색의 진화 시나리오 시작" onclick="openModal('color')">
-                <div class="icon" aria-hidden="true">🎨</div>
+                <div class="icon" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-palette"/></svg></div>
                 <h2>색의 진화</h2>
                 <p>환경과의 보호색이 생존에 미치는 영향을 관찰합니다. 배경과 비슷한 색이 유리할까요?</p>
             </div>
 
             <div class="scenario-card size-card cnsa-focusable" role="button" tabindex="0" aria-label="크기의 진화 시나리오 시작" onclick="openModal('size')">
-                <div class="icon" aria-hidden="true">📏</div>
+                <div class="icon" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-ruler"/></svg></div>
                 <h2>크기의 진화</h2>
                 <p>개체의 크기가 포식 위험에 미치는 영향을 관찰합니다. 작은 개체가 더 안전할까요?</p>
             </div>
@@ -1079,42 +1543,42 @@
 
         <div class="genetics-section">
             <div class="genetics-toggle cnsa-focusable" role="button" tabindex="0" aria-expanded="false" aria-controls="geneticsCards" onclick="toggleGenetics()">
-                <h2>🔬 알고 보면 놀라운, 달팽이의 유전</h2>
-                <span class="toggle-arrow" id="geneticsArrow" aria-hidden="true">▼</span>
+                <h2><svg class="ico" aria-hidden="true"><use href="#i-microscope"/></svg>알고 보면 놀라운, 달팽이의 유전</h2>
+                <span class="toggle-arrow" id="geneticsArrow" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-chevron-down"/></svg></span>
             </div>
             <div class="genetics-cards" id="geneticsCards">
                 <div class="genetics-card">
-                    <div class="card-icon">🧬</div>
+                    <div class="card-icon"><svg class="ico" aria-hidden="true"><use href="#i-branch"/></svg></div>
                     <h3>달팽이는 암수한몸인데, 왜 혼자 번식하지 않을까?</h3>
                     <div class="card-teaser">
                         달팽이는 정자와 난자를 모두 만든다. 이론상 혼자서도 번식이 가능하지만... 거의 하지 않는다. 왜일까?
                     </div>
                     <div class="card-hint">
-                        💡 "유전적 다양성"이라는 키워드로 조사해보면...
+                        <svg class="ico" aria-hidden="true"><use href="#i-bulb"/></svg> "유전적 다양성"이라는 키워드로 조사해보면...
                     </div>
                     <div class="card-footer">조사해보면 재미있을지도...?</div>
                 </div>
 
                 <div class="genetics-card">
-                    <div class="card-icon">🐚</div>
+                    <div class="card-icon"><svg class="ico" aria-hidden="true"><use href="#i-spiral"/></svg></div>
                     <h3>껍질이 왼쪽으로 감기면, 짝짓기를 못 한다?</h3>
                     <div class="card-teaser">
                         대부분의 달팽이 껍질은 오른쪽으로 감긴다. 왼쪽으로 감기는 달팽이는 4만 마리 중 1마리. 그런데 이 달팽이는 짝짓기가 물리적으로 불가능하다. 생식기 위치가 반대라서.
                     </div>
                     <div class="card-hint">
-                        💡 더 놀라운 건, 껍질 방향을 결정하는 건 본인의 유전자가 아니라 <strong>어머니의 유전자</strong>라는 것. "모성유전"으로 검색해보면...
+                        <svg class="ico" aria-hidden="true"><use href="#i-bulb"/></svg> 더 놀라운 건, 껍질 방향을 결정하는 건 본인의 유전자가 아니라 <strong>어머니의 유전자</strong>라는 것. "모성유전"으로 검색해보면...
                     </div>
                     <div class="card-footer">조사해보면 재미있을지도...?</div>
                 </div>
 
                 <div class="genetics-card">
-                    <div class="card-icon">💘</div>
+                    <div class="card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg></div>
                     <h3>달팽이는 짝짓기 전에 상대방에게 '화살'을 쏜다</h3>
                     <div class="card-teaser">
                         많은 육상 달팽이는 탄산칼슘으로 만든 뾰족한 화살을 가지고 있다. 짝짓기 전에 상대방 몸에 이걸 찔러 넣는다. 사랑 고백? 아니다. 훨씬 더 이기적인 이유가 있다.
                     </div>
                     <div class="card-hint">
-                        💡 "love dart snail"로 검색해보면...
+                        <svg class="ico" aria-hidden="true"><use href="#i-bulb"/></svg> "love dart snail"로 검색해보면...
                     </div>
                     <div class="card-footer">조사해보면 재미있을지도...?</div>
                 </div>
@@ -1126,12 +1590,12 @@
     <div class="modal" id="tutorialModal">
         <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="tutorialModalTitle">
             <div class="modal-header">
-                <h3 id="tutorialModalTitle">📖 사용법 안내</h3>
-                <button class="modal-close cnsa-focusable" onclick="closeTutorial()" aria-label="사용법 안내 닫기">×</button>
+                <h3 id="tutorialModalTitle"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg>사용법 안내</h3>
+                <button class="modal-close cnsa-focusable" onclick="closeTutorial()" aria-label="사용법 안내 닫기"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
             </div>
             <div class="modal-body">
                 <div class="log-entry">
-                    <div class="log-date">🎯 프로그램 소개</div>
+                    <div class="log-date"><svg class="ico" aria-hidden="true"><use href="#i-target"/></svg> 프로그램 소개</div>
                     <div class="log-text">
                         <strong>달팽이 진화 시뮬레이션</strong>은 자연선택을 통한 진화 과정을 시각적으로 보여주는 교육용 프로그램입니다. 
                         세 가지 시나리오(속도, 보호색, 크기)를 통해 특정 형질이 생존에 유리할 때 집단의 평균 형질이 어떻게 변화하는지 관찰할 수 있습니다.
@@ -1139,7 +1603,7 @@
                 </div>
 
                 <div class="log-entry">
-                    <div class="log-date">📚 기본 사용법</div>
+                    <div class="log-date"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg> 기본 사용법</div>
                     <div class="log-text">
                         <strong>1단계: 시나리오 선택</strong><br>
                         • <strong>속도 진화</strong>: 느린 달팽이가 먼저 잡아먹힘<br>
@@ -1171,7 +1635,7 @@
                 </div>
 
                 <div class="log-entry">
-                    <div class="log-date">💡 학습 팁</div>
+                    <div class="log-date"><svg class="ico" aria-hidden="true"><use href="#i-bulb"/></svg> 학습 팁</div>
                     <div class="log-text">
                         <strong>효과적인 관찰 방법:</strong><br>
                         • 각 시나리오를 여러 번 실행하여 일관된 패턴을 확인하세요<br>
@@ -1188,7 +1652,7 @@
                 </div>
 
                 <div class="log-entry">
-                    <div class="log-date">🔬 과학적 배경</div>
+                    <div class="log-date"><svg class="ico" aria-hidden="true"><use href="#i-microscope"/></svg> 과학적 배경</div>
                     <div class="log-text">
                         이 시뮬레이션은 <strong>다윈의 자연선택 이론</strong>을 보여줍니다. 집단 내에 다양한 형질이 존재하고, 
                         특정 형질이 생존과 번식에 유리할 때, 그 형질을 가진 개체가 더 많은 자손을 남기게 됩니다. 
@@ -1204,8 +1668,8 @@
     <div class="modal" id="devLogModal">
         <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="devLogModalTitle">
             <div class="modal-header">
-                <h3 id="devLogModalTitle">📝 개발자 로그</h3>
-                <button class="modal-close cnsa-focusable" onclick="closeDevLog()" aria-label="개발자 로그 닫기">×</button>
+                <h3 id="devLogModalTitle"><svg class="ico" aria-hidden="true"><use href="#i-log"/></svg>개발자 로그</h3>
+                <button class="modal-close cnsa-focusable" onclick="closeDevLog()" aria-label="개발자 로그 닫기"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
             </div>
             <div class="modal-body">
                 <div class="log-entry">
@@ -1218,7 +1682,7 @@
                 </div>
                 
                 <div class="log-entry">
-                    <div class="log-date">©️ 저작권 정보</div>
+                    <div class="log-date"><svg class="ico" aria-hidden="true"><use href="#i-copyright"/></svg> 저작권 정보</div>
                     <div class="log-text">
                         <strong>달팽이 진화 시뮬레이션 v1.0</strong><br><br>
                         ⓒ 2025 충남삼성고등학교 신도경 교사<br>
@@ -1235,39 +1699,44 @@
     <!-- 초기 설정 모달 -->
     <div id="setupModal" class="modal">
         <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-            <h3 id="modalTitle">초기 개체군 설정</h3>
+            <div class="modal-header">
+                <h3 id="modalTitle"><svg class="ico" aria-hidden="true"><use href="#i-sliders"/></svg><span id="modalTitleText">초기 개체군 설정</span></h3>
+                <button class="modal-close cnsa-focusable" onclick="closeModal()" aria-label="설정 닫기"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+            </div>
 
-            <div class="distribution-setup">
-                <div class="trait-level">
-                    <label>
-                        <span id="level1Label">레벨 1</span>
-                        <input type="number" id="level1Count" min="0" max="50" value="10" aria-labelledby="level1Label">
-                    </label>
+            <p class="setup-hint">형질 단계별 시작 개체수를 정하세요. 왼쪽(약)에서 오른쪽(강)으로 갈수록 형질이 강해집니다.</p>
+
+            <div class="dist-grid">
+                <div class="dist-cell">
+                    <span class="dist-name" id="level1Label">레벨 1</span>
+                    <input type="number" id="level1Count" min="0" max="50" value="10" aria-labelledby="level1Label">
                 </div>
-                <div class="trait-level">
-                    <label>
-                        <span id="level2Label">레벨 2</span>
-                        <input type="number" id="level2Count" min="0" max="50" value="10" aria-labelledby="level2Label">
-                    </label>
+                <div class="dist-cell">
+                    <span class="dist-name" id="level2Label">레벨 2</span>
+                    <input type="number" id="level2Count" min="0" max="50" value="10" aria-labelledby="level2Label">
                 </div>
-                <div class="trait-level">
-                    <label>
-                        <span id="level3Label">레벨 3</span>
-                        <input type="number" id="level3Count" min="0" max="50" value="10" aria-labelledby="level3Label">
-                    </label>
+                <div class="dist-cell">
+                    <span class="dist-name" id="level3Label">레벨 3</span>
+                    <input type="number" id="level3Count" min="0" max="50" value="10" aria-labelledby="level3Label">
                 </div>
-                <div class="trait-level">
-                    <label>
-                        <span id="level4Label">레벨 4</span>
-                        <input type="number" id="level4Count" min="0" max="50" value="10" aria-labelledby="level4Label">
-                    </label>
+                <div class="dist-cell">
+                    <span class="dist-name" id="level4Label">레벨 4</span>
+                    <input type="number" id="level4Count" min="0" max="50" value="10" aria-labelledby="level4Label">
                 </div>
-                <div class="trait-level">
-                    <label>
-                        <span id="level5Label">레벨 5</span>
-                        <input type="number" id="level5Count" min="0" max="50" value="10" aria-labelledby="level5Label">
-                    </label>
+                <div class="dist-cell">
+                    <span class="dist-name" id="level5Label">레벨 5</span>
+                    <input type="number" id="level5Count" min="0" max="50" value="10" aria-labelledby="level5Label">
                 </div>
+            </div>
+
+            <div class="setup-foot">
+                <div class="preset-group" role="group" aria-label="빠른 분포 설정">
+                    <button type="button" class="preset-btn cnsa-focusable" onclick="applyPreset('even')">균등</button>
+                    <button type="button" class="preset-btn cnsa-focusable" onclick="applyPreset('bell')">정규</button>
+                    <button type="button" class="preset-btn cnsa-focusable" onclick="applyPreset('random')">랜덤</button>
+                    <button type="button" class="preset-btn cnsa-focusable" onclick="applyPreset('clear')">비우기</button>
+                </div>
+                <div class="setup-total">총 <span id="setupTotal">50</span>마리</div>
             </div>
 
             <div class="modal-buttons">
@@ -1281,8 +1750,8 @@
     <div class="modal" id="nameModal">
         <div class="modal-content" style="max-width:420px;" role="dialog" aria-modal="true" aria-labelledby="nameModalTitle">
             <div class="modal-header">
-                <h3 id="nameModalTitle">📋 기록모드</h3>
-                <button class="modal-close cnsa-focusable" onclick="cancelRecording()" aria-label="기록모드 닫기">×</button>
+                <h3 id="nameModalTitle"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg>기록모드</h3>
+                <button class="modal-close cnsa-focusable" onclick="cancelRecording()" aria-label="기록모드 닫기"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
             </div>
             <div class="name-modal-body">
                 <p id="studentNameHint">이름 또는 번호를 입력하세요</p>
@@ -1301,10 +1770,10 @@
             <div class="sim-title-section">
                 <h2 class="sim-title" id="simTitle">속도의 진화</h2>
                 <div class="header-controls">
-                    <button class="btn-success cnsa-focusable" id="startBtn" onclick="toggleSimulation()" aria-label="시뮬레이션 시작 또는 정지">▶️ 시작</button>
-                    <button class="btn-warning cnsa-focusable" id="reproduceBtn" onclick="reproduce()" aria-label="다음 세대 번식">🔄 번식</button>
-                    <button class="btn-primary cnsa-focusable" id="toggleViewBtn" onclick="toggleView()" aria-label="통계와 그래프 보기 전환">📊 그래프</button>
-                    <button class="btn-record cnsa-focusable" id="recordBtn" onclick="toggleRecording()" aria-label="기록모드 켜기 또는 끄기">📋 기록모드</button>
+                    <button class="btn-success cnsa-focusable" id="startBtn" onclick="toggleSimulation()" aria-label="시뮬레이션 시작 또는 정지"><svg class="ico" aria-hidden="true"><use href="#i-play"/></svg><span data-label>시작</span></button>
+                    <button class="btn-secondary cnsa-focusable" id="reproduceBtn" onclick="reproduce()" aria-label="다음 세대 번식"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg>번식</button>
+                    <button class="btn-record cnsa-focusable" id="recordBtn" onclick="toggleRecording()" aria-label="기록모드 켜기 또는 끄기"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg><span data-label>기록모드</span></button>
+                    <button class="btn-report cnsa-focusable" id="reportBtn" onclick="openReport()" aria-label="실험 보고서 작성"><svg class="ico" aria-hidden="true"><use href="#i-report"/></svg><span data-label>보고서 쓰기</span></button>
                 </div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
@@ -1312,108 +1781,131 @@
                     <span class="recording-dot" aria-hidden="true"></span>
                     기록 중
                 </div>
-                <button class="btn-back cnsa-focusable" onclick="backToSelection()" aria-label="처음 화면으로 돌아가기">◀ 처음으로</button>
+                <button class="btn-danger cnsa-focusable" onclick="resetSimulation()" aria-label="시뮬레이션 초기화"><svg class="ico" aria-hidden="true"><use href="#i-rotate"/></svg>초기화</button>
+                <button class="btn-back cnsa-focusable" onclick="backToSelection()" aria-label="처음 화면으로 돌아가기"><svg class="ico" aria-hidden="true"><use href="#i-chevron-left"/></svg>처음으로</button>
             </div>
         </div>
         
         <div class="controls">
-            <div class="control-section">
-                <h3>⚙️ 시뮬레이션 설정</h3>
+            <div class="control-section" id="simSetupSection">
+                <h3><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg>시뮬레이션 설정</h3>
                 
                 <div class="mode-selector" role="group" aria-label="시뮬레이션 모드 선택">
                     <div class="mode-button active cnsa-focusable" id="manualMode" role="button" tabindex="0" aria-pressed="true" onclick="setMode('manual')">
-                        👆 수동 모드
+                        <svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg>수동 모드
                     </div>
                     <div class="mode-button cnsa-focusable" id="autoMode" role="button" tabindex="0" aria-pressed="false" onclick="setMode('auto')">
-                        🦅 자동 모드
+                        <svg class="ico" aria-hidden="true"><use href="#i-bird"/></svg>자동 모드
                     </div>
                 </div>
 
                 <div class="bg-selector" id="bgSelector" style="display: none; margin-top: 10px;" role="group" aria-label="배경 환경 선택">
                     <div class="bg-button grassland active cnsa-focusable" id="grasslandBg" role="button" tabindex="0" aria-pressed="true" onclick="setBackground('grassland')">
-                        🌿 초지
+                        <svg class="ico" aria-hidden="true"><use href="#i-leaf"/></svg>초지
                     </div>
                     <div class="bg-button openfield cnsa-focusable" id="openfieldBg" role="button" tabindex="0" aria-pressed="false" onclick="setBackground('openfield')">
-                        🏜️ 개활지
+                        <svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg>개활지
                     </div>
                 </div>
-            </div>
-            
-            <div class="control-section">
-                <h3>🧬 진화 설정</h3>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="heritableCheck" checked>
-                    <label for="heritableCheck">유전</label>
-                    
-                    <input type="checkbox" id="mutationCheck" checked>
-                    <label for="mutationCheck">돌연변이</label>
-                </div>
-                
-                <div class="slider-group">
-                    <label for="mutationRate">돌연변이율:</label>
-                    <div class="slider-container">
-                        <input type="range" id="mutationRate" min="0" max="20" value="5">
-                        <span class="slider-value" id="mutationRateValue">5%</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="control-section">
-                <h3>🎮 컨트롤</h3>
-                
+
                 <div class="slider-group" id="speedControl" style="display: none;">
-                    <label for="simSpeed">시뮬레이션 속도:</label>
-                    <div class="slider-container">
-                        <input type="range" id="simSpeed" min="0.5" max="5" step="0.5" value="1">
+                    <div class="slider-head">
+                        <label for="simSpeed">시뮬레이션 속도</label>
                         <span class="slider-value" id="simSpeedValue">1x</span>
                     </div>
+                    <div class="slider-container">
+                        <input type="range" id="simSpeed" min="0.5" max="5" step="0.5" value="1">
+                    </div>
                 </div>
-                
-                <button class="btn-danger cnsa-focusable" onclick="resetSimulation()" style="width: 100%; margin-top: 10px;" aria-label="시뮬레이션 초기화">↺ 초기화</button>
             </div>
+            
+            <div class="control-section" id="evoSetupSection">
+                <h3><svg class="ico" aria-hidden="true"><use href="#i-branch"/></svg>진화 설정</h3>
+
+                <div class="toggle-grid">
+                    <label class="toggle-row">
+                        <span class="toggle-title">유전</span>
+                        <span class="switch">
+                            <input type="checkbox" id="heritableCheck" checked>
+                            <span class="switch-track" aria-hidden="true"></span>
+                        </span>
+                    </label>
+                    <label class="toggle-row">
+                        <span class="toggle-title">돌연변이</span>
+                        <span class="switch">
+                            <input type="checkbox" id="mutationCheck" checked>
+                            <span class="switch-track" aria-hidden="true"></span>
+                        </span>
+                    </label>
+                </div>
+
+                <div class="slider-group" id="mutationRateGroup">
+                    <div class="slider-head">
+                        <label for="mutationRate">돌연변이율</label>
+                        <span class="slider-value" id="mutationRateValue">5%</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="mutationRate" min="0" max="20" value="5">
+                    </div>
+                </div>
+            </div>
+            
         </div>
         
-        <div class="keyboard-hints">⌨️ Space(시작/정지) R(번식) G(그래프) D(기록) Esc(처음으로)</div>
+        <div class="keyboard-hints"><svg class="ico" aria-hidden="true"><use href="#i-keyboard"/></svg><kbd>Space</kbd> 시작/정지 <kbd>R</kbd> 번식 <kbd>D</kbd> 기록 <kbd>Esc</kbd> 처음으로</div>
 
         <div class="main-area">
-            <canvas id="gameCanvas" width="600" height="400" role="img" aria-label="달팽이 진화 시뮬레이션 화면. 수동 모드에서는 달팽이를 클릭해 포식합니다."></canvas>
-            
-            <div class="stats-panel" id="statsPanel">
-                <h3>📊 현재 상태</h3>
-                <div class="stat-item">
-                    <span class="stat-label">총 개체수:</span>
-                    <span class="stat-value" id="totalCount">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">세대:</span>
-                    <span class="stat-value" id="generation">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">평균값:</span>
-                    <span class="stat-value" id="avgValue">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">잡은 개체수:</span>
-                    <span class="stat-value" id="caughtCount">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">돌연변이 발생:</span>
-                    <span class="stat-value" id="mutationCount">0</span>
-                </div>
-                <div class="stat-item" id="eagleStats" style="display: none;">
-                    <span class="stat-label">독수리 사냥 성공:</span>
-                    <span class="stat-value" id="eagleHunts">0</span>
-                </div>
+            <div class="canvas-wrap">
+                <canvas id="gameCanvas" width="600" height="400" role="img" aria-label="달팽이 진화 시뮬레이션 화면. 수동 모드에서는 달팽이를 클릭해 포식합니다."></canvas>
             </div>
             
-            <div class="graph-panel" id="graphPanel" style="display: none;">
-                <h3>📈 분포도</h3>
-                <canvas id="sideChart"></canvas>
+            <div class="stats-panel" id="statsPanel">
+                <h3><svg class="ico" aria-hidden="true"><use href="#i-activity"/></svg>현재 상태</h3>
+
+                <div class="stat-hero">
+                    <div class="stat-hero-top">
+                        <span class="stat-hero-label">평균 형질값</span>
+                        <span class="stat-trend" id="avgTrend" data-dir="flat">기준</span>
+                    </div>
+                    <div class="stat-hero-value" id="avgValue">0</div>
+                    <div class="stat-hero-sub"><svg class="ico" aria-hidden="true"><use href="#i-branch"/></svg><span id="generation">0</span>세대 진행</div>
+                </div>
+
+                <div class="stat-grid">
+                    <div class="stat-cell">
+                        <span class="stat-cell-label">현재 개체수</span>
+                        <span class="stat-cell-value" id="totalCount">0</span>
+                    </div>
+                    <div class="stat-cell">
+                        <span class="stat-cell-label">잡힌 개체</span>
+                        <span class="stat-cell-value" id="caughtCount">0</span>
+                    </div>
+                    <div class="stat-cell">
+                        <span class="stat-cell-label">돌연변이</span>
+                        <span class="stat-cell-value" id="mutationCount">0</span>
+                    </div>
+                    <div class="stat-cell" id="eagleStats" style="display: none;">
+                        <span class="stat-cell-label">독수리 사냥</span>
+                        <span class="stat-cell-value" id="eagleHunts">0</span>
+                    </div>
+                </div>
+
+                <div class="stat-dist">
+                    <span class="stat-dist-title"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg>형질 분포</span>
+                    <div class="stat-dist-chart"><canvas id="sideChart"></canvas></div>
+                </div>
             </div>
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
+        const FONT_STACK = getComputedStyle(document.documentElement).getPropertyValue('--cnsa-font').trim();
+
+        function setBtnLabel(el, icon, label) {
+            const node = typeof el === 'string' ? document.getElementById(el) : el;
+            if (!node) return;
+            node.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-' + icon + '"/></svg><span data-label>' + label + '</span>';
+        }
         function toggleGenetics() {
             const cards = document.getElementById('geneticsCards');
             const arrow = document.getElementById('geneticsArrow');
@@ -1448,7 +1940,22 @@
         let simulationSpeed = 1;
         let backgroundImage = null;
         let sideChart = null;
-        let showingGraph = false;
+        let baselineAvg = null;
+        let roundData = [];
+
+        function snapshotCounts() {
+            const alive = snails.filter(s => s.alive);
+            const c = [0, 0, 0, 0, 0];
+            alive.forEach(s => { c[s.level - 1]++; });
+            const total = alive.length;
+            let avg = 0;
+            if (total > 0) {
+                if (currentScenario === 'speed') avg = alive.reduce((a, s) => a + s.speed, 0) / total;
+                else if (currentScenario === 'color') avg = alive.reduce((a, s) => a + s.level, 0) / total;
+                else avg = alive.reduce((a, s) => a + s.size, 0) / total;
+            }
+            return { c: c, total: total, avg: Math.round(avg * 100) / 100 };
+        }
         
         let isRecording = false;
         let recordingData = [];
@@ -1457,6 +1964,11 @@
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+
+        const eagleShadow = document.createElement('canvas');
+        eagleShadow.width = 160;
+        eagleShadow.height = 160;
+        const esCtx = eagleShadow.getContext('2d');
         
         // 시나리오별 레이블
         const scenarioLabels = {
@@ -1486,7 +1998,8 @@
                 this.angle = Math.random() * Math.PI * 2;
                 this.alive = true;
                 this.targetAngle = this.angle;
-                this.turnSpeed = 0.05;
+                this.turnSpeed = 0.045;
+                this.wobble = Math.random() * Math.PI * 2;
                 this.setupTraits();
             }
             
@@ -1518,11 +2031,12 @@
             update() {
                 if (!this.alive || !isRunning) return;
                 
-                if (Math.random() < 0.02) {
+                if (Math.random() < 0.01) {
                     this.targetAngle = Math.random() * Math.PI * 2;
                 }
-                
-                const angleDiff = this.targetAngle - this.angle;
+
+                let angleDiff = this.targetAngle - this.angle;
+                angleDiff = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
                 this.angle += angleDiff * this.turnSpeed;
                 
                 const actualSpeed = this.speed * simulationSpeed;
@@ -1539,62 +2053,76 @@
                     this.targetAngle = this.angle;
                     this.y = Math.max(this.size, Math.min(canvas.height - this.size, this.y));
                 }
+
+                this.wobble += 0.09 * simulationSpeed;
             }
             
             draw() {
                 if (!this.alive) return;
-                
+
+                const S = this.size;
+                const shellColor = this.getColor();
+                const w = Math.sin(this.wobble);
+
                 ctx.save();
                 ctx.translate(this.x, this.y);
+
+                // 접지 그림자 (블러, 회전 무관)
+                ctx.save();
+                ctx.filter = 'blur(3px)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.16)';
+                ctx.beginPath();
+                ctx.ellipse(S * 0.15, S * 0.35, S * 1.1, S * 0.7, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
                 ctx.rotate(this.angle);
-                
-                // 색상 가져오기
-                const shellColor = this.getColor();
-                
-                // 달팽이 껍질
+
+                // 몸체(발) - 기어가는 미세 펄스
                 ctx.fillStyle = shellColor;
                 ctx.beginPath();
-                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.ellipse(S * 0.8, 0, S * 0.6 * (1 + w * 0.06), S * 0.3, 0, 0, Math.PI * 2);
                 ctx.fill();
-                
+
+                // 더듬이 - 좌우 흔들림
+                ctx.strokeStyle = shellColor;
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                const tipY = S * 0.3 + w * 0.7;
+                ctx.beginPath();
+                ctx.moveTo(S * 1.2, -S * 0.1);
+                ctx.lineTo(S * 1.5, -tipY);
+                ctx.moveTo(S * 1.2, S * 0.1);
+                ctx.lineTo(S * 1.5, tipY);
+                ctx.stroke();
+
+                // 눈
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(S * 1.5, -tipY, 2, 0, Math.PI * 2);
+                ctx.arc(S * 1.5, tipY, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 껍질 (몸체 위)
+                ctx.fillStyle = shellColor;
+                ctx.beginPath();
+                ctx.arc(0, 0, S, 0, Math.PI * 2);
+                ctx.fill();
+
                 // 나선 무늬
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
                 ctx.lineWidth = 2;
+                ctx.lineJoin = 'round';
                 ctx.beginPath();
                 for (let i = 0; i < Math.PI * 4; i += 0.1) {
-                    const r = (this.size * 0.8) * (i / (Math.PI * 4));
+                    const r = (S * 0.8) * (i / (Math.PI * 4));
                     const x = Math.cos(i) * r;
                     const y = Math.sin(i) * r;
                     if (i === 0) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);
                 }
                 ctx.stroke();
-                
-                // 달팽이 몸체 (껍질과 같은 색상, 약간 더 진하게)
-                ctx.fillStyle = shellColor;
-                ctx.globalAlpha = 0.8;
-                ctx.beginPath();
-                ctx.ellipse(this.size * 0.8, 0, this.size * 0.6, this.size * 0.3, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.globalAlpha = 1;
-                
-                // 더듬이 (몸체와 같은 색상)
-                ctx.strokeStyle = shellColor;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(this.size * 1.2, -this.size * 0.1);
-                ctx.lineTo(this.size * 1.5, -this.size * 0.3);
-                ctx.moveTo(this.size * 1.2, this.size * 0.1);
-                ctx.lineTo(this.size * 1.5, this.size * 0.3);
-                ctx.stroke();
-                
-                // 눈 (검은색 유지)
-                ctx.fillStyle = 'black';
-                ctx.beginPath();
-                ctx.arc(this.size * 1.5, -this.size * 0.3, 2, 0, Math.PI * 2);
-                ctx.arc(this.size * 1.5, this.size * 0.3, 2, 0, Math.PI * 2);
-                ctx.fill();
-                
+
                 ctx.restore();
             }
             
@@ -1631,11 +2159,13 @@
                 this.huntCooldown = 0;
                 this.target = null;
                 this.hunts = 0;
+                this.wingPhase = Math.random() * Math.PI * 2;
             }
             
             update() {
                 if (!isRunning) return;
-                
+
+                this.wingPhase += 0.22 * simulationSpeed;
                 this.huntCooldown = Math.max(0, this.huntCooldown - simulationSpeed);
                 
                 if (!this.target || !this.target.alive || this.huntCooldown > 0) {
@@ -1692,63 +2222,40 @@
                 }
             }
             
-            draw() {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.angle);
-                
-                // 독수리 그림자 (위에서 본 실루엣)
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                
-                // 스케일 조정
-                ctx.scale(1.2, 1.2);
-                
+            _trace(ctx, flap) {
                 // 몸통
-                ctx.beginPath();
+                ctx.moveTo(8, 0);
                 ctx.ellipse(0, 0, 8, 12, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
+
                 // 머리
-                ctx.beginPath();
+                ctx.moveTo(5, -10);
                 ctx.arc(0, -10, 5, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 왼쪽 날개 (펼친 모양)
-                ctx.beginPath();
+
+                // 왼쪽 날개
                 ctx.moveTo(-5, -5);
-                // 날개 앞부분
-                ctx.quadraticCurveTo(-20, -8, -30, -5);
-                // 날개 끝 깃털들
-                ctx.lineTo(-32, -2);
-                ctx.lineTo(-33, 1);
-                ctx.lineTo(-32, 4);
-                ctx.lineTo(-30, 6);
-                ctx.lineTo(-27, 7);
-                // 날개 뒷부분
+                ctx.quadraticCurveTo(-20, -8 + flap, -30, -5 + flap);
+                ctx.lineTo(-32, -2 + flap);
+                ctx.lineTo(-33, 1 + flap);
+                ctx.lineTo(-32, 4 + flap);
+                ctx.lineTo(-30, 6 + flap);
+                ctx.lineTo(-27, 7 + flap);
                 ctx.quadraticCurveTo(-20, 6, -15, 8);
                 ctx.quadraticCurveTo(-10, 10, -5, 8);
                 ctx.closePath();
-                ctx.fill();
-                
-                // 오른쪽 날개 (펼친 모양)
-                ctx.beginPath();
+
+                // 오른쪽 날개
                 ctx.moveTo(5, -5);
-                // 날개 앞부분
-                ctx.quadraticCurveTo(20, -8, 30, -5);
-                // 날개 끝 깃털들
-                ctx.lineTo(32, -2);
-                ctx.lineTo(33, 1);
-                ctx.lineTo(32, 4);
-                ctx.lineTo(30, 6);
-                ctx.lineTo(27, 7);
-                // 날개 뒷부분
+                ctx.quadraticCurveTo(20, -8 + flap, 30, -5 + flap);
+                ctx.lineTo(32, -2 + flap);
+                ctx.lineTo(33, 1 + flap);
+                ctx.lineTo(32, 4 + flap);
+                ctx.lineTo(30, 6 + flap);
+                ctx.lineTo(27, 7 + flap);
                 ctx.quadraticCurveTo(20, 6, 15, 8);
                 ctx.quadraticCurveTo(10, 10, 5, 8);
                 ctx.closePath();
-                ctx.fill();
-                
-                // 꼬리 (부채꼴 모양)
-                ctx.beginPath();
+
+                // 꼬리
                 ctx.moveTo(-4, 10);
                 ctx.quadraticCurveTo(-3, 15, -5, 18);
                 ctx.lineTo(-3, 19);
@@ -1759,8 +2266,85 @@
                 ctx.lineTo(5, 18);
                 ctx.quadraticCurveTo(3, 15, 4, 10);
                 ctx.closePath();
+            }
+
+            _fill(ctx, flap) {
+                ctx.beginPath(); ctx.ellipse(0, 0, 8, 12, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(0, -10, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(-5, -5);
+                ctx.quadraticCurveTo(-20, -8 + flap, -30, -5 + flap);
+                ctx.lineTo(-32, -2 + flap); ctx.lineTo(-33, 1 + flap); ctx.lineTo(-32, 4 + flap);
+                ctx.lineTo(-30, 6 + flap); ctx.lineTo(-27, 7 + flap);
+                ctx.quadraticCurveTo(-20, 6, -15, 8);
+                ctx.quadraticCurveTo(-10, 10, -5, 8);
+                ctx.closePath(); ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(5, -5);
+                ctx.quadraticCurveTo(20, -8 + flap, 30, -5 + flap);
+                ctx.lineTo(32, -2 + flap); ctx.lineTo(33, 1 + flap); ctx.lineTo(32, 4 + flap);
+                ctx.lineTo(30, 6 + flap); ctx.lineTo(27, 7 + flap);
+                ctx.quadraticCurveTo(20, 6, 15, 8);
+                ctx.quadraticCurveTo(10, 10, 5, 8);
+                ctx.closePath(); ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(-4, 10);
+                ctx.quadraticCurveTo(-3, 15, -5, 18);
+                ctx.lineTo(-3, 19); ctx.lineTo(-1, 20); ctx.lineTo(0, 20); ctx.lineTo(1, 20);
+                ctx.lineTo(3, 19); ctx.lineTo(5, 18);
+                ctx.quadraticCurveTo(3, 15, 4, 10);
+                ctx.closePath(); ctx.fill();
+            }
+
+            draw() {
+                const flap = Math.sin(this.wingPhase) * 4;
+
+                // 부드러운 그림자 (오프스크린 불투명 실루엣 합성 = 구멍/겹침 없음)
+                esCtx.clearRect(0, 0, 160, 160);
+                esCtx.save();
+                esCtx.translate(80, 80);
+                esCtx.rotate(this.angle);
+                esCtx.translate(9, 13);
+                esCtx.scale(1.2, 1.2);
+                esCtx.fillStyle = '#000';
+                this._fill(esCtx, flap);
+                esCtx.restore();
+
+                ctx.save();
+                ctx.globalAlpha = 0.2;
+                ctx.filter = 'blur(6px)';
+                ctx.drawImage(eagleShadow, this.x - 80, this.y - 80);
+                ctx.restore();
+
+                // 독수리 본체 (단일 패스)
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.scale(1.2, 1.2);
+                ctx.fillStyle = 'rgba(30, 22, 16, 0.94)';
+                this._fill(ctx, flap);
+
+                // 몸통 하이라이트 (등줄기)
+                ctx.fillStyle = 'rgba(90, 68, 44, 0.85)';
+                ctx.beginPath();
+                ctx.ellipse(0, -1, 3, 9, 0, 0, Math.PI * 2);
                 ctx.fill();
-                
+
+                // 머리
+                ctx.fillStyle = 'rgba(52, 40, 28, 0.95)';
+                ctx.beginPath();
+                ctx.arc(0, -10, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 부리
+                ctx.fillStyle = '#d99a2b';
+                ctx.beginPath();
+                ctx.moveTo(-2, -13.5);
+                ctx.lineTo(0, -18);
+                ctx.lineTo(2, -13.5);
+                ctx.closePath();
+                ctx.fill();
+
                 ctx.restore();
             }
         }
@@ -1832,7 +2416,7 @@ function startRecording() {
 
     document.getElementById('nameModal').style.display = 'none';
     document.getElementById('recordBtn').classList.add('active');
-    document.getElementById('recordBtn').textContent = '⏹ 기록중지';
+    setBtnLabel('recordBtn', 'stop', '기록중지');
     document.getElementById('recordingBadge').classList.add('visible');
 
     recordingData.push(captureSnapshot());
@@ -1846,7 +2430,7 @@ function cancelRecording() {
 function stopRecording() {
     isRecording = false;
     document.getElementById('recordBtn').classList.remove('active');
-    document.getElementById('recordBtn').textContent = '📋 기록모드';
+    setBtnLabel('recordBtn', 'clipboard', '기록모드');
     document.getElementById('recordingBadge').classList.remove('visible');
 
     if (recordingData.length <= 1) {
@@ -1857,6 +2441,8 @@ function stopRecording() {
 
     sendRecordingData();
 }
+
+
 
 function sendRecordingData() {
     showToast('전송 중...', 5000);
@@ -1887,6 +2473,7 @@ function sendRecordingData() {
 }
 
 function downloadCSV() {
+    const name = studentName;
     const headers = '세대,Lv1,Lv2,Lv3,Lv4,Lv5,총 개체수,평균값,돌연변이\n';
     const rows = recordingData.map(function(d) {
         return [d.gen, d.lv1, d.lv2, d.lv3, d.lv4, d.lv5, d.total, d.avg, d.mutations].join(',');
@@ -1897,7 +2484,7 @@ function downloadCSV() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = studentName + '_' + currentScenario + '_기록.csv';
+    a.download = name + '_' + currentScenario + '_기록.csv';
     a.click();
     URL.revokeObjectURL(url);
 }
@@ -1928,13 +2515,33 @@ window.onclick = function(event) {
             const modal = document.getElementById('setupModal');
             const labels = scenarioLabels[scenario];
             
-            document.getElementById('modalTitle').textContent = `${labels.title} - 초기 개체군 설정`;
+            document.getElementById('modalTitleText').textContent = `${labels.title} 설정`;
             
             for (let i = 1; i <= 5; i++) {
                 document.getElementById(`level${i}Label`).textContent = labels.levels[i-1];
             }
-            
+
+            updateSetupTotal();
             modal.style.display = 'block';
+        }
+
+        function updateSetupTotal() {
+            let total = 0;
+            for (let i = 1; i <= 5; i++) {
+                total += parseInt(document.getElementById(`level${i}Count`).value) || 0;
+            }
+            document.getElementById('setupTotal').textContent = total;
+        }
+
+        function applyPreset(kind) {
+            const vals = kind === 'even'   ? [10, 10, 10, 10, 10]
+                       : kind === 'bell'   ? [4, 10, 16, 10, 4]
+                       : kind === 'clear'  ? [0, 0, 0, 0, 0]
+                       : Array.from({ length: 5 }, () => Math.floor(Math.random() * 16) + 2);
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`level${i}Count`).value = vals[i-1];
+            }
+            updateSetupTotal();
         }
         
         // 모달 닫기
@@ -1962,10 +2569,11 @@ window.onclick = function(event) {
                     snails.push(new Snail(level));
                 }
             }
+            roundData = [{ start: snapshotCounts() }];
             
             document.getElementById('setupModal').style.display = 'none';
             document.getElementById('selectionScreen').style.display = 'none';
-            document.getElementById('simulationScreen').style.display = 'block';
+            document.getElementById('simulationScreen').style.display = '';
             document.getElementById('simulationScreen').classList.add('active');
             
             const labels = scenarioLabels[currentScenario];
@@ -1978,6 +2586,7 @@ window.onclick = function(event) {
             }
             
             generation = 0;
+            baselineAvg = null;
             caughtCount = 0;
             mutationCount = 0;
             eagles = [];
@@ -1988,9 +2597,12 @@ window.onclick = function(event) {
             updateStats();
             initChart();
             updateChart();
+            paintAllRanges();
+            syncMutationRate();
             requestAnimationFrame(() => {
                 resizeCanvas();
             });
+
         }
         
         // 처음으로 돌아가기
@@ -2013,10 +2625,6 @@ window.onclick = function(event) {
             }
             
             // 뷰 상태 초기화
-            showingGraph = false;
-            document.getElementById('toggleViewBtn').innerHTML = '📊 그래프';
-            document.getElementById('statsPanel').style.display = 'block';
-            document.getElementById('graphPanel').style.display = 'none';
             
             // 개체수 입력 초기화
             for (let i = 1; i <= 5; i++) {
@@ -2044,12 +2652,14 @@ window.onclick = function(event) {
             // 슬라이더 초기화
             document.getElementById('mutationRate').value = 5;
             document.getElementById('mutationRateValue').textContent = '5%';
+            paintAllRanges();
+            syncMutationRate();
             document.getElementById('simSpeed').value = 1;
             document.getElementById('simSpeedValue').textContent = '1x';
             simulationSpeed = 1;
             
             // 버튼 상태 초기화
-            document.getElementById('startBtn').textContent = '▶️ 시작';
+            setBtnLabel('startBtn', 'play', '시작');
             document.getElementById('startBtn').className = 'btn-success';
             document.getElementById('reproduceBtn').disabled = true;
             
@@ -2073,32 +2683,27 @@ window.onclick = function(event) {
             const offCtx = offCanvas.getContext('2d');
             
             if (currentBackground === 'grassland') {
-                const gradient = offCtx.createLinearGradient(0, 0, 0, offCanvas.height);
-                gradient.addColorStop(0, '#8BC34A');
-                gradient.addColorStop(1, '#4CAF50');
-                offCtx.fillStyle = gradient;
+                offCtx.fillStyle = '#66a83f';
                 offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
-                
-                offCtx.strokeStyle = 'rgba(76, 175, 80, 0.6)';
-                offCtx.lineWidth = 2;
-                for (let i = 0; i < 150; i++) {
+
+                // 점 텍스처 (개활지와 동일 방식, 초록 톤)
+                for (let i = 0; i < 90; i++) {
                     const x = Math.random() * offCanvas.width;
                     const y = Math.random() * offCanvas.height;
-                    
+                    const size = Math.random() * 3 + 1;
+                    offCtx.fillStyle = `rgba(60, 130, 45, ${Math.random() * 0.4 + 0.2})`;
                     offCtx.beginPath();
-                    const blades = Math.floor(Math.random() * 3) + 3;
-                    for (let j = 0; j < blades; j++) {
-                        const angle = (Math.PI / 4) * (j / blades - 0.5);
-                        const height = Math.random() * 15 + 10;
-                        offCtx.moveTo(x, y);
-                        offCtx.quadraticCurveTo(
-                            x + Math.sin(angle) * height/2, 
-                            y - height/2,
-                            x + Math.sin(angle) * height, 
-                            y - height
-                        );
-                    }
-                    offCtx.stroke();
+                    offCtx.arc(x, y, size, 0, Math.PI * 2);
+                    offCtx.fill();
+                }
+
+                offCtx.fillStyle = 'rgba(140, 200, 90, 0.35)';
+                for (let i = 0; i < 34; i++) {
+                    const x = Math.random() * offCanvas.width;
+                    const y = Math.random() * offCanvas.height;
+                    offCtx.beginPath();
+                    offCtx.ellipse(x, y, Math.random() * 8 + 3, Math.random() * 5 + 2, Math.random() * Math.PI, 0, Math.PI * 2);
+                    offCtx.fill();
                 }
             } else {
                 offCtx.fillStyle = '#8B4513';
@@ -2169,6 +2774,8 @@ window.onclick = function(event) {
 
             backgroundImage = null;
             drawBackground();
+            snails.forEach(s => { if (s.alive) s.draw(); });
+            eagles.forEach(e => e.draw());
         }
         
         // 시뮬레이션 토글
@@ -2177,12 +2784,12 @@ window.onclick = function(event) {
             const btn = document.getElementById('startBtn');
             
             if (isRunning) {
-                btn.textContent = '⏸️ 정지';
+                setBtnLabel(btn, 'pause', '정지');
                 btn.className = 'btn-danger';
                 document.getElementById('reproduceBtn').disabled = true;
                 animate();
             } else {
-                btn.textContent = '▶️ 시작';
+                setBtnLabel(btn, 'play', '시작');
                 btn.className = 'btn-success';
                 document.getElementById('reproduceBtn').disabled = false;
                 if (animationId) {
@@ -2220,21 +2827,19 @@ window.onclick = function(event) {
             const aliveCount = snails.filter(s => s.alive).length;
             const halfPopulation = Math.floor(initialPopulation / 2);
             
-            // 자동 모드에서만 절반에서 정지
-            if (currentMode === 'auto' && aliveCount <= halfPopulation) {
-                // 자동 모드: 절반 이하가 되면 자동 정지
+            // 자동/수동 모두 절반 이하가 되면 정지하고 번식 유도
+            if (isRunning && aliveCount <= halfPopulation) {
                 isRunning = false;
-                document.getElementById('startBtn').textContent = '▶️ 시작';
+                setBtnLabel('startBtn', 'play', '시작');
                 document.getElementById('startBtn').className = 'btn-success';
                 document.getElementById('reproduceBtn').disabled = false;
-                
+
                 if (animationId) {
                     cancelAnimationFrame(animationId);
                 }
-                
+
                 showToast(`개체수가 절반(${halfPopulation}마리) 이하! 번식 버튼을 눌러주세요.`, 4000);
             }
-            // 수동 모드에서는 정지하지 않음
         }
         
         // 번식
@@ -2301,8 +2906,10 @@ window.onclick = function(event) {
                 newSnails.push(child);
             });
             
+            if (roundData.length) roundData[roundData.length - 1].end = snapshotCounts();
             snails = newSnails.filter(s => s.alive);
             generation++;
+            roundData.push({ start: snapshotCounts() });
             caughtCount = 0;
             mutationCount += mutationOccurred; // 누적 돌연변이 수 업데이트
             
@@ -2338,7 +2945,7 @@ window.onclick = function(event) {
         // 초기화
         function resetSimulation() {
             isRunning = false;
-            document.getElementById('startBtn').textContent = '▶️ 시작';
+            setBtnLabel('startBtn', 'play', '시작');
             document.getElementById('startBtn').className = 'btn-success';
             document.getElementById('reproduceBtn').disabled = true;
             
@@ -2349,8 +2956,10 @@ window.onclick = function(event) {
                     snails.push(new Snail(level));
                 }
             }
+            roundData = [{ start: snapshotCounts() }];
             
             generation = 0;
+            baselineAvg = null;
             caughtCount = 0;
             mutationCount = 0;
             
@@ -2370,52 +2979,52 @@ window.onclick = function(event) {
         // 통계 업데이트
         function updateStats() {
             const aliveSnails = snails.filter(s => s.alive);
-            
+
             document.getElementById('totalCount').textContent = aliveSnails.length;
             document.getElementById('generation').textContent = generation;
             document.getElementById('caughtCount').textContent = caughtCount;
             document.getElementById('mutationCount').textContent = mutationCount;
-            
+
+            const avgEl = document.getElementById('avgValue');
+            const trendEl = document.getElementById('avgTrend');
+
             if (aliveSnails.length > 0) {
                 let avgValue = 0;
-                
+                let display = '0';
+
                 if (currentScenario === 'speed') {
                     avgValue = aliveSnails.reduce((sum, s) => sum + s.speed, 0) / aliveSnails.length;
-                    document.getElementById('avgValue').textContent = avgValue.toFixed(2) + ' m/s';
+                    display = avgValue.toFixed(2) + ' m/s';
                 } else if (currentScenario === 'color') {
                     avgValue = aliveSnails.reduce((sum, s) => sum + s.level, 0) / aliveSnails.length;
-                    document.getElementById('avgValue').textContent = avgValue.toFixed(1) + ' 레벨';
+                    display = avgValue.toFixed(1) + ' 레벨';
                 } else if (currentScenario === 'size') {
                     avgValue = aliveSnails.reduce((sum, s) => sum + s.size, 0) / aliveSnails.length;
-                    document.getElementById('avgValue').textContent = avgValue.toFixed(1) + ' mm';
+                    display = avgValue.toFixed(1) + ' mm';
+                }
+                avgEl.textContent = display;
+
+                if (baselineAvg === null) baselineAvg = avgValue;
+                const delta = avgValue - baselineAvg;
+                const pct = baselineAvg !== 0 ? (delta / Math.abs(baselineAvg)) * 100 : 0;
+
+                if (Math.abs(pct) < 0.5) {
+                    trendEl.dataset.dir = 'flat';
+                    trendEl.textContent = '기준';
+                } else if (delta > 0) {
+                    trendEl.dataset.dir = 'up';
+                    trendEl.textContent = '▲ ' + pct.toFixed(0) + '%';
+                } else {
+                    trendEl.dataset.dir = 'down';
+                    trendEl.textContent = '▼ ' + Math.abs(pct).toFixed(0) + '%';
                 }
             } else {
-                document.getElementById('avgValue').textContent = '0';
+                avgEl.textContent = '—';
+                trendEl.dataset.dir = 'flat';
+                trendEl.textContent = '멸종';
             }
-        }
-        
-        // 뷰 토글 (통계 <-> 그래프)
-        function toggleView() {
-            showingGraph = !showingGraph;
-            const btn = document.getElementById('toggleViewBtn');
-            const statsPanel = document.getElementById('statsPanel');
-            const graphPanel = document.getElementById('graphPanel');
-            
-            if (showingGraph) {
-                statsPanel.style.display = 'none';
-                graphPanel.style.display = 'block';
-                btn.innerHTML = '📊 인덱스';
-                
-                // 그래프가 없으면 생성
-                if (!sideChart) {
-                    initSideChart();
-                }
-                updateChart();
-            } else {
-                statsPanel.style.display = 'block';
-                graphPanel.style.display = 'none';
-                btn.innerHTML = '📊 그래프';
-            }
+
+            updateChart();
         }
         
         // 사이드 차트 초기화
@@ -2431,30 +3040,37 @@ window.onclick = function(event) {
                         label: '개체수',
                         data: [0, 0, 0, 0, 0],
                         backgroundColor: [
-                            'rgba(255, 99, 132, 0.5)',
-                            'rgba(255, 159, 64, 0.5)',
-                            'rgba(255, 205, 86, 0.5)',
-                            'rgba(75, 192, 192, 0.5)',
-                            'rgba(54, 162, 235, 0.5)'
+                            'rgba(0, 210, 255, 0.22)',
+                            'rgba(0, 210, 255, 0.38)',
+                            'rgba(0, 210, 255, 0.54)',
+                            'rgba(58, 123, 213, 0.62)',
+                            'rgba(58, 123, 213, 0.85)'
                         ],
-                        borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(255, 159, 64, 1)',
-                            'rgba(255, 205, 86, 1)',
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(54, 162, 235, 1)'
-                        ],
-                        borderWidth: 2
+                        borderColor: 'rgba(0, 210, 255, 0.85)',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        maxBarThickness: 40
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
                     scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: 'rgba(255,255,255,0.6)', font: { family: FONT_STACK, size: 11 } }
+                        },
                         y: {
                             beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.08)' },
+                            border: { display: false },
                             ticks: {
-                                stepSize: 1
+                                stepSize: 1,
+                                color: 'rgba(255,255,255,0.45)',
+                                font: { family: FONT_STACK, size: 11 }
                             }
                         }
                     }
@@ -2464,12 +3080,12 @@ window.onclick = function(event) {
         
         // 차트 초기화
         function initChart() {
-            // 사이드 차트는 toggleView에서 처리
+            if (!sideChart) initSideChart();
         }
         
         // 차트 업데이트
         function updateChart() {
-            if (sideChart && showingGraph) {
+            if (sideChart) {
                 const counts = [0, 0, 0, 0, 0];
                 const aliveSnails = snails.filter(s => s.alive);
                 
@@ -2514,6 +3130,36 @@ window.onclick = function(event) {
             simulationSpeed = parseFloat(e.target.value);
             document.getElementById('simSpeedValue').textContent = simulationSpeed + 'x';
         });
+
+        for (let i = 1; i <= 5; i++) {
+            document.getElementById(`level${i}Count`).addEventListener('input', updateSetupTotal);
+        }
+
+        function paintRange(input) {
+            const min = parseFloat(input.min) || 0;
+            const max = parseFloat(input.max) || 100;
+            const pct = ((parseFloat(input.value) - min) / (max - min)) * 100;
+            input.style.setProperty('--fill', pct + '%');
+        }
+
+        function paintAllRanges() {
+            document.querySelectorAll('.slider-container input[type="range"]').forEach(paintRange);
+        }
+
+        document.querySelectorAll('.slider-container input[type="range"]').forEach(r => {
+            r.addEventListener('input', () => paintRange(r));
+        });
+
+        function syncMutationRate() {
+            const on = document.getElementById('mutationCheck').checked;
+            const grp = document.getElementById('mutationRateGroup');
+            grp.style.display = on ? '' : 'none';
+            if (on) paintRange(document.getElementById('mutationRate'));
+        }
+
+        document.getElementById('mutationCheck').addEventListener('change', syncMutationRate);
+        paintAllRanges();
+        syncMutationRate();
         
         let resizeTimer;
         function resizeCanvas() {
@@ -2626,16 +3272,13 @@ window.onclick = function(event) {
                 case 'Space':
                     e.preventDefault();
                     toggleSimulation();
-                    showToast(isRunning ? '▶ 시뮬레이션 시작' : '⏸ 일시정지', 1500);
+                    showToast(isRunning ? '시뮬레이션 시작' : '일시정지', 1500);
                     break;
                 case 'KeyR':
                     if (!document.getElementById('reproduceBtn').disabled) {
                         reproduce();
-                        showToast(`🔄 ${generation}세대 번식 완료`, 1500);
+                        showToast(`${generation}세대 번식 완료`, 1500);
                     }
-                    break;
-                case 'KeyG':
-                    toggleView();
                     break;
                 case 'KeyD':
                     toggleRecording();
@@ -2645,6 +3288,280 @@ window.onclick = function(event) {
                     break;
             }
         });
+
+        function buildGraphSVG(vals, xs, unit) {
+            if (!vals.length) return '<div class="nograph">아직 기록된 세대가 없어요. 시뮬레이션을 진행한 뒤 다시 열어보세요.</div>';
+            const W = 680, H = 240, pl = 46, pr = 16, pt = 18, pb = 42;
+            let lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+            if (lo === hi) { lo -= 1; hi += 1; }
+            const pad = (hi - lo) * 0.12; lo -= pad; hi += pad;
+            const iw = W - pl - pr, ih = H - pt - pb;
+            const X = function (i) { return pl + (vals.length === 1 ? iw / 2 : iw * i / (vals.length - 1)); };
+            const Y = function (v) { return pt + ih * (1 - (v - lo) / (hi - lo)); };
+            let grid = '';
+            for (let g = 0; g <= 4; g++) {
+                const yy = pt + ih * g / 4;
+                const val = hi - (hi - lo) * g / 4;
+                grid += '<line x1="' + pl + '" y1="' + yy + '" x2="' + (W - pr) + '" y2="' + yy + '" stroke="#e5e7eb"/>';
+                grid += '<text x="' + (pl - 6) + '" y="' + (yy + 3) + '" text-anchor="end" font-size="10" fill="#999">' + val.toFixed(1) + '</text>';
+            }
+            const pts = vals.map(function (v, i) { return X(i) + ',' + Y(v); }).join(' ');
+            const dots = vals.map(function (v, i) { return '<circle cx="' + X(i) + '" cy="' + Y(v) + '" r="3" fill="#2563eb"/>'; }).join('');
+            const xlab = xs.map(function (t, i) { return '<text x="' + X(i) + '" y="' + (H - pb + 16) + '" text-anchor="middle" font-size="9" fill="#666">' + t + '</text>'; }).join('');
+            const yttl = '<text x="12" y="' + (pt + ih / 2) + '" transform="rotate(-90 12 ' + (pt + ih / 2) + ')" text-anchor="middle" font-size="10" fill="#666">평균값' + (unit ? ' (' + unit + ')' : '') + '</text>';
+            return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%">' + grid + '<polyline points="' + pts + '" fill="none" stroke="#2563eb" stroke-width="2"/>' + dots + xlab + yttl + '</svg>';
+        }
+
+        function buildReportDoc() {
+            const cur = currentScenario;
+            const labels = scenarioLabels[cur];
+            const L = labels.levels;
+            const unit = labels.unit || '';
+            const modeText = currentMode === 'auto' ? '자동모드' : '수동모드';
+            const heritable = document.getElementById('heritableCheck').checked;
+            const mutation = document.getElementById('mutationCheck').checked;
+            const mrate = document.getElementById('mutationRate').value;
+            const bgText = cur === 'color' ? (currentBackground === 'grassland' ? '초지' : '개활지') : '-';
+            const initial = (roundData[0] && roundData[0].start) ? roundData[0].start : snapshotCounts();
+            const ROUNDS = 5;
+
+            const inp = function (v) { return '<input class="cin" value="' + (v === '' || v === undefined || v === null ? '' : v) + '">'; };
+            const g = function (r, k, i) { const rd = roundData[r - 1]; if (!rd || !rd[k]) return ''; return i === undefined ? rd[k].total : rd[k].c[i]; };
+            const ga = function (r, k) { const rd = roundData[r - 1]; if (!rd || !rd[k]) return ''; return rd[k].avg; };
+
+            let head = '<th class="y hd">형질</th>';
+            for (let r = 1; r <= ROUNDS; r++) head += '<th class="y">' + r + '회차<br>시작</th><th class="y">' + r + '회차<br>끝</th>';
+
+            let body = '';
+            for (let i = 0; i < 5; i++) {
+                let row = '<th class="y">' + L[i] + '<span class="lv">(' + (i + 1) + '레벨)</span></th>';
+                for (let r = 1; r <= ROUNDS; r++) row += '<td>' + inp(g(r, 'start', i)) + '</td><td>' + inp(g(r, 'end', i)) + '</td>';
+                body += '<tr>' + row + '</tr>';
+            }
+            let trow = '<th class="y">총 개체 수</th>';
+            for (let r = 1; r <= ROUNDS; r++) trow += '<td>' + inp(g(r, 'start')) + '</td><td>' + inp(g(r, 'end')) + '</td>';
+            body += '<tr>' + trow + '</tr>';
+            let arow = '<th class="y">평균값</th>';
+            for (let r = 1; r <= ROUNDS; r++) arow += '<td>' + inp(ga(r, 'start')) + '</td><td>' + inp(ga(r, 'end')) + '</td>';
+            body += '<tr>' + arow + '</tr>';
+
+            const seq = [], xs = [];
+            for (let r = 1; r <= ROUNDS; r++) {
+                const rd = roundData[r - 1];
+                if (rd && rd.start) { seq.push(rd.start.avg); xs.push(r + '시'); }
+                if (rd && rd.end) { seq.push(rd.end.avg); xs.push(r + '끝'); }
+            }
+            const graph = buildGraphSVG(seq, xs, unit);
+
+            let initCells = '';
+            for (let i = 0; i < 5; i++) initCells += '<td class="y">' + L[i] + '<span class="lv">(' + (i + 1) + '레벨)</span></td>';
+            let initVals = '';
+            for (let i = 0; i < 5; i++) initVals += '<td rowspan="4" class="tv">' + inp(initial.c[i]) + '</td>';
+
+            const Q = [
+                '시뮬레이션 결과, 형질에 따른 개체 수의 변화는 어떻게 나타났는가? 그 이유를 자연선택의 관점에서 설명해보자. (수동모드와 자동모드에서 결과가 달랐다면 그 이유도 설명해보자.)',
+                '각 시뮬레이션 상황에서 자연선택에 영향을 주는 다양한 요인에 대해 조원들과 이야기를 나누어 보자.',
+                'CNSA 탐사대는 육지와 교류가 단절된 가상의 섬의 달팽이 조사 결과, 육지의 달팽이에 비해 어두운 색을 띠는 것을 확인하였다. 해당 섬의 달팽이 색이 육지와 다른 이유를 자연선택을 이용하여 추론하여라.',
+                'CNSA 탐사대의 영향으로 위 섬의 토양의 색이 밝아지게 되었다. 앞으로 이 섬의 달팽이 색의 변화에 대해 자연선택의 관점에서 추론하여라.'
+            ];
+            let qHtml = '';
+            Q.forEach(function (q, i) { qHtml += '<div class="q"><div class="qt">' + (i + 1) + '. ' + q + '</div><textarea class="ans"></textarea></div>'; });
+
+            const css = '*{box-sizing:border-box}body{font-family:Pretendard,"Noto Sans KR",-apple-system,sans-serif;color:#111;margin:0;padding:24px;background:#f3f4f6}'
+                + '.sheet{max-width:900px;margin:0 auto;background:#fff;padding:28px 32px;box-shadow:0 2px 12px rgba(0,0,0,.1)}'
+                + '.top{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #111;padding-bottom:8px;font-size:14px}'
+                + '.top .id input{border:none;border-bottom:1px solid #999;width:90px;text-align:center;font-size:14px}'
+                + '.subj{display:flex;margin:16px 0}.subj .k{background:#ffe14d;font-weight:700;padding:10px 16px;border:1px solid #d4b800}.subj .v{flex:1;background:#ffe14d;text-align:center;font-weight:700;padding:10px;border:1px solid #d4b800;border-left:none}'
+                + '.book{width:100%;border-collapse:collapse;margin-bottom:22px;font-size:13px}.book td,.book th{border:1px solid #bbb;padding:8px;text-align:center}.book th{background:#f7f7f7}'
+                + '.step{background:#fdf6d8;font-weight:700;padding:8px 12px;margin:22px 0 14px;border-left:4px solid #e8c400}'
+                + 'table.grid{border-collapse:collapse;width:100%;font-size:12px;margin-bottom:10px}'
+                + 'table.grid th,table.grid td{border:1px solid #b9b9b9;padding:4px 6px;text-align:center;white-space:nowrap}'
+                + 'table.grid th{min-width:54px}table.grid td{min-width:48px}table.grid th:first-child{min-width:90px}'
+                + 'table.grid th.y,table.grid td.y{background:#fff2a8;font-weight:600}'
+                + '.lv{display:block;font-size:10px;color:#666;font-weight:400}'
+                + '.cin{width:100%;min-width:34px;border:none;text-align:center;font-size:12px;background:transparent;padding:3px 0}'
+                + '.cin:focus{outline:2px solid #2563eb;background:#eef4ff}'
+                + '.scroll{overflow-x:auto}'
+                + '.settings{border-collapse:collapse;width:100%;font-size:12px;margin-bottom:18px}.settings td{border:1px solid #b9b9b9;padding:6px 8px;text-align:center}.settings td.hd{background:#ffe14d;font-weight:700}.settings td.y{background:#fff2a8;font-weight:600}'
+                + '.graph{border:1px solid #ddd;border-radius:8px;padding:12px;margin:8px 0 22px}.graph h4{margin:0 0 8px;font-size:13px;text-align:center}.nograph{color:#888;font-size:13px;padding:24px;text-align:center}'
+                + '.note{font-size:12px;color:#555;line-height:1.7;margin:6px 0 16px}.note b{color:#111}'
+                + '.q{margin:14px 0}.qt{font-size:13px;line-height:1.6;margin-bottom:6px}.ans{width:100%;height:120px;border:1px solid #999;border-radius:6px;padding:8px;font-family:inherit;font-size:13px;resize:vertical}'
+                + '.bar{position:sticky;bottom:0;display:flex;gap:10px;justify-content:center;padding:14px;background:#f3f4f6}'
+                + '.bar button{padding:10px 20px;font-size:14px;font-weight:600;border-radius:8px;border:none;cursor:pointer}'
+                + '.bar .pdf{background:#2563eb;color:#fff}.bar .close{background:#e5e7eb;color:#333}'
+                + '@media print{body{background:#fff;padding:0}.sheet{box-shadow:none;max-width:none;padding:12mm}.bar{display:none}.cin:focus{outline:none;background:transparent}@page{size:A4;margin:10mm}}';
+
+            const chk = function (b) { return b ? '☑' : '☐'; };
+            const doc = '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+                + '<link rel="preconnect" href="https://fonts.gstatic.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">'
+                + '<title>실험 보고서 - ' + labels.title + '</title><style>' + css + '</style></head><body><div class="sheet">'
+                + '<div class="top"><div><b>2025학년도 2학기 통합과학2</b></div><div class="id">학번 : (<input>) &nbsp; 이름 : (<input>)</div></div>'
+                + '<div class="subj"><div class="k">주제</div><div class="v">자연선택 과정에 대한 모의실험 하기</div></div>'
+                + '<table class="book"><tr><th rowspan="2">교과서</th><th>대단원</th><th>중단원</th><th>소단원</th><th>페이지</th></tr>'
+                + '<tr><td>Ⅰ. 변화와 다양성</td><td>1. 생물다양성</td><td>2. 자연선택과 생물다양성</td><td>p. 26~27</td></tr></table>'
+                + '<div class="step">Step 2. 시뮬레이션 수행하기</div>'
+                + '<table class="settings"><tr><td class="hd" rowspan="2">선택한 시뮬레이션</td><td class="hd" colspan="5">초기 개체군 설정</td><td class="hd">시뮬레이션 모드</td></tr>'
+                + '<tr>' + initCells + '<td class="y">' + modeText + '</td></tr>'
+                + '<tr><td class="y" rowspan="4">' + labels.title + '</td>' + initVals + '<td>유전 ' + chk(heritable) + '</td></tr>'
+                + '<tr><td>돌연변이 ' + chk(mutation) + '</td></tr>'
+                + '<tr><td>돌연변이율 ' + mrate + '%</td></tr>'
+                + '<tr><td>배경의 색 ' + bgText + '</td></tr></table>'
+                + '<div class="note">· <b>노란 칸</b>은 자동으로 채워졌고, <b>흰 칸</b>은 직접 입력·수정할 수 있어요.<br>· 각 회차 <b>시작 = 번식 직후</b>, <b>끝 = 절반을 사냥한 뒤</b> 형질별 개체 수예요. 평균값은 현재 상태 탭 기준으로 자동 기입돼요.</div>'
+                + '<div class="scroll"><table class="grid"><thead><tr>' + head + '</tr></thead><tbody>' + body + '</tbody></table></div>'
+                + '<div class="graph"><h4>평균 형질값 변화 추이</h4>' + graph + '</div>'
+                + '<div class="step">Step 3. 시뮬레이션 결과 분석하기</div>' + qHtml
+                + '</div><div class="bar"><button class="pdf" id="pdfBtn" onclick="savePdf()">PDF로 저장</button><button class="close" onclick="window.close()">닫기</button></div>'
+                + '<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>'
+                + '<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>'
+                + '<script>async function savePdf(){var b=document.getElementById("pdfBtn");if(!window.html2canvas||!window.jspdf){window.print();return;}b.disabled=true;b.textContent="PDF 생성 중...";try{await (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve());var sheet=document.querySelector(".sheet");var kids=Array.prototype.slice.call(sheet.children);var blocks=[];kids.forEach(function(el){if(el.classList.contains("scroll")){blocks.push(el.querySelector("table"));}else if(!el.classList.contains("bar")){blocks.push(el);}});var JsPDF=window.jspdf.jsPDF;var pdf=new JsPDF("p","mm","a4");var pw=210,ph=297,m=10,iw=pw-m*2,pageH=ph-m*2;var y=m,first=true;for(var i=0;i<blocks.length;i++){var el=blocks[i];if(!el||el.offsetHeight===0)continue;var oc=function(d){d.querySelectorAll("input.cin").forEach(function(i){var s=d.createElement("span");s.textContent=i.value||"";s.style.cssText="display:block;text-align:center;font-size:12px;line-height:1.4";i.replaceWith(s);});d.querySelectorAll(".top input").forEach(function(i){var s=d.createElement("span");s.textContent=i.value||"";s.style.cssText="display:inline-block;width:90px;text-align:center;border-bottom:1px solid #999";i.replaceWith(s);});d.querySelectorAll("textarea").forEach(function(t){var v=t.value||"";var dv=d.createElement("div");dv.textContent=v;dv.style.cssText="white-space:pre-wrap;min-height:110px;border:1px solid #999;border-radius:6px;padding:8px;font-size:13px;text-align:left;line-height:1.6";t.replaceWith(dv);});};var canvas=await html2canvas(el,{scale:2,backgroundColor:"#ffffff",scrollX:0,scrollY:0,windowWidth:Math.max(document.documentElement.clientWidth,el.scrollWidth),onclone:oc});var h=canvas.height*iw/canvas.width;var img=canvas.toDataURL("image/jpeg",0.95);if(h<=pageH){if(!first&&y+h>m+pageH){pdf.addPage();y=m;}pdf.addImage(img,"JPEG",m,y,iw,h);y+=h+3;}else{if(!first){pdf.addPage();}var yy=m,hLeft=h;pdf.addImage(img,"JPEG",m,yy,iw,h);hLeft-=pageH;while(hLeft>0){pdf.addPage();yy=yy-pageH;pdf.addImage(img,"JPEG",m,yy,iw,h);hLeft-=pageH;}pdf.addPage();y=m;}first=false;}pdf.save("실험보고서_' + labels.title + '.pdf");}catch(e){window.print();}b.disabled=false;b.textContent="PDF로 저장";}<\/script>'
+                + '</body></html>';
+
+            return doc;
+        }
+
+        function openReport() {
+            const doc = buildReportDoc();
+            const w = window.open('', '_blank');
+            if (!w) { showToast('팝업이 차단되었습니다. 팝업을 허용해주세요.', 4000); return; }
+            w.document.open();
+            w.document.write(doc);
+            w.document.close();
+        }
+
+        /* ===== 온보딩 투어 ===== */
+        const HOME_STEPS = [
+            { icon: 'i-snail', title: '달팽이 진화에 오신 걸 환영해요', text: '자연선택으로 형질이 세대마다 어떻게 변하는지 직접 실험해봐요. 잠깐 둘러볼까요?' },
+            { sel: '.scenario-cards', icon: 'i-zap', title: '세 가지 실험 (속도·색·크기)', text: '① 속도는 느린 개체, ② 색은 배경과 다른 색, ③ 크기는 큰 개체가 먼저 잡아먹혀요. 세대가 지날수록 유리한 형질이 늘어나는지 관찰합니다.' },
+            { sel: '.genetics-toggle', icon: 'i-microscope', title: '달팽이 유전 이야기', text: '흥미로운 달팽이 유전 상식도 펼쳐보세요.' }
+        ];
+        const SIM_STEPS = [
+            { sel: '.canvas-wrap', icon: 'i-pointer', title: '관찰 무대', text: '여기서 달팽이가 살아갑니다. 수동 모드에선 달팽이를 클릭해 잡아먹어요.' },
+            { sel: '#simSetupSection', icon: 'i-settings', title: '시뮬레이션 설정', text: '수동(직접 클릭) 또는 자동(독수리) 모드를 고르세요.' },
+            { sel: '#evoSetupSection', icon: 'i-branch', title: '진화 설정', text: '유전과 돌연변이를 켜고 끄며 진화 조건을 바꿔봐요.' },
+            { sel: '#reproduceBtn', icon: 'i-refresh', title: '번식', text: '개체가 절반으로 줄면 이 버튼으로 다음 세대를 만들어요.' },
+            { sel: '#statsPanel', icon: 'i-activity', title: '현재 상태', text: '평균 형질값과 분포가 세대마다 어떻게 변하는지 관찰하세요.' },
+            { sel: '#recordBtn', icon: 'i-clipboard', title: '기록모드', text: '세대별 데이터를 기록할 수 있어요.' }
+        ];
+
+        const TOUR = { steps: [], i: 0, done: null, spot: null, tip: null, block: null };
+
+        function tourSeen(k) { try { return localStorage.getItem(k) === '1'; } catch (e) { return false; } }
+        function markSeen(k) { try { localStorage.setItem(k, '1'); } catch (e) {} }
+
+        function ensureTourDom() {
+            if (TOUR.spot) return;
+            TOUR.block = document.createElement('div'); TOUR.block.className = 'tour-block';
+            TOUR.spot = document.createElement('div'); TOUR.spot.className = 'tour-spot';
+            TOUR.tip = document.createElement('div'); TOUR.tip.className = 'tour-tip';
+            document.body.appendChild(TOUR.block);
+            document.body.appendChild(TOUR.spot);
+            document.body.appendChild(TOUR.tip);
+        }
+
+        function runTour(steps, done) {
+            ensureTourDom();
+            TOUR.steps = steps; TOUR.i = 0; TOUR.done = done;
+            TOUR.block.style.display = 'block';
+            TOUR.spot.style.display = 'block';
+            TOUR.tip.style.display = 'block';
+            renderTourStep();
+            window.addEventListener('resize', positionTourStep);
+            document.addEventListener('keydown', tourKey);
+        }
+
+        function endTour(completed) {
+            if (!TOUR.spot) return;
+            TOUR.block.style.display = 'none';
+            TOUR.spot.style.display = 'none';
+            TOUR.tip.style.display = 'none';
+            window.removeEventListener('resize', positionTourStep);
+            document.removeEventListener('keydown', tourKey);
+            const d = TOUR.done; TOUR.done = null;
+            if (d) d(!!completed);
+        }
+
+        function tourKey(e) { if (e.key === 'Escape') endTour(false); }
+        function tourNext() { if (TOUR.i < TOUR.steps.length - 1) { TOUR.i++; renderTourStep(); } else { endTour(true); } }
+        function tourPrev() { if (TOUR.i > 0) { TOUR.i--; renderTourStep(); } }
+
+        function renderTourStep() {
+            const s = TOUR.steps[TOUR.i];
+            const last = TOUR.i === TOUR.steps.length - 1;
+            const iconHtml = s.icon ? '<svg class="ico" aria-hidden="true"><use href="#' + s.icon + '"/></svg>' : '';
+            const dots = TOUR.steps.map(function (_, k) { return '<span class="tour-dot' + (k === TOUR.i ? ' on' : '') + '"></span>'; }).join('');
+            TOUR.tip.innerHTML =
+                '<h4>' + iconHtml + s.title + '</h4>' +
+                '<p>' + s.text + '</p>' +
+                '<div class="tour-foot">' +
+                    '<div class="tour-dots">' + dots + '</div>' +
+                    '<div class="tour-btns">' +
+                        '<button class="tour-skip" onclick="endTour(false)">건너뛰기</button>' +
+                        (TOUR.i > 0 ? '<button class="tour-btn" onclick="tourPrev()">이전</button>' : '') +
+                        '<button class="tour-btn primary" onclick="tourNext()">' + (last ? '완료' : '다음') + '</button>' +
+                    '</div>' +
+                '</div>';
+            positionTourStep();
+        }
+
+        function positionTourStep() {
+            const s = TOUR.steps[TOUR.i];
+            const spot = TOUR.spot, tip = TOUR.tip, pad = 8;
+            let r = null;
+            if (s.sel) {
+                const el = document.querySelector(s.sel);
+                if (el) { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); r = el.getBoundingClientRect(); }
+            }
+            const tipW = tip.offsetWidth || 320, tipH = tip.offsetHeight || 170;
+            if (r && r.width > 0) {
+                spot.style.top = (r.top - pad) + 'px';
+                spot.style.left = (r.left - pad) + 'px';
+                spot.style.width = (r.width + pad * 2) + 'px';
+                spot.style.height = (r.height + pad * 2) + 'px';
+                let top = r.bottom + 12;
+                if (top + tipH > window.innerHeight - 8) top = Math.max(8, r.top - tipH - 12);
+                let left = r.left + r.width / 2 - tipW / 2;
+                left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
+                tip.style.top = top + 'px';
+                tip.style.left = left + 'px';
+            } else {
+                spot.style.top = '50%'; spot.style.left = '50%';
+                spot.style.width = '0px'; spot.style.height = '0px';
+                tip.style.top = (window.innerHeight / 2 - tipH / 2) + 'px';
+                tip.style.left = (window.innerWidth / 2 - tipW / 2) + 'px';
+            }
+        }
+
+        function enterSimForTour() {
+            currentScenario = 'speed';
+            startSimulation();
+            setTimeout(function () {
+                runTour(SIM_STEPS, function (completed) {
+                    if (completed) backToSelection();
+                });
+            }, 550);
+        }
+
+        // 튜토리얼 버튼: 홈 설명 후 자동으로 시뮬에 들어가 전체 기능을 이어서 안내
+        function startTutorial() {
+            const sim = document.getElementById('simulationScreen');
+            if (sim && sim.classList.contains('active')) {
+                runTour(SIM_STEPS, null);
+                return;
+            }
+            runTour(HOME_STEPS, function (completed) {
+                if (completed) enterSimForTour();
+            });
+        }
+
+        // 첫 방문: 홈 소개만 1회 자동(시뮬로 넘어가지 않음)
+        document.addEventListener('DOMContentLoaded', function () {
+            const home = document.getElementById('selectionScreen');
+            if (home && home.style.display !== 'none' && !tourSeen('evosnail_home_tour')) {
+                markSeen('evosnail_home_tour');
+                setTimeout(function () { runTour(HOME_STEPS, null); }, 700);
+            }
+        });
+
     </script>
     <script src="/assets/sim-ui.js"></script>
     <script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
