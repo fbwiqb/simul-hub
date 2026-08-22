@@ -2184,17 +2184,6 @@
                 ctx.fillStyle = 'rgba(30, 22, 16, 0.94)';
                 this._fill(ctx, flap);
 
-                // 디테일: 날개 깃선 (밝은 갈색)
-                ctx.strokeStyle = 'rgba(120, 92, 60, 0.9)';
-                ctx.lineWidth = 1;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
-                ctx.moveTo(-6, -2); ctx.quadraticCurveTo(-16, -3 + flap * 0.6, -26, -3 + flap);
-                ctx.moveTo(-6, 1);  ctx.quadraticCurveTo(-15, 1, -23, 2);
-                ctx.moveTo(6, -2);  ctx.quadraticCurveTo(16, -3 + flap * 0.6, 26, -3 + flap);
-                ctx.moveTo(6, 1);   ctx.quadraticCurveTo(15, 1, 23, 2);
-                ctx.stroke();
-
                 // 몸통 하이라이트 (등줄기)
                 ctx.fillStyle = 'rgba(90, 68, 44, 0.85)';
                 ctx.beginPath();
