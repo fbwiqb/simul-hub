@@ -8,6 +8,8 @@
     <title>달팽이 진화 시뮬레이션</title>
     <style>
         :root {
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-soft: cubic-bezier(0.33, 0, 0.15, 1);
             --s1: 4px;
             --s2: 8px;
             --s3: 12px;
@@ -28,13 +30,12 @@
         }
 
         html {
-            background: var(--cnsa-bg-1);
+            background: #141a30;
         }
 
         body {
             font-family: var(--cnsa-font);
-            background: var(--cnsa-bg);
-            background-attachment: fixed;
+            background: #141a30;
             color: var(--cnsa-text);
             min-height: 100vh;
             margin: 0;
@@ -55,6 +56,7 @@
             stroke-linecap: round;
             stroke-linejoin: round;
             fill: none;
+            overflow: visible;
             vertical-align: -0.14em;
         }
 
@@ -144,14 +146,31 @@
             border-radius: var(--cnsa-radius);
             padding: var(--s5);
             cursor: pointer;
-            transition: transform 0.25s var(--cnsa-ease), border-color 0.25s var(--cnsa-ease), background 0.25s var(--cnsa-ease);
+            transition: transform 0.4s var(--ease-out), border-color 0.4s var(--ease-out), background 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+            animation: cardRise 0.6s var(--ease-out) both;
+        }
+
+        .scenario-card:nth-child(2) { animation-delay: 0.08s; }
+        .scenario-card:nth-child(3) { animation-delay: 0.16s; }
+
+        @keyframes cardRise {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .scenario-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-4px);
             background: var(--panel-2);
             border-color: rgba(0, 210, 255, 0.4);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
         }
+
+        .scenario-card .icon,
+        .scenario-card h2 {
+            transition: transform 0.4s var(--ease-out), color 0.3s var(--ease-out);
+        }
+
+        .scenario-card:hover .icon { transform: scale(1.08); }
 
         .scenario-card .icon {
             display: grid;
@@ -183,11 +202,11 @@
             z-index: 2147483000;
             inset: 0;
             background: rgba(6, 10, 22, 0.66);
-            backdrop-filter: blur(3px);
-            -webkit-backdrop-filter: blur(3px);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             padding: var(--s5) var(--s4);
             overflow-y: auto;
-            animation: fadeIn 0.2s var(--cnsa-ease);
+            animation: fadeIn 0.28s var(--ease-out);
         }
 
         @keyframes fadeIn {
@@ -205,12 +224,12 @@
             width: 100%;
             max-width: 620px;
             box-shadow: var(--cnsa-shadow-lg);
-            animation: slideIn 0.25s var(--cnsa-ease);
+            animation: slideIn 0.42s var(--ease-out);
         }
 
         @keyframes slideIn {
-            from { transform: translateY(-12px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from { transform: translateY(16px) scale(0.98); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
         }
 
         .modal-header {
@@ -296,45 +315,135 @@
 
         .log-text a:hover { text-decoration: underline; }
 
-        .distribution-setup {
-            display: grid;
-            gap: var(--s2);
-            margin: var(--s4) 0;
+        .setup-hint {
+            color: var(--cnsa-text-dim);
+            font-size: 0.875rem;
+            line-height: 1.6;
+            margin-bottom: var(--s4);
         }
 
-        .trait-level {
-            padding: var(--s3) var(--s4);
+        .dist-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--s2);
+            position: relative;
+            padding-bottom: var(--s4);
+        }
+
+        .dist-grid::after {
+            content: "";
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            bottom: 0;
+            height: 3px;
+            border-radius: 2px;
+            background: rgba(0, 210, 255, 0.5);
+        }
+
+        .dist-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--s2);
+            padding: var(--s3) 6px;
             background: var(--panel);
             border: 1px solid var(--hairline);
             border-radius: var(--cnsa-radius-sm);
+            transition: border-color 0.2s var(--cnsa-ease), background 0.2s var(--cnsa-ease);
         }
 
-        .trait-level label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: var(--s3);
+        .dist-cell:focus-within {
+            border-color: rgba(0, 210, 255, 0.5);
+            background: var(--panel-2);
+        }
+
+        .dist-name {
             color: var(--cnsa-text-dim);
-            font-size: 0.9375rem;
+            font-size: 0.75rem;
             font-weight: 600;
+            text-align: center;
+            line-height: 1.3;
+            min-height: 2.1em;
+            display: flex;
+            align-items: center;
         }
 
-        .trait-level input[type="number"] {
-            width: 76px;
-            padding: 7px;
+        .dist-cell input[type="number"] {
+            width: 100%;
+            padding: 8px 4px;
             border: 1px solid var(--cnsa-border-strong);
             border-radius: var(--cnsa-radius-sm);
             background: rgba(0, 0, 0, 0.24);
             color: var(--cnsa-text);
-            font-size: 0.9375rem;
+            font-size: 1rem;
             font-family: var(--cnsa-mono);
             font-variant-numeric: tabular-nums;
             text-align: center;
+            -moz-appearance: textfield;
+            transition: border-color 0.2s var(--cnsa-ease);
         }
 
-        .trait-level input[type="number"]:focus {
+        .dist-cell input[type="number"]::-webkit-outer-spin-button,
+        .dist-cell input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .dist-cell input[type="number"]:focus {
             outline: none;
             border-color: var(--cnsa-accent-1);
+        }
+
+        .setup-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--s3);
+            flex-wrap: wrap;
+            margin-top: var(--s4);
+        }
+
+        .preset-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: 7px 13px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: var(--cnsa-font);
+            color: var(--cnsa-text-dim);
+            background: transparent;
+            border: 1px solid var(--cnsa-border);
+            border-radius: var(--cnsa-radius-pill);
+            cursor: pointer;
+            box-shadow: none;
+            transition: color 0.18s var(--cnsa-ease), background 0.18s var(--cnsa-ease), border-color 0.18s var(--cnsa-ease);
+        }
+
+        .preset-btn:hover {
+            color: #fff;
+            background: var(--panel-2);
+            border-color: var(--cnsa-border-strong);
+            transform: none;
+        }
+
+        .setup-total {
+            color: var(--cnsa-text-dim);
+            font-size: 0.875rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .setup-total span {
+            color: var(--cnsa-accent-1);
+            font-family: var(--cnsa-mono);
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            font-size: 1rem;
         }
 
         .modal-buttons {
@@ -356,9 +465,8 @@
         }
 
         .btn-start {
-            background: var(--cnsa-accent);
-            color: white;
-            box-shadow: 0 4px 14px rgba(0, 130, 200, 0.3);
+            background: var(--cnsa-accent-2);
+            color: #fff;
         }
 
         .btn-cancel {
@@ -367,7 +475,7 @@
             color: var(--cnsa-text-dim);
         }
 
-        .btn-start:hover { filter: brightness(1.08); transform: none; }
+        .btn-start:hover { background: #4a8be0; transform: none; }
 
         .btn-cancel:hover {
             background: var(--panel-2);
@@ -388,6 +496,20 @@
             display: flex;
             flex-direction: column;
             gap: var(--s3);
+            animation: screenFade 0.45s var(--ease-out) both;
+        }
+
+        @keyframes valuePop {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.06); }
+            100% { transform: scale(1); }
+        }
+
+        .stat-hero-value.pop { animation: valuePop 0.4s var(--ease-out); }
+
+        @keyframes screenFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .sim-header {
@@ -498,29 +620,105 @@
         .stats-panel h3 .ico,
         .graph-panel h3 .ico { color: var(--cnsa-accent-1); }
 
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            gap: var(--s3);
-            padding: 11px 0;
-            border-bottom: 1px solid var(--hairline);
+        .stat-hero {
+            padding: var(--s4);
+            margin-bottom: var(--s3);
+            background: var(--tint);
+            border: 1px solid rgba(0, 210, 255, 0.24);
+            border-radius: var(--cnsa-radius-sm);
         }
 
-        .stat-item:last-child { border-bottom: none; }
+        .stat-hero-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--s2);
+            margin-bottom: 6px;
+        }
 
-        .stat-label {
-            font-weight: 500;
-            font-size: 0.875rem;
+        .stat-hero-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
             color: var(--cnsa-text-dim);
         }
 
-        .stat-value {
-            color: var(--cnsa-text);
+        .stat-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.6875rem;
+            font-weight: 700;
             font-family: var(--cnsa-mono);
             font-variant-numeric: tabular-nums;
-            font-size: 1rem;
-            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: var(--cnsa-radius-pill);
+            background: var(--panel-2);
+            color: var(--cnsa-text-dimmer);
+            transition: color 0.3s var(--cnsa-ease), background 0.3s var(--cnsa-ease);
+        }
+
+        .stat-trend[data-dir="up"] { color: #7fe0a0; background: rgba(34, 197, 94, 0.16); }
+        .stat-trend[data-dir="down"] { color: #f3a6ad; background: rgba(239, 68, 68, 0.16); }
+
+        .stat-hero-value {
+            font-family: var(--cnsa-mono);
+            font-variant-numeric: tabular-nums;
+            font-size: 1.9rem;
+            font-weight: 700;
+            line-height: 1.1;
+            color: #eafaff;
+            letter-spacing: -0.01em;
+            transition: color 0.3s var(--ease-out);
+        }
+
+        .stat-hero-sub {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--cnsa-text-dim);
+        }
+
+        .stat-hero-sub .ico { color: var(--cnsa-accent-1); width: 0.9em; height: 0.9em; }
+        .stat-hero-sub span {
+            font-family: var(--cnsa-mono);
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            color: var(--cnsa-text);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--s2);
+        }
+
+        .stat-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 10px 12px;
+            background: var(--panel);
+            border: 1px solid var(--hairline);
+            border-radius: var(--cnsa-radius-sm);
+            transition: background 0.3s var(--ease-out);
+        }
+
+        .stat-cell-label {
+            font-size: 0.6875rem;
+            font-weight: 500;
+            color: var(--cnsa-text-dimmer);
+        }
+
+        .stat-cell-value {
+            font-family: var(--cnsa-mono);
+            font-variant-numeric: tabular-nums;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--cnsa-text);
         }
 
         #sideChart {
@@ -619,19 +817,18 @@
             border: none;
             border-radius: var(--cnsa-radius-sm);
             cursor: pointer;
-            transition: filter 0.2s var(--cnsa-ease), background 0.2s var(--cnsa-ease), color 0.2s var(--cnsa-ease), border-color 0.2s var(--cnsa-ease);
+            transition: filter 0.2s var(--ease-out), background 0.2s var(--ease-out), color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), transform 0.12s var(--ease-out);
             box-shadow: none;
         }
 
         .btn-primary,
         .btn-success {
-            background: var(--cnsa-accent);
-            color: white;
-            box-shadow: 0 4px 14px rgba(0, 130, 200, 0.28);
+            background: var(--cnsa-accent-2);
+            color: #fff;
         }
 
         .btn-primary:hover,
-        .btn-success:hover { filter: brightness(1.08); }
+        .btn-success:hover { background: #4a8be0; }
 
         .btn-secondary,
         .btn-warning,
@@ -804,7 +1001,7 @@
 
         .genetics-toggle .toggle-arrow {
             display: inline-flex;
-            transition: transform 0.3s var(--cnsa-ease);
+            transition: transform 0.45s var(--ease-out);
             color: var(--cnsa-text-dimmer);
             font-size: 16px;
         }
@@ -818,7 +1015,7 @@
             overflow: hidden;
             max-height: 0;
             opacity: 0;
-            transition: max-height 0.45s var(--cnsa-ease), opacity 0.35s ease, margin 0.35s ease;
+            transition: max-height 0.6s var(--ease-out), opacity 0.5s var(--ease-out), margin 0.5s var(--ease-out);
             margin-top: 0;
         }
 
@@ -1044,8 +1241,17 @@
             .modal-content { margin: var(--s4) auto; padding: var(--s4); }
         }
 
+        .cnsa-simbar .cnsa-unit {
+            background: rgba(0, 210, 255, 0.12);
+        }
+
         @media (prefers-reduced-motion: reduce) {
-            * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
         }
     </style>
 </head>
@@ -1061,7 +1267,7 @@
         <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
         <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
         <symbol id="i-branch" viewBox="0 0 24 24"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol>
-        <symbol id="i-spiral" viewBox="0 0 24 24"><path d="M12 12a2 2 0 1 1 2-2 4 4 0 1 1-4 4 6 6 0 1 1 6-6 8 8 0 1 1-8 8"/></symbol>
+        <symbol id="i-spiral" viewBox="0 0 24 24"><path d="M14 11a2 2 0 1 1-4 0 4 4 0 0 1 8 0 6 6 0 0 1-12 0 8 8 0 0 1 16 0 10 10 0 1 1-20 0 11.93 11.93 0 0 1 2.42-7.22 2 2 0 1 1 3.16 2.44"/></symbol>
         <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7z"/></symbol>
         <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
         <symbol id="i-play" viewBox="0 0 24 24"><path d="m6 3 14 9-14 9z"/></symbol>
@@ -1078,6 +1284,7 @@
         <symbol id="i-bird" viewBox="0 0 24 24"><path d="M16 7h.01"/><path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20"/><path d="m20 7 2 .5-2 .5"/><path d="M10 18v3"/><path d="M14 17.75V21"/><path d="M7 18a6 6 0 0 0 3.84-10.61"/></symbol>
         <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></symbol>
         <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+        <symbol id="i-copyright" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M14.83 14.83a4 4 0 1 1 0-5.66"/></symbol>
         <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
         <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></symbol>
         <symbol id="i-keyboard" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.01"/><path d="M10 8h.01"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/><path d="M7 16h10"/></symbol>
@@ -1256,7 +1463,7 @@
                 </div>
                 
                 <div class="log-entry">
-                    <div class="log-date">©️ 저작권 정보</div>
+                    <div class="log-date"><svg class="ico" aria-hidden="true"><use href="#i-copyright"/></svg> 저작권 정보</div>
                     <div class="log-text">
                         <strong>달팽이 진화 시뮬레이션 v1.0</strong><br><br>
                         ⓒ 2025 충남삼성고등학교 신도경 교사<br>
@@ -1273,39 +1480,44 @@
     <!-- 초기 설정 모달 -->
     <div id="setupModal" class="modal">
         <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-            <h3 id="modalTitle">초기 개체군 설정</h3>
+            <div class="modal-header">
+                <h3 id="modalTitle"><svg class="ico" aria-hidden="true"><use href="#i-sliders"/></svg><span id="modalTitleText">초기 개체군 설정</span></h3>
+                <button class="modal-close cnsa-focusable" onclick="closeModal()" aria-label="설정 닫기"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+            </div>
 
-            <div class="distribution-setup">
-                <div class="trait-level">
-                    <label>
-                        <span id="level1Label">레벨 1</span>
-                        <input type="number" id="level1Count" min="0" max="50" value="10" aria-labelledby="level1Label">
-                    </label>
+            <p class="setup-hint">형질 단계별 시작 개체수를 정하세요. 왼쪽(약)에서 오른쪽(강)으로 갈수록 형질이 강해집니다.</p>
+
+            <div class="dist-grid">
+                <div class="dist-cell">
+                    <span class="dist-name" id="level1Label">레벨 1</span>
+                    <input type="number" id="level1Count" min="0" max="50" value="10" aria-labelledby="level1Label">
                 </div>
-                <div class="trait-level">
-                    <label>
-                        <span id="level2Label">레벨 2</span>
-                        <input type="number" id="level2Count" min="0" max="50" value="10" aria-labelledby="level2Label">
-                    </label>
+                <div class="dist-cell">
+                    <span class="dist-name" id="level2Label">레벨 2</span>
+                    <input type="number" id="level2Count" min="0" max="50" value="10" aria-labelledby="level2Label">
                 </div>
-                <div class="trait-level">
-                    <label>
-                        <span id="level3Label">레벨 3</span>
-                        <input type="number" id="level3Count" min="0" max="50" value="10" aria-labelledby="level3Label">
-                    </label>
+                <div class="dist-cell">
+                    <span class="dist-name" id="level3Label">레벨 3</span>
+                    <input type="number" id="level3Count" min="0" max="50" value="10" aria-labelledby="level3Label">
                 </div>
-                <div class="trait-level">
-                    <label>
-                        <span id="level4Label">레벨 4</span>
-                        <input type="number" id="level4Count" min="0" max="50" value="10" aria-labelledby="level4Label">
-                    </label>
+                <div class="dist-cell">
+                    <span class="dist-name" id="level4Label">레벨 4</span>
+                    <input type="number" id="level4Count" min="0" max="50" value="10" aria-labelledby="level4Label">
                 </div>
-                <div class="trait-level">
-                    <label>
-                        <span id="level5Label">레벨 5</span>
-                        <input type="number" id="level5Count" min="0" max="50" value="10" aria-labelledby="level5Label">
-                    </label>
+                <div class="dist-cell">
+                    <span class="dist-name" id="level5Label">레벨 5</span>
+                    <input type="number" id="level5Count" min="0" max="50" value="10" aria-labelledby="level5Label">
                 </div>
+            </div>
+
+            <div class="setup-foot">
+                <div class="preset-group" role="group" aria-label="빠른 분포 설정">
+                    <button type="button" class="preset-btn cnsa-focusable" onclick="applyPreset('even')">균등</button>
+                    <button type="button" class="preset-btn cnsa-focusable" onclick="applyPreset('bell')">정규</button>
+                    <button type="button" class="preset-btn cnsa-focusable" onclick="applyPreset('random')">랜덤</button>
+                    <button type="button" class="preset-btn cnsa-focusable" onclick="applyPreset('clear')">비우기</button>
+                </div>
+                <div class="setup-total">총 <span id="setupTotal">50</span>마리</div>
             </div>
 
             <div class="modal-buttons">
@@ -1416,29 +1628,33 @@
             
             <div class="stats-panel" id="statsPanel">
                 <h3><svg class="ico" aria-hidden="true"><use href="#i-activity"/></svg>현재 상태</h3>
-                <div class="stat-item">
-                    <span class="stat-label">총 개체수:</span>
-                    <span class="stat-value" id="totalCount">0</span>
+
+                <div class="stat-hero">
+                    <div class="stat-hero-top">
+                        <span class="stat-hero-label">평균 형질값</span>
+                        <span class="stat-trend" id="avgTrend" data-dir="flat">기준</span>
+                    </div>
+                    <div class="stat-hero-value" id="avgValue">0</div>
+                    <div class="stat-hero-sub"><svg class="ico" aria-hidden="true"><use href="#i-branch"/></svg><span id="generation">0</span>세대 진행</div>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-label">세대:</span>
-                    <span class="stat-value" id="generation">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">평균값:</span>
-                    <span class="stat-value" id="avgValue">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">잡은 개체수:</span>
-                    <span class="stat-value" id="caughtCount">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">돌연변이 발생:</span>
-                    <span class="stat-value" id="mutationCount">0</span>
-                </div>
-                <div class="stat-item" id="eagleStats" style="display: none;">
-                    <span class="stat-label">독수리 사냥 성공:</span>
-                    <span class="stat-value" id="eagleHunts">0</span>
+
+                <div class="stat-grid">
+                    <div class="stat-cell">
+                        <span class="stat-cell-label">현재 개체수</span>
+                        <span class="stat-cell-value" id="totalCount">0</span>
+                    </div>
+                    <div class="stat-cell">
+                        <span class="stat-cell-label">잡힌 개체</span>
+                        <span class="stat-cell-value" id="caughtCount">0</span>
+                    </div>
+                    <div class="stat-cell">
+                        <span class="stat-cell-label">돌연변이</span>
+                        <span class="stat-cell-value" id="mutationCount">0</span>
+                    </div>
+                    <div class="stat-cell" id="eagleStats" style="display: none;">
+                        <span class="stat-cell-label">독수리 사냥</span>
+                        <span class="stat-cell-value" id="eagleHunts">0</span>
+                    </div>
                 </div>
             </div>
             
@@ -1492,6 +1708,7 @@
         let backgroundImage = null;
         let sideChart = null;
         let showingGraph = false;
+        let baselineAvg = null;
         
         let isRecording = false;
         let recordingData = [];
@@ -1971,13 +2188,33 @@ window.onclick = function(event) {
             const modal = document.getElementById('setupModal');
             const labels = scenarioLabels[scenario];
             
-            document.getElementById('modalTitle').textContent = `${labels.title} - 초기 개체군 설정`;
+            document.getElementById('modalTitleText').textContent = `${labels.title} 설정`;
             
             for (let i = 1; i <= 5; i++) {
                 document.getElementById(`level${i}Label`).textContent = labels.levels[i-1];
             }
-            
+
+            updateSetupTotal();
             modal.style.display = 'block';
+        }
+
+        function updateSetupTotal() {
+            let total = 0;
+            for (let i = 1; i <= 5; i++) {
+                total += parseInt(document.getElementById(`level${i}Count`).value) || 0;
+            }
+            document.getElementById('setupTotal').textContent = total;
+        }
+
+        function applyPreset(kind) {
+            const vals = kind === 'even'   ? [10, 10, 10, 10, 10]
+                       : kind === 'bell'   ? [4, 10, 16, 10, 4]
+                       : kind === 'clear'  ? [0, 0, 0, 0, 0]
+                       : Array.from({ length: 5 }, () => Math.floor(Math.random() * 16) + 2);
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`level${i}Count`).value = vals[i-1];
+            }
+            updateSetupTotal();
         }
         
         // 모달 닫기
@@ -2021,6 +2258,7 @@ window.onclick = function(event) {
             }
             
             generation = 0;
+            baselineAvg = null;
             caughtCount = 0;
             mutationCount = 0;
             eagles = [];
@@ -2116,10 +2354,7 @@ window.onclick = function(event) {
             const offCtx = offCanvas.getContext('2d');
             
             if (currentBackground === 'grassland') {
-                const gradient = offCtx.createLinearGradient(0, 0, 0, offCanvas.height);
-                gradient.addColorStop(0, '#8BC34A');
-                gradient.addColorStop(1, '#4CAF50');
-                offCtx.fillStyle = gradient;
+                offCtx.fillStyle = '#66a83f';
                 offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
                 
                 offCtx.strokeStyle = 'rgba(76, 175, 80, 0.6)';
@@ -2394,6 +2629,7 @@ window.onclick = function(event) {
             }
             
             generation = 0;
+            baselineAvg = null;
             caughtCount = 0;
             mutationCount = 0;
             
@@ -2413,27 +2649,54 @@ window.onclick = function(event) {
         // 통계 업데이트
         function updateStats() {
             const aliveSnails = snails.filter(s => s.alive);
-            
+
             document.getElementById('totalCount').textContent = aliveSnails.length;
             document.getElementById('generation').textContent = generation;
             document.getElementById('caughtCount').textContent = caughtCount;
             document.getElementById('mutationCount').textContent = mutationCount;
-            
+
+            const avgEl = document.getElementById('avgValue');
+            const trendEl = document.getElementById('avgTrend');
+
             if (aliveSnails.length > 0) {
                 let avgValue = 0;
-                
+                let display = '0';
+
                 if (currentScenario === 'speed') {
                     avgValue = aliveSnails.reduce((sum, s) => sum + s.speed, 0) / aliveSnails.length;
-                    document.getElementById('avgValue').textContent = avgValue.toFixed(2) + ' m/s';
+                    display = avgValue.toFixed(2) + ' m/s';
                 } else if (currentScenario === 'color') {
                     avgValue = aliveSnails.reduce((sum, s) => sum + s.level, 0) / aliveSnails.length;
-                    document.getElementById('avgValue').textContent = avgValue.toFixed(1) + ' 레벨';
+                    display = avgValue.toFixed(1) + ' 레벨';
                 } else if (currentScenario === 'size') {
                     avgValue = aliveSnails.reduce((sum, s) => sum + s.size, 0) / aliveSnails.length;
-                    document.getElementById('avgValue').textContent = avgValue.toFixed(1) + ' mm';
+                    display = avgValue.toFixed(1) + ' mm';
+                }
+                if (avgEl.textContent !== display) {
+                    avgEl.textContent = display;
+                    avgEl.classList.remove('pop');
+                    void avgEl.offsetWidth;
+                    avgEl.classList.add('pop');
+                }
+
+                if (baselineAvg === null) baselineAvg = avgValue;
+                const delta = avgValue - baselineAvg;
+                const pct = baselineAvg !== 0 ? (delta / Math.abs(baselineAvg)) * 100 : 0;
+
+                if (Math.abs(pct) < 0.5) {
+                    trendEl.dataset.dir = 'flat';
+                    trendEl.textContent = '기준';
+                } else if (delta > 0) {
+                    trendEl.dataset.dir = 'up';
+                    trendEl.textContent = '▲ ' + pct.toFixed(0) + '%';
+                } else {
+                    trendEl.dataset.dir = 'down';
+                    trendEl.textContent = '▼ ' + Math.abs(pct).toFixed(0) + '%';
                 }
             } else {
-                document.getElementById('avgValue').textContent = '0';
+                avgEl.textContent = '—';
+                trendEl.dataset.dir = 'flat';
+                trendEl.textContent = '멸종';
             }
         }
         
@@ -2564,6 +2827,10 @@ window.onclick = function(event) {
             simulationSpeed = parseFloat(e.target.value);
             document.getElementById('simSpeedValue').textContent = simulationSpeed + 'x';
         });
+
+        for (let i = 1; i <= 5; i++) {
+            document.getElementById(`level${i}Count`).addEventListener('input', updateSetupTotal);
+        }
         
         let resizeTimer;
         function resizeCanvas() {
