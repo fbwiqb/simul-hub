@@ -1228,6 +1228,24 @@
             text-align: right;
         }
 
+        .btn-flee {
+            background: transparent;
+            color: var(--cnsa-text-dim);
+            border: 1px solid var(--cnsa-border);
+        }
+
+        .btn-flee:hover {
+            background: var(--panel-2);
+            color: #fff;
+            border-color: var(--cnsa-border-strong);
+        }
+
+        .btn-flee.active {
+            background: var(--tint);
+            color: #cdeffd;
+            border-color: rgba(0, 210, 255, 0.55);
+        }
+
         .btn-report {
             background: var(--tint);
             color: #cdeffd;
@@ -1534,6 +1552,7 @@
         <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol>
         <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
         <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+        <symbol id="i-wind" viewBox="0 0 24 24"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"/><path d="M17.5 8A2.5 2.5 0 1 1 20 12H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/></symbol>
         <symbol id="i-report" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M8 9h2"/></symbol>
         <symbol id="i-clipboard" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></symbol>
         <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10.6 3.09V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
@@ -1822,6 +1841,7 @@
                     <span class="recording-dot" aria-hidden="true"></span>
                     기록 중
                 </div>
+                <button class="btn-flee cnsa-focusable" id="fleeBtn" onclick="toggleFlee()" aria-pressed="false" aria-label="도망가기 모드 켜기 또는 끄기"><svg class="ico" aria-hidden="true"><use href="#i-wind"/></svg>도망가기</button>
                 <button class="btn-danger cnsa-focusable" onclick="resetSimulation()" aria-label="시뮬레이션 초기화"><svg class="ico" aria-hidden="true"><use href="#i-rotate"/></svg>초기화</button>
                 <button class="btn-back cnsa-focusable" onclick="backToSelection()" aria-label="처음 화면으로 돌아가기"><svg class="ico" aria-hidden="true"><use href="#i-chevron-left"/></svg>처음으로</button>
             </div>
@@ -1974,6 +1994,9 @@
         let currentScenario = '';
         let currentMode = 'manual';
         let currentBackground = 'grassland';
+        let fleeMode = false;
+        let mouseX = null, mouseY = null;
+        const FLEE_RADIUS = 110;
         let snails = [];
         let eagles = [];
         let isRunning = false;
@@ -2088,16 +2111,27 @@
             
             update() {
                 if (!this.alive || !isRunning) return;
-                
-                if (Math.random() < 0.01) {
+
+                let fleeing = false, fleeBoost = 1;
+                if (fleeMode && mouseX !== null) {
+                    const mdx = this.x - mouseX, mdy = this.y - mouseY;
+                    const mdist = Math.hypot(mdx, mdy);
+                    if (mdist < FLEE_RADIUS) {
+                        fleeing = true;
+                        this.targetAngle = Math.atan2(mdy, mdx);
+                        fleeBoost = 1 + (1 - mdist / FLEE_RADIUS) * 1.8;
+                    }
+                }
+
+                if (!fleeing && Math.random() < 0.01) {
                     this.targetAngle = Math.random() * Math.PI * 2;
                 }
 
                 let angleDiff = this.targetAngle - this.angle;
                 angleDiff = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
-                this.angle += angleDiff * this.turnSpeed;
-                
-                const actualSpeed = this.speed * simulationSpeed;
+                this.angle += angleDiff * (fleeing ? 0.28 : this.turnSpeed);
+
+                const actualSpeed = this.speed * simulationSpeed * fleeBoost;
                 this.x += Math.cos(this.angle) * actualSpeed;
                 this.y += Math.sin(this.angle) * actualSpeed;
                 
@@ -3168,6 +3202,21 @@ window.onclick = function(event) {
         }
         
         // 클릭 이벤트
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+        });
+        canvas.addEventListener('mouseleave', () => { mouseX = null; mouseY = null; });
+
+        function toggleFlee() {
+            fleeMode = !fleeMode;
+            const btn = document.getElementById('fleeBtn');
+            btn.classList.toggle('active', fleeMode);
+            btn.setAttribute('aria-pressed', fleeMode ? 'true' : 'false');
+            showToast(fleeMode ? '도망가기 ON — 달팽이가 마우스를 피해요' : '도망가기 OFF', 2000);
+        }
+
         canvas.addEventListener('click', (e) => {
             if (!isRunning || currentMode !== 'manual') return;
             
