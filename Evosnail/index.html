@@ -1364,6 +1364,104 @@
             .modal-content { margin: var(--s4) auto; padding: var(--s4); }
         }
 
+        .tour-block {
+            position: fixed;
+            inset: 0;
+            z-index: 2147483299;
+        }
+
+        .tour-spot {
+            position: fixed;
+            border-radius: 12px;
+            box-shadow: 0 0 0 9999px rgba(6, 10, 22, 0.72);
+            transition: top 0.35s var(--ease-out), left 0.35s var(--ease-out), width 0.35s var(--ease-out), height 0.35s var(--ease-out);
+            pointer-events: none;
+            z-index: 2147483300;
+        }
+
+        .tour-tip {
+            position: fixed;
+            z-index: 2147483301;
+            width: 320px;
+            max-width: calc(100vw - 24px);
+            background: #16213e;
+            border: 1px solid var(--cnsa-border-strong);
+            border-radius: var(--cnsa-radius);
+            box-shadow: var(--cnsa-shadow-lg);
+            padding: var(--s5);
+            color: var(--cnsa-text);
+            transition: top 0.3s var(--ease-out), left 0.3s var(--ease-out);
+        }
+
+        .tour-tip h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.0625rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .tour-tip h4 .ico { color: var(--cnsa-accent-1); }
+
+        .tour-tip p {
+            font-size: 0.9375rem;
+            color: var(--cnsa-text-dim);
+            line-height: 1.65;
+        }
+
+        .tour-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--s3);
+            margin-top: var(--s5);
+        }
+
+        .tour-dots { display: flex; gap: 5px; }
+
+        .tour-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--cnsa-border-strong);
+            transition: background 0.2s var(--ease-out);
+        }
+
+        .tour-dot.on { background: var(--cnsa-accent-1); }
+
+        .tour-btns { display: flex; align-items: center; gap: 6px; }
+
+        .tour-skip {
+            background: none;
+            border: none;
+            color: var(--cnsa-text-dimmer);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 7px 4px;
+        }
+
+        .tour-skip:hover { color: var(--cnsa-text-dim); }
+
+        .tour-btn {
+            padding: 7px 14px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: var(--cnsa-font);
+            border-radius: var(--cnsa-radius-sm);
+            cursor: pointer;
+            border: 1px solid var(--cnsa-border);
+            background: transparent;
+            color: var(--cnsa-text-dim);
+            transition: background 0.18s var(--ease-out), color 0.18s var(--ease-out), border-color 0.18s var(--ease-out);
+        }
+
+        .tour-btn:hover { color: #fff; background: var(--panel-2); border-color: var(--cnsa-border-strong); }
+
+        .tour-btn.primary { background: var(--cnsa-accent-2); color: #fff; border-color: transparent; }
+        .tour-btn.primary:hover { background: #4a8be0; }
+
         .cnsa-simbar .cnsa-unit {
             background: rgba(0, 210, 255, 0.12);
         }
@@ -1381,6 +1479,7 @@
 <body>
     <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
         <symbol id="i-snail" viewBox="0 0 24 24"><path d="M2 13a6 6 0 1 0 12 0 4 4 0 1 0-8 0 2 2 0 0 0 4 0"/><circle cx="10" cy="13" r="8"/><path d="M2 21h12c4.4 0 8-3.6 8-8V7a2 2 0 1 0-4 0v6"/><path d="M18 3l1.1 2.2"/><path d="M22 3l-1.1 2.2"/></symbol>
+        <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></symbol>
         <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></symbol>
         <symbol id="i-log" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></symbol>
         <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 4.5 13.5a.5.5 0 0 0 .4.8H11l-1 7.7 8.5-11.5a.5.5 0 0 0-.4-.8H12z"/></symbol>
@@ -1422,6 +1521,7 @@
         
         <!-- 홈 버튼 섹션 추가 -->
         <div class="home-buttons">
+            <button class="home-btn cnsa-focusable" onclick="startHomeTour()"><svg class="ico" aria-hidden="true"><use href="#i-compass"/></svg>튜토리얼</button>
             <button class="home-btn cnsa-focusable" onclick="showTutorial()"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg>사용법</button>
             <button class="home-btn cnsa-focusable" onclick="showDevLog()"><svg class="ico" aria-hidden="true"><use href="#i-log"/></svg>개발자 로그</button>
         </div>
@@ -1692,7 +1792,7 @@
         </div>
         
         <div class="controls">
-            <div class="control-section">
+            <div class="control-section" id="simSetupSection">
                 <h3><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg>시뮬레이션 설정</h3>
                 
                 <div class="mode-selector" role="group" aria-label="시뮬레이션 모드 선택">
@@ -1724,7 +1824,7 @@
                 </div>
             </div>
             
-            <div class="control-section">
+            <div class="control-section" id="evoSetupSection">
                 <h3><svg class="ico" aria-hidden="true"><use href="#i-branch"/></svg>진화 설정</h3>
 
                 <div class="toggle-grid">
@@ -2590,6 +2690,11 @@ window.onclick = function(event) {
             requestAnimationFrame(() => {
                 resizeCanvas();
             });
+
+            if (!tourSeen('evosnail_sim_tour')) {
+                markSeen('evosnail_sim_tour');
+                setTimeout(startSimTour, 500);
+            }
         }
         
         // 처음으로 돌아가기
@@ -3270,6 +3375,125 @@ window.onclick = function(event) {
                     break;
             }
         });
+
+        /* ===== 온보딩 투어 ===== */
+        const HOME_STEPS = [
+            { icon: 'i-snail', title: '달팽이 진화에 오신 걸 환영해요', text: '자연선택으로 형질이 세대마다 어떻게 변하는지 직접 실험해봐요. 세 가지 실험을 하나씩 살펴볼까요?' },
+            { sel: '.speed-card', icon: 'i-zap', title: '① 속도의 진화', text: '느린 달팽이가 먼저 잡아먹혀요. 세대가 지날수록 빠른 개체가 많아지는지 관찰합니다.' },
+            { sel: '.color-card', icon: 'i-palette', title: '② 색의 진화', text: '배경과 다른 색이 눈에 띄어 먼저 잡아먹혀요. 보호색이 유리한지, 배경(초지·개활지)도 바꿔가며 관찰합니다.' },
+            { sel: '.size-card', icon: 'i-ruler', title: '③ 크기의 진화', text: '큰 달팽이가 먼저 잡아먹혀요. 작은 개체가 살아남아 늘어나는지 관찰합니다.' },
+            { sel: '.home-buttons', icon: 'i-book', title: '도움말', text: '사용법과 개발자 로그는 여기 있어요. 이 튜토리얼도 언제든 다시 볼 수 있어요.' },
+            { sel: '.genetics-toggle', icon: 'i-microscope', title: '달팽이 유전 이야기', text: '흥미로운 달팽이 유전 상식도 펼쳐보세요.' }
+        ];
+        const SIM_STEPS = [
+            { sel: '.canvas-wrap', icon: 'i-pointer', title: '관찰 무대', text: '여기서 달팽이가 살아갑니다. 수동 모드에선 달팽이를 클릭해 잡아먹어요.' },
+            { sel: '#simSetupSection', icon: 'i-settings', title: '시뮬레이션 설정', text: '수동(직접 클릭) 또는 자동(독수리) 모드를 고르세요.' },
+            { sel: '#evoSetupSection', icon: 'i-branch', title: '진화 설정', text: '유전과 돌연변이를 켜고 끄며 진화 조건을 바꿔봐요.' },
+            { sel: '#reproduceBtn', icon: 'i-refresh', title: '번식', text: '개체가 절반으로 줄면 이 버튼으로 다음 세대를 만들어요.' },
+            { sel: '#statsPanel', icon: 'i-activity', title: '현재 상태', text: '평균 형질값과 분포가 세대마다 어떻게 변하는지 관찰하세요.' },
+            { sel: '#recordBtn', icon: 'i-clipboard', title: '기록모드', text: '세대별 데이터를 기록할 수 있어요.' },
+            { sel: '#reportBtn', icon: 'i-sheet', title: '보고서 쓰러가기', text: '기록을 내 구글 시트로 보내 보고서를 바로 작성해요.' }
+        ];
+
+        const TOUR = { steps: [], i: 0, done: null, spot: null, tip: null, block: null };
+
+        function tourSeen(k) { try { return localStorage.getItem(k) === '1'; } catch (e) { return false; } }
+        function markSeen(k) { try { localStorage.setItem(k, '1'); } catch (e) {} }
+
+        function ensureTourDom() {
+            if (TOUR.spot) return;
+            TOUR.block = document.createElement('div'); TOUR.block.className = 'tour-block';
+            TOUR.spot = document.createElement('div'); TOUR.spot.className = 'tour-spot';
+            TOUR.tip = document.createElement('div'); TOUR.tip.className = 'tour-tip';
+            document.body.appendChild(TOUR.block);
+            document.body.appendChild(TOUR.spot);
+            document.body.appendChild(TOUR.tip);
+        }
+
+        function runTour(steps, done) {
+            ensureTourDom();
+            TOUR.steps = steps; TOUR.i = 0; TOUR.done = done;
+            TOUR.block.style.display = 'block';
+            TOUR.spot.style.display = 'block';
+            TOUR.tip.style.display = 'block';
+            renderTourStep();
+            window.addEventListener('resize', positionTourStep);
+            document.addEventListener('keydown', tourKey);
+        }
+
+        function endTour() {
+            if (!TOUR.spot) return;
+            TOUR.block.style.display = 'none';
+            TOUR.spot.style.display = 'none';
+            TOUR.tip.style.display = 'none';
+            window.removeEventListener('resize', positionTourStep);
+            document.removeEventListener('keydown', tourKey);
+            const d = TOUR.done; TOUR.done = null;
+            if (d) d();
+        }
+
+        function tourKey(e) { if (e.key === 'Escape') endTour(); }
+        function tourNext() { if (TOUR.i < TOUR.steps.length - 1) { TOUR.i++; renderTourStep(); } else { endTour(); } }
+        function tourPrev() { if (TOUR.i > 0) { TOUR.i--; renderTourStep(); } }
+
+        function renderTourStep() {
+            const s = TOUR.steps[TOUR.i];
+            const last = TOUR.i === TOUR.steps.length - 1;
+            const iconHtml = s.icon ? '<svg class="ico" aria-hidden="true"><use href="#' + s.icon + '"/></svg>' : '';
+            const dots = TOUR.steps.map(function (_, k) { return '<span class="tour-dot' + (k === TOUR.i ? ' on' : '') + '"></span>'; }).join('');
+            TOUR.tip.innerHTML =
+                '<h4>' + iconHtml + s.title + '</h4>' +
+                '<p>' + s.text + '</p>' +
+                '<div class="tour-foot">' +
+                    '<div class="tour-dots">' + dots + '</div>' +
+                    '<div class="tour-btns">' +
+                        '<button class="tour-skip" onclick="endTour()">건너뛰기</button>' +
+                        (TOUR.i > 0 ? '<button class="tour-btn" onclick="tourPrev()">이전</button>' : '') +
+                        '<button class="tour-btn primary" onclick="tourNext()">' + (last ? '완료' : '다음') + '</button>' +
+                    '</div>' +
+                '</div>';
+            positionTourStep();
+        }
+
+        function positionTourStep() {
+            const s = TOUR.steps[TOUR.i];
+            const spot = TOUR.spot, tip = TOUR.tip, pad = 8;
+            let r = null;
+            if (s.sel) {
+                const el = document.querySelector(s.sel);
+                if (el) { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); r = el.getBoundingClientRect(); }
+            }
+            const tipW = tip.offsetWidth || 320, tipH = tip.offsetHeight || 170;
+            if (r && r.width > 0) {
+                spot.style.top = (r.top - pad) + 'px';
+                spot.style.left = (r.left - pad) + 'px';
+                spot.style.width = (r.width + pad * 2) + 'px';
+                spot.style.height = (r.height + pad * 2) + 'px';
+                let top = r.bottom + 12;
+                if (top + tipH > window.innerHeight - 8) top = Math.max(8, r.top - tipH - 12);
+                let left = r.left + r.width / 2 - tipW / 2;
+                left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
+                tip.style.top = top + 'px';
+                tip.style.left = left + 'px';
+            } else {
+                spot.style.top = '50%'; spot.style.left = '50%';
+                spot.style.width = '0px'; spot.style.height = '0px';
+                tip.style.top = (window.innerHeight / 2 - tipH / 2) + 'px';
+                tip.style.left = (window.innerWidth / 2 - tipW / 2) + 'px';
+            }
+        }
+
+        function startHomeTour() { runTour(HOME_STEPS, function () { markSeen('evosnail_home_tour'); }); }
+        function startSimTour() { runTour(SIM_STEPS, function () { markSeen('evosnail_sim_tour'); }); }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const home = document.getElementById('selectionScreen');
+            if (home && home.style.display !== 'none' && !tourSeen('evosnail_home_tour')) {
+                markSeen('evosnail_home_tour');
+                setTimeout(startHomeTour, 700);
+            }
+        });
+
     </script>
     <script src="/assets/sim-ui.js"></script>
     <script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
