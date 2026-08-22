@@ -713,8 +713,33 @@
             color: var(--cnsa-text);
         }
 
+        .stat-dist {
+            margin-top: var(--s3);
+            padding-top: var(--s4);
+            border-top: 1px solid var(--hairline);
+        }
+
+        .stat-dist-title {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--cnsa-text-dimmer);
+            margin-bottom: var(--s3);
+        }
+
+        .stat-dist-title .ico { color: var(--cnsa-accent-1); }
+
+        .stat-dist-chart {
+            height: 160px;
+        }
+
         #sideChart {
-            max-height: 280px;
+            width: 100% !important;
+            height: 100% !important;
         }
 
         .controls {
@@ -874,7 +899,7 @@
             align-items: center;
             justify-content: space-between;
             gap: var(--s3);
-            padding: 12px 14px;
+            padding: 8px 12px;
             background: var(--panel);
             border: 1px solid var(--hairline);
             border-radius: var(--cnsa-radius-sm);
@@ -1633,7 +1658,6 @@
                 <div class="header-controls">
                     <button class="btn-success cnsa-focusable" id="startBtn" onclick="toggleSimulation()" aria-label="시뮬레이션 시작 또는 정지"><svg class="ico" aria-hidden="true"><use href="#i-play"/></svg><span data-label>시작</span></button>
                     <button class="btn-secondary cnsa-focusable" id="reproduceBtn" onclick="reproduce()" aria-label="다음 세대 번식"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg>번식</button>
-                    <button class="btn-secondary cnsa-focusable" id="toggleViewBtn" onclick="toggleView()" aria-label="통계와 그래프 보기 전환"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span data-label>그래프</span></button>
                     <button class="btn-record cnsa-focusable" id="recordBtn" onclick="toggleRecording()" aria-label="기록모드 켜기 또는 끄기"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg><span data-label>기록모드</span></button>
                 </div>
             </div>
@@ -1713,7 +1737,7 @@
             
         </div>
         
-        <div class="keyboard-hints"><svg class="ico" aria-hidden="true"><use href="#i-keyboard"/></svg><kbd>Space</kbd> 시작/정지 <kbd>R</kbd> 번식 <kbd>G</kbd> 그래프 <kbd>D</kbd> 기록 <kbd>Esc</kbd> 처음으로</div>
+        <div class="keyboard-hints"><svg class="ico" aria-hidden="true"><use href="#i-keyboard"/></svg><kbd>Space</kbd> 시작/정지 <kbd>R</kbd> 번식 <kbd>D</kbd> 기록 <kbd>Esc</kbd> 처음으로</div>
 
         <div class="main-area">
             <div class="canvas-wrap">
@@ -1750,11 +1774,11 @@
                         <span class="stat-cell-value" id="eagleHunts">0</span>
                     </div>
                 </div>
-            </div>
-            
-            <div class="graph-panel" id="graphPanel" style="display: none;">
-                <h3><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg>분포도</h3>
-                <canvas id="sideChart"></canvas>
+
+                <div class="stat-dist">
+                    <span class="stat-dist-title"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg>형질 분포</span>
+                    <div class="stat-dist-chart"><canvas id="sideChart"></canvas></div>
+                </div>
             </div>
         </div>
     </div>
@@ -1801,7 +1825,6 @@
         let simulationSpeed = 1;
         let backgroundImage = null;
         let sideChart = null;
-        let showingGraph = false;
         let baselineAvg = null;
         
         let isRecording = false;
@@ -2390,10 +2413,6 @@ window.onclick = function(event) {
             }
             
             // 뷰 상태 초기화
-            showingGraph = false;
-            setBtnLabel('toggleViewBtn', 'chart', '그래프');
-            document.getElementById('statsPanel').style.display = 'block';
-            document.getElementById('graphPanel').style.display = 'none';
             
             // 개체수 입력 초기화
             for (let i = 1; i <= 5; i++) {
@@ -2791,30 +2810,8 @@ window.onclick = function(event) {
                 trendEl.dataset.dir = 'flat';
                 trendEl.textContent = '멸종';
             }
-        }
-        
-        // 뷰 토글 (통계 <-> 그래프)
-        function toggleView() {
-            showingGraph = !showingGraph;
-            const btn = document.getElementById('toggleViewBtn');
-            const statsPanel = document.getElementById('statsPanel');
-            const graphPanel = document.getElementById('graphPanel');
-            
-            if (showingGraph) {
-                statsPanel.style.display = 'none';
-                graphPanel.style.display = 'block';
-                setBtnLabel(btn, 'activity', '현재 상태');
-                
-                // 그래프가 없으면 생성
-                if (!sideChart) {
-                    initSideChart();
-                }
-                updateChart();
-            } else {
-                statsPanel.style.display = 'block';
-                graphPanel.style.display = 'none';
-                setBtnLabel(btn, 'chart', '그래프');
-            }
+
+            updateChart();
         }
         
         // 사이드 차트 초기화
@@ -2870,12 +2867,12 @@ window.onclick = function(event) {
         
         // 차트 초기화
         function initChart() {
-            // 사이드 차트는 toggleView에서 처리
+            if (!sideChart) initSideChart();
         }
         
         // 차트 업데이트
         function updateChart() {
-            if (sideChart && showingGraph) {
+            if (sideChart) {
                 const counts = [0, 0, 0, 0, 0];
                 const aliveSnails = snails.filter(s => s.alive);
                 
@@ -3069,9 +3066,6 @@ window.onclick = function(event) {
                         reproduce();
                         showToast(`${generation}세대 번식 완료`, 1500);
                     }
-                    break;
-                case 'KeyG':
-                    toggleView();
                     break;
                 case 'KeyD':
                     toggleRecording();
