@@ -1521,7 +1521,7 @@
         
         <!-- 홈 버튼 섹션 추가 -->
         <div class="home-buttons">
-            <button class="home-btn cnsa-focusable" onclick="startHomeTour()"><svg class="ico" aria-hidden="true"><use href="#i-compass"/></svg>튜토리얼</button>
+            <button class="home-btn cnsa-focusable" onclick="startTutorial()"><svg class="ico" aria-hidden="true"><use href="#i-compass"/></svg>튜토리얼</button>
             <button class="home-btn cnsa-focusable" onclick="showTutorial()"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg>사용법</button>
             <button class="home-btn cnsa-focusable" onclick="showDevLog()"><svg class="ico" aria-hidden="true"><use href="#i-log"/></svg>개발자 로그</button>
         </div>
@@ -2691,10 +2691,6 @@ window.onclick = function(event) {
                 resizeCanvas();
             });
 
-            if (!tourSeen('evosnail_sim_tour')) {
-                markSeen('evosnail_sim_tour');
-                setTimeout(startSimTour, 500);
-            }
         }
         
         // 처음으로 돌아가기
@@ -3421,7 +3417,7 @@ window.onclick = function(event) {
             document.addEventListener('keydown', tourKey);
         }
 
-        function endTour() {
+        function endTour(completed) {
             if (!TOUR.spot) return;
             TOUR.block.style.display = 'none';
             TOUR.spot.style.display = 'none';
@@ -3429,11 +3425,11 @@ window.onclick = function(event) {
             window.removeEventListener('resize', positionTourStep);
             document.removeEventListener('keydown', tourKey);
             const d = TOUR.done; TOUR.done = null;
-            if (d) d();
+            if (d) d(!!completed);
         }
 
-        function tourKey(e) { if (e.key === 'Escape') endTour(); }
-        function tourNext() { if (TOUR.i < TOUR.steps.length - 1) { TOUR.i++; renderTourStep(); } else { endTour(); } }
+        function tourKey(e) { if (e.key === 'Escape') endTour(false); }
+        function tourNext() { if (TOUR.i < TOUR.steps.length - 1) { TOUR.i++; renderTourStep(); } else { endTour(true); } }
         function tourPrev() { if (TOUR.i > 0) { TOUR.i--; renderTourStep(); } }
 
         function renderTourStep() {
@@ -3447,7 +3443,7 @@ window.onclick = function(event) {
                 '<div class="tour-foot">' +
                     '<div class="tour-dots">' + dots + '</div>' +
                     '<div class="tour-btns">' +
-                        '<button class="tour-skip" onclick="endTour()">건너뛰기</button>' +
+                        '<button class="tour-skip" onclick="endTour(false)">건너뛰기</button>' +
                         (TOUR.i > 0 ? '<button class="tour-btn" onclick="tourPrev()">이전</button>' : '') +
                         '<button class="tour-btn primary" onclick="tourNext()">' + (last ? '완료' : '다음') + '</button>' +
                     '</div>' +
@@ -3483,14 +3479,30 @@ window.onclick = function(event) {
             }
         }
 
-        function startHomeTour() { runTour(HOME_STEPS, function () { markSeen('evosnail_home_tour'); }); }
-        function startSimTour() { runTour(SIM_STEPS, function () { markSeen('evosnail_sim_tour'); }); }
+        function enterSimForTour() {
+            currentScenario = 'speed';
+            startSimulation();
+            setTimeout(function () { runTour(SIM_STEPS, null); }, 550);
+        }
 
+        // 튜토리얼 버튼: 홈 설명 후 자동으로 시뮬에 들어가 전체 기능을 이어서 안내
+        function startTutorial() {
+            const sim = document.getElementById('simulationScreen');
+            if (sim && sim.classList.contains('active')) {
+                runTour(SIM_STEPS, null);
+                return;
+            }
+            runTour(HOME_STEPS, function (completed) {
+                if (completed) enterSimForTour();
+            });
+        }
+
+        // 첫 방문: 홈 소개만 1회 자동(시뮬로 넘어가지 않음)
         document.addEventListener('DOMContentLoaded', function () {
             const home = document.getElementById('selectionScreen');
             if (home && home.style.display !== 'none' && !tourSeen('evosnail_home_tour')) {
                 markSeen('evosnail_home_tour');
-                setTimeout(startHomeTour, 700);
+                setTimeout(function () { runTour(HOME_STEPS, null); }, 700);
             }
         });
 
