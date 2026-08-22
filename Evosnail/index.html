@@ -1188,15 +1188,15 @@
         }
 
         .btn-report {
-            background: rgba(52, 168, 83, 0.16);
-            color: #93e0a8;
-            border: 1px solid rgba(52, 168, 83, 0.5);
+            background: var(--tint);
+            color: #cdeffd;
+            border: 1px solid rgba(0, 210, 255, 0.45);
         }
 
         .btn-report:hover {
-            background: rgba(52, 168, 83, 0.26);
+            background: rgba(0, 210, 255, 0.22);
             color: #fff;
-            border-color: rgba(52, 168, 83, 0.7);
+            border-color: rgba(0, 210, 255, 0.65);
         }
 
         .btn-record.active {
@@ -3406,11 +3406,12 @@ window.onclick = function(event) {
                 + '<tr><td>배경의 색 ' + bgText + '</td></tr></table>'
                 + '<div class="note">· <b>노란 칸</b>은 자동으로 채워졌고, <b>흰 칸</b>은 직접 입력·수정할 수 있어요.<br>· 각 회차 <b>시작 = 번식 직후</b>, <b>끝 = 절반을 사냥한 뒤</b> 형질별 개체 수예요. 평균값은 현재 상태 탭 기준으로 자동 기입돼요.</div>'
                 + '<div class="scroll"><table class="grid"><thead><tr>' + head + '</tr></thead><tbody>' + body + '</tbody></table></div>'
-                + '<div class="graph"><h4>📈 평균 형질값 변화 추이</h4>' + graph + '</div>'
+                + '<div class="graph"><h4>평균 형질값 변화 추이</h4>' + graph + '</div>'
                 + '<div class="step">Step 3. 시뮬레이션 결과 분석하기</div>' + qHtml
                 + '</div><div class="bar"><button class="pdf" id="pdfBtn" onclick="savePdf()">PDF로 저장</button><button class="close" onclick="window.close()">닫기</button></div>'
-                + '<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>'
-                + '<script>function savePdf(){var b=document.getElementById("pdfBtn");var el=document.querySelector(".sheet");var opt={margin:8,filename:"실험보고서_' + labels.title + '.pdf",image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["css","legacy"]}};var r=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();b.disabled=true;b.textContent="PDF 생성 중...";r.then(function(){if(window.html2pdf){html2pdf().set(opt).from(el).save().then(function(){b.disabled=false;b.textContent="PDF로 저장";}).catch(function(){b.disabled=false;b.textContent="PDF로 저장";window.print();});}else{b.disabled=false;b.textContent="PDF로 저장";window.print();}});}<\/script>'
+                + '<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>'
+                + '<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>'
+                + '<script>function savePdf(){var b=document.getElementById("pdfBtn");var el=document.querySelector(".sheet");if(!window.html2canvas||!window.jspdf){window.print();return;}b.disabled=true;b.textContent="PDF 생성 중...";var r=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();r.then(function(){window.scrollTo(0,0);return html2canvas(el,{scale:2,backgroundColor:"#ffffff",scrollX:0,scrollY:0,useCORS:true});}).then(function(canvas){var JsPDF=window.jspdf.jsPDF;var pdf=new JsPDF("p","mm","a4");var pw=210,ph=297,m=8,iw=pw-m*2;var ih=canvas.height*iw/canvas.width;var pageH=ph-m*2;var img=canvas.toDataURL("image/jpeg",0.95);var y=m,hLeft=ih;pdf.addImage(img,"JPEG",m,y,iw,ih);hLeft-=pageH;while(hLeft>0){pdf.addPage();y=m-(ih-hLeft);pdf.addImage(img,"JPEG",m,y,iw,ih);hLeft-=pageH;}pdf.save("실험보고서_' + labels.title + '.pdf");b.disabled=false;b.textContent="PDF로 저장";}).catch(function(e){b.disabled=false;b.textContent="PDF로 저장";window.print();});}<\/script>'
                 + '</body></html>';
 
             return doc;
