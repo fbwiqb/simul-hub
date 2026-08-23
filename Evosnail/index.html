@@ -819,6 +819,26 @@
 
         .control-section h3 .ico { color: var(--cnsa-accent-1); }
 
+        .info-btn {
+            margin-left: auto;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1px solid var(--cnsa-border);
+            background: transparent;
+            color: var(--cnsa-text-dim);
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            flex-shrink: 0;
+        }
+        .info-btn:hover { color: var(--cnsa-accent-1); border-color: var(--cnsa-accent-1); }
+
         .mode-selector,
         .bg-selector {
             display: grid;
@@ -1807,20 +1827,21 @@
         </div>
     </div>
     
-    <!-- 이름 입력 모달 -->
+    <!-- 보고서 작성자 등록 모달 -->
     <div class="modal" id="nameModal">
         <div class="modal-content" style="max-width:420px;" role="dialog" aria-modal="true" aria-labelledby="nameModalTitle">
             <div class="modal-header">
-                <h3 id="nameModalTitle"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg>기록모드</h3>
-                <button class="modal-close cnsa-focusable" onclick="cancelRecording()" aria-label="기록모드 닫기"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+                <h3 id="nameModalTitle"><svg class="ico" aria-hidden="true"><use href="#i-report"/></svg>보고서 작성자 등록</h3>
+                <button class="modal-close cnsa-focusable" onclick="cancelReportInfo()" aria-label="닫기"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
             </div>
             <div class="name-modal-body">
-                <p id="studentNameHint">이름 또는 번호를 입력하세요</p>
-                <input type="text" id="studentNameInput" placeholder="예: 홍길동, 1반 3번" maxlength="20" aria-labelledby="studentNameHint">
+                <p id="studentNameHint">학번과 이름을 입력하세요</p>
+                <input type="text" id="studentIdInput" placeholder="학번 (예: 30412)" maxlength="10" aria-labelledby="studentNameHint">
+                <input type="text" id="studentNameInput" placeholder="이름 (예: 홍길동)" maxlength="20" aria-labelledby="studentNameHint">
             </div>
             <div class="modal-buttons">
-                <button class="btn-cancel cnsa-focusable" onclick="cancelRecording()">취소</button>
-                <button class="btn-start cnsa-focusable" onclick="startRecording()">기록 시작</button>
+                <button class="btn-cancel cnsa-focusable" onclick="cancelReportInfo()">취소</button>
+                <button class="btn-start cnsa-focusable" onclick="confirmReportInfo()">보고서 열기</button>
             </div>
         </div>
     </div>
@@ -1833,15 +1854,10 @@
                 <div class="header-controls">
                     <button class="btn-success cnsa-focusable" id="startBtn" onclick="toggleSimulation()" aria-label="시뮬레이션 시작 또는 정지"><svg class="ico" aria-hidden="true"><use href="#i-play"/></svg><span data-label>시작</span></button>
                     <button class="btn-secondary cnsa-focusable" id="reproduceBtn" onclick="reproduce()" aria-label="다음 세대 번식"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg>번식</button>
-                    <button class="btn-record cnsa-focusable" id="recordBtn" onclick="toggleRecording()" aria-label="기록모드 켜기 또는 끄기"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg><span data-label>기록모드</span></button>
-                    <button class="btn-report cnsa-focusable" id="reportBtn" onclick="openReport()" aria-label="실험 보고서 작성"><svg class="ico" aria-hidden="true"><use href="#i-report"/></svg><span data-label>보고서 쓰기</span></button>
+                    <button class="btn-report cnsa-focusable" id="reportBtn" onclick="openReportModal()" aria-label="실험 보고서 작성"><svg class="ico" aria-hidden="true"><use href="#i-report"/></svg><span data-label>보고서 쓰기</span></button>
                 </div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
-                <div class="recording-badge" id="recordingBadge" role="status">
-                    <span class="recording-dot" aria-hidden="true"></span>
-                    기록 중
-                </div>
                 <button class="btn-flee cnsa-focusable" id="fleeBtn" onclick="toggleFlee()" aria-pressed="false" aria-label="도망가기 모드 켜기 또는 끄기"><svg class="ico" aria-hidden="true"><use href="#i-wind"/></svg>도망가기</button>
                 <button class="btn-danger cnsa-focusable" onclick="resetSimulation()" aria-label="시뮬레이션 초기화"><svg class="ico" aria-hidden="true"><use href="#i-rotate"/></svg>초기화</button>
                 <button class="btn-back cnsa-focusable" onclick="backToSelection()" aria-label="처음 화면으로 돌아가기"><svg class="ico" aria-hidden="true"><use href="#i-chevron-left"/></svg>처음으로</button>
@@ -1882,7 +1898,7 @@
             </div>
             
             <div class="control-section" id="evoSetupSection">
-                <h3><svg class="ico" aria-hidden="true"><use href="#i-branch"/></svg>진화 설정</h3>
+                <h3><svg class="ico" aria-hidden="true"><use href="#i-branch"/></svg>진화 설정<button type="button" class="info-btn cnsa-focusable" onclick="showToast('유전: 부모의 형질이 자식에게 그대로 전달돼요. 돌연변이: 낮은 확률로 형질이 무작위로 바뀌어 새로운 변이가 나타나요.', 6000)" aria-label="유전과 돌연변이 차이 설명 보기">?</button></h3>
 
                 <div class="toggle-grid">
                     <label class="toggle-row">
@@ -1914,7 +1930,7 @@
             
         </div>
         
-        <div class="keyboard-hints"><svg class="ico" aria-hidden="true"><use href="#i-keyboard"/></svg><kbd>Space</kbd> 시작/정지 <kbd>R</kbd> 번식 <kbd>D</kbd> 기록 <kbd>Esc</kbd> 처음으로</div>
+        <div class="keyboard-hints"><svg class="ico" aria-hidden="true"><use href="#i-keyboard"/></svg><kbd>Space</kbd> 시작/정지 <kbd>R</kbd> 번식 <kbd>Esc</kbd> 처음으로</div>
 
         <div class="main-area">
             <div class="canvas-wrap">
@@ -2038,9 +2054,8 @@
             return { c: c, total: total, avg: Math.round(avg * 100) / 100, hex: hex };
         }
         
-        let isRecording = false;
-        let recordingData = [];
-        let studentName = '';
+        let reportStudentId = '';
+        let reportStudentName = '';
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbyAGQ79tmQKZhJznVEWbirjFFydAK9-0__MR7IkVpMAwzttQjVCVBeAOxXU0nmWasfonQ/exec';
         // 팩 1~15 구글 드라이브 폴더 ID
         const PACK_FOLDER_IDS = ['1lbq3Gbsufr-lVRjOGSGxLw0NnKm2WEDJ', '1YmBKM8UlTLLMzj1WrdEFLcxu4l32nNvP', '15V9kE4CH6C7cWN1zTSbqpMQm9tSM3X8F', '1Q_mO9DqeA5tb9Gkgn4CZKnvbsEHrMK-8', '1MyJIdgiUQGba0za1YtGL5zBEDAWakB1T', '1iF-iG5214bv6p_lLS5cNROUvqW8MELqz', '1sN9F9yl0Ce3MJnWK07KwApAB5MaftP3z', '1tX39_3ddey6kXEBQBA3nouoCnE-T4uTv', '1Vtt4KYzG1NsgRT8aFdfJfiBsH01pmRWM', '1k9rN1toVbB7e7YYHPNPu8lnYi-jTFkn3', '1tdWwJCBu3cX4EcFQ-hXFWH5adtazFqR7', '16TA_-c9M4bgTHLHd7g7ZcTk9Ix15RrzK', '1FjCErJcsU1SWhkVPXAvY0fAg1r4pd6OI', '1M-c4Xyj0amn5eNrxtx7iVWdmJnA-LuV4', '194IVzuPG4P_d6m8NRXBt3lu_RXUxkQuI'];
@@ -2114,14 +2129,13 @@
             update() {
                 if (!this.alive || !isRunning) return;
 
-                let fleeing = false, fleeBoost = 1;
+                let fleeing = false;
                 if (fleeMode && mouseX !== null) {
                     const mdx = this.x - mouseX, mdy = this.y - mouseY;
                     const mdist = Math.hypot(mdx, mdy);
                     if (mdist < FLEE_RADIUS) {
                         fleeing = true;
                         this.targetAngle = Math.atan2(mdy, mdx);
-                        fleeBoost = 1 + (1 - mdist / FLEE_RADIUS) * 1.8;
                     }
                 }
 
@@ -2133,7 +2147,7 @@
                 angleDiff = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
                 this.angle += angleDiff * (fleeing ? 0.28 : this.turnSpeed);
 
-                const actualSpeed = this.speed * simulationSpeed * fleeBoost;
+                const actualSpeed = this.speed * simulationSpeed;
                 this.x += Math.cos(this.angle) * actualSpeed;
                 this.y += Math.sin(this.angle) * actualSpeed;
                 
@@ -2462,125 +2476,32 @@ function closeDevLog() {
     document.getElementById('devLogModal').style.display = 'none';
 }
 
-function captureSnapshot() {
-    const aliveSnails = snails.filter(s => s.alive);
-    const counts = [0, 0, 0, 0, 0];
-    aliveSnails.forEach(s => { counts[s.level - 1]++; });
-    const total = aliveSnails.length;
-
-    let avg = 0;
-    if (total > 0) {
-        if (currentScenario === 'speed') {
-            avg = aliveSnails.reduce((sum, s) => sum + s.speed, 0) / total;
-        } else if (currentScenario === 'color') {
-            avg = aliveSnails.reduce((sum, s) => sum + s.level, 0) / total;
-        } else if (currentScenario === 'size') {
-            avg = aliveSnails.reduce((sum, s) => sum + s.size, 0) / total;
-        }
-    }
-
-    return {
-        gen: generation,
-        lv1: counts[0], lv2: counts[1], lv3: counts[2], lv4: counts[3], lv5: counts[4],
-        total: total,
-        avg: Math.round(avg * 100) / 100,
-        mutations: mutationCount
-    };
+function sanitizeReportField(v) {
+    return String(v).trim().replace(/["<>]/g, '');
 }
 
-function toggleRecording() {
-    if (!isRecording) {
-        document.getElementById('nameModal').style.display = 'block';
-        document.getElementById('studentNameInput').value = '';
-        setTimeout(() => document.getElementById('studentNameInput').focus(), 100);
-    } else {
-        stopRecording();
-    }
+function openReportModal() {
+    document.getElementById('nameModal').style.display = 'block';
+    document.getElementById('studentIdInput').value = reportStudentId;
+    document.getElementById('studentNameInput').value = reportStudentName;
+    setTimeout(() => document.getElementById('studentIdInput').focus(), 100);
 }
 
-function startRecording() {
-    const nameInput = document.getElementById('studentNameInput').value.trim();
-    if (!nameInput) {
-        showToast('이름을 입력해주세요!');
-        return;
-    }
-    studentName = nameInput;
-    isRecording = true;
-    recordingData = [];
-
-    document.getElementById('nameModal').style.display = 'none';
-    document.getElementById('recordBtn').classList.add('active');
-    setBtnLabel('recordBtn', 'stop', '기록중지');
-    document.getElementById('recordingBadge').classList.add('visible');
-
-    recordingData.push(captureSnapshot());
-    showToast('기록모드 시작! 세대별 데이터가 기록됩니다.', 3000);
-}
-
-function cancelRecording() {
+function cancelReportInfo() {
     document.getElementById('nameModal').style.display = 'none';
 }
 
-function stopRecording() {
-    isRecording = false;
-    document.getElementById('recordBtn').classList.remove('active');
-    setBtnLabel('recordBtn', 'clipboard', '기록모드');
-    document.getElementById('recordingBadge').classList.remove('visible');
-
-    if (recordingData.length <= 1) {
-        showToast('기록할 데이터가 없습니다. (번식을 1회 이상 진행해주세요)', 3000);
-        recordingData = [];
+function confirmReportInfo() {
+    const sid = sanitizeReportField(document.getElementById('studentIdInput').value);
+    const sname = sanitizeReportField(document.getElementById('studentNameInput').value);
+    if (!sid || !sname) {
+        showToast('학번과 이름을 모두 입력해주세요!');
         return;
     }
-
-    sendRecordingData();
-}
-
-
-
-function sendRecordingData() {
-    showToast('전송 중...', 5000);
-
-    const payload = {
-        studentName: studentName,
-        scenario: currentScenario,
-        mode: currentMode,
-        background: currentBackground,
-        speed: simulationSpeed,
-        data: recordingData
-    };
-
-    fetch(GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        mode: 'no-cors'
-    })
-    .then(function() {
-        showToast('기록 완료! 스프레드시트에 저장되었습니다.', 4000);
-        recordingData = [];
-    })
-    .catch(function(err) {
-        showToast('네트워크 오류! CSV로 다운로드합니다.', 4000);
-        downloadCSV();
-        recordingData = [];
-    });
-}
-
-function downloadCSV() {
-    const name = studentName;
-    const headers = '세대,Lv1,Lv2,Lv3,Lv4,Lv5,총 개체수,평균값,돌연변이\n';
-    const rows = recordingData.map(function(d) {
-        return [d.gen, d.lv1, d.lv2, d.lv3, d.lv4, d.lv5, d.total, d.avg, d.mutations].join(',');
-    }).join('\n');
-
-    const bom = '\uFEFF';
-    const blob = new Blob([bom + headers + rows], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name + '_' + currentScenario + '_기록.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    reportStudentId = sid;
+    reportStudentName = sname;
+    document.getElementById('nameModal').style.display = 'none';
+    openReport();
 }
 
 // 모달 외부 클릭 시 닫기
@@ -2663,7 +2584,7 @@ window.onclick = function(event) {
                     snails.push(new Snail(level));
                 }
             }
-            roundData = [{ start: snapshotCounts() }];
+            roundData = [{ start: snapshotCounts(), bg: currentBackground }];
             pausedByHalf = false;
             
             document.getElementById('setupModal').style.display = 'none';
@@ -2702,9 +2623,6 @@ window.onclick = function(event) {
         
         // 처음으로 돌아가기
         function backToSelection() {
-            if (isRecording) {
-                stopRecording();
-            }
             if (isRunning) {
                 toggleSimulation();
             }
@@ -3005,7 +2923,7 @@ window.onclick = function(event) {
             if (roundData.length) roundData[roundData.length - 1].end = snapshotCounts();
             snails = newSnails.filter(s => s.alive);
             generation++;
-            roundData.push({ start: snapshotCounts() });
+            roundData.push({ start: snapshotCounts(), bg: currentBackground });
             caughtCount = 0;
             mutationCount += mutationOccurred; // 누적 돌연변이 수 업데이트
             
@@ -3024,11 +2942,7 @@ window.onclick = function(event) {
                 CNSA.srAnnounce(`${generation}세대 번식 완료. 개체수 ${aliveNow}마리, 평균값 ${avgText}.`);
             }
 
-            if (isRecording) {
-                recordingData.push(captureSnapshot());
-            }
-
-            if (pausedByHalf && currentMode === 'manual' && !isRunning) {
+            if (pausedByHalf && !isRunning) {
                 pausedByHalf = false;
                 toggleSimulation();
             } else if (!isRunning) {
@@ -3055,7 +2969,7 @@ window.onclick = function(event) {
                     snails.push(new Snail(level));
                 }
             }
-            roundData = [{ start: snapshotCounts() }];
+            roundData = [{ start: snapshotCounts(), bg: currentBackground }];
             
             generation = 0;
             baselineAvg = null;
@@ -3324,11 +3238,13 @@ window.onclick = function(event) {
             }, 150);
         });
 
-        document.getElementById('studentNameInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                startRecording();
-            }
+        ['studentIdInput', 'studentNameInput'].forEach(function (id) {
+            document.getElementById(id).addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    confirmReportInfo();
+                }
+            });
         });
 
         const ALL_MODAL_IDS = ['tutorialModal', 'devLogModal', 'setupModal', 'nameModal'];
@@ -3344,7 +3260,7 @@ window.onclick = function(event) {
         function closeOpenModal() {
             const m = getOpenModal();
             if (!m) return false;
-            if (m.id === 'nameModal') cancelRecording();
+            if (m.id === 'nameModal') cancelReportInfo();
             else m.style.display = 'none';
             return true;
         }
@@ -3405,18 +3321,16 @@ window.onclick = function(event) {
                         showToast(`${generation}세대 번식 완료`, 1500);
                     }
                     break;
-                case 'KeyD':
-                    toggleRecording();
-                    break;
                 case 'Escape':
                     backToSelection();
                     break;
             }
         });
 
-        function buildGraphSVG(vals, xs, unit) {
+        function buildGraphSVG(vals, xs, unit, opts) {
+            opts = opts || {};
             if (!vals.length) return '<div class="nograph">아직 기록된 세대가 없어요. 시뮬레이션을 진행한 뒤 다시 열어보세요.</div>';
-            const W = 680, H = 240, pl = 46, pr = 16, pt = 18, pb = 42;
+            const W = 680, H = 260, pl = opts.isColor ? 56 : 48, pr = 16, pt = 20, pb = 42;
             let lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
             if (lo === hi) { lo -= 1; hi += 1; }
             const pad = (hi - lo) * 0.12; lo -= pad; hi += pad;
@@ -3427,14 +3341,40 @@ window.onclick = function(event) {
             for (let g = 0; g <= 4; g++) {
                 const yy = pt + ih * g / 4;
                 const val = hi - (hi - lo) * g / 4;
-                grid += '<line x1="' + pl + '" y1="' + yy + '" x2="' + (W - pr) + '" y2="' + yy + '" stroke="#e5e7eb"/>';
-                grid += '<text x="' + (pl - 6) + '" y="' + (yy + 3) + '" text-anchor="end" font-size="10" fill="#999">' + val.toFixed(1) + '</text>';
+                grid += '<line x1="' + pl + '" y1="' + yy + '" x2="' + (W - pr) + '" y2="' + yy + '" stroke="#edeff3" stroke-dasharray="3,4"/>';
+                if (opts.isColor) {
+                    const cv = Math.max(0, Math.min(1, (val - 1) / 4));
+                    grid += '<rect x="' + (pl - 34) + '" y="' + (yy - 6) + '" width="20" height="12" rx="3" fill="' + colorHexAt(cv) + '" stroke="#d8dce3"/>';
+                } else {
+                    grid += '<text x="' + (pl - 10) + '" y="' + (yy + 3) + '" text-anchor="end" font-size="10" fill="#9aa1ad">' + val.toFixed(1) + '</text>';
+                }
             }
-            const pts = vals.map(function (v, i) { return X(i) + ',' + Y(v); }).join(' ');
-            const dots = vals.map(function (v, i) { return '<circle cx="' + X(i) + '" cy="' + Y(v) + '" r="3" fill="#2563eb"/>'; }).join('');
-            const xlab = xs.map(function (t, i) { return '<text x="' + X(i) + '" y="' + (H - pb + 16) + '" text-anchor="middle" font-size="9" fill="#666">' + t + '</text>'; }).join('');
-            const yttl = '<text x="12" y="' + (pt + ih / 2) + '" transform="rotate(-90 12 ' + (pt + ih / 2) + ')" text-anchor="middle" font-size="10" fill="#666">평균값' + (unit ? ' (' + unit + ')' : '') + '</text>';
-            return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%">' + grid + '<polyline points="' + pts + '" fill="none" stroke="#2563eb" stroke-width="2"/>' + dots + xlab + yttl + '</svg>';
+            let bgMarks = '', hasBgMark = false;
+            if (opts.isColor && opts.bgs && opts.bgs.length === vals.length) {
+                for (let i = 1; i < opts.bgs.length; i++) {
+                    if (opts.bgs[i] && opts.bgs[i - 1] && opts.bgs[i] !== opts.bgs[i - 1]) {
+                        hasBgMark = true;
+                        const mx = X(i);
+                        const label = opts.bgs[i] === 'grassland' ? '초지로 변경' : '개활지로 변경';
+                        bgMarks += '<line x1="' + mx + '" y1="' + pt + '" x2="' + mx + '" y2="' + (pt + ih) + '" stroke="#b6bcc9" stroke-width="1.5" stroke-dasharray="4,3"/>';
+                        bgMarks += '<text x="' + mx + '" y="' + (pt - 7) + '" text-anchor="middle" font-size="9" fill="#8b90a0">' + label + '</text>';
+                    }
+                }
+            }
+            const areaPath = 'M' + X(0) + ',' + (pt + ih) + ' ' + vals.map(function (v, i) { return 'L' + X(i) + ',' + Y(v); }).join(' ') + ' L' + X(vals.length - 1) + ',' + (pt + ih) + ' Z';
+            const linePts = vals.map(function (v, i) { return X(i) + ',' + Y(v); }).join(' ');
+            const dots = vals.map(function (v, i) { return '<circle cx="' + X(i) + '" cy="' + Y(v) + '" r="4" fill="#fff" stroke="#2563eb" stroke-width="2.2"/>'; }).join('');
+            const xlab = xs.map(function (t, i) { return '<text x="' + X(i) + '" y="' + (H - pb + 18) + '" text-anchor="middle" font-size="9" fill="#8b90a0">' + t + '</text>'; }).join('');
+            const yttl = opts.isColor ? '' : '<text x="14" y="' + (pt + ih / 2) + '" transform="rotate(-90 14 ' + (pt + ih / 2) + ')" text-anchor="middle" font-size="10" fill="#8b90a0">평균값' + (unit ? ' (' + unit + ')' : '') + '</text>';
+            const legend = hasBgMark ? '<div style="font-size:11px;color:#8b90a0;text-align:center;margin-top:2px;">점선: 배경(토양색) 변경 시점</div>' : '';
+            return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%">'
+                + '<defs><linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2563eb" stop-opacity="0.16"/><stop offset="100%" stop-color="#2563eb" stop-opacity="0"/></linearGradient></defs>'
+                + '<rect x="' + pl + '" y="' + pt + '" width="' + iw + '" height="' + ih + '" rx="6" fill="#fafbfc" stroke="#edeff3"/>'
+                + grid + bgMarks
+                + '<path d="' + areaPath + '" fill="url(#areaFill)"/>'
+                + '<polyline points="' + linePts + '" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
+                + dots + xlab + yttl
+                + '</svg>' + legend;
         }
 
         function buildReportDoc() {
@@ -3484,13 +3424,13 @@ window.onclick = function(event) {
             }
             body += '<tr>' + arow + '</tr>';
 
-            const seq = [], xs = [];
+            const seq = [], xs = [], bgs = [];
             for (let r = 1; r <= ROUNDS; r++) {
                 const rd = roundData[r - 1];
-                if (rd && rd.start) { seq.push(rd.start.avg); xs.push(r + '시'); }
-                if (rd && rd.end) { seq.push(rd.end.avg); xs.push(r + '끝'); }
+                if (rd && rd.start) { seq.push(rd.start.avg); xs.push(r + '시'); bgs.push(rd.bg); }
+                if (rd && rd.end) { seq.push(rd.end.avg); xs.push(r + '끝'); bgs.push(rd.bg); }
             }
-            const graph = buildGraphSVG(seq, xs, unit);
+            const graph = buildGraphSVG(seq, xs, unit, { isColor: cur === 'color', bgs: bgs });
 
             let initCells = '';
             for (let i = 0; i < 5; i++) initCells += '<td class="y">' + L[i] + '<span class="lv">(' + (i + 1) + '레벨)</span></td>';
@@ -3499,9 +3439,7 @@ window.onclick = function(event) {
 
             const Q = [
                 '시뮬레이션 결과, 형질에 따른 개체 수의 변화는 어떻게 나타났는가? 그 이유를 자연선택의 관점에서 설명해보자. (수동모드와 자동모드에서 결과가 달랐다면 그 이유도 설명해보자.)',
-                '각 시뮬레이션 상황에서 자연선택에 영향을 주는 다양한 요인에 대해 조원들과 이야기를 나누어 보자.',
-                'CNSA 탐사대는 육지와 교류가 단절된 가상의 섬의 달팽이 조사 결과, 육지의 달팽이에 비해 어두운 색을 띠는 것을 확인하였다. 해당 섬의 달팽이 색이 육지와 다른 이유를 자연선택을 이용하여 추론하여라.',
-                'CNSA 탐사대의 영향으로 위 섬의 토양의 색이 밝아지게 되었다. 앞으로 이 섬의 달팽이 색의 변화에 대해 자연선택의 관점에서 추론하여라.'
+                '이번 시뮬레이션에서 자연선택에 영향을 준 요인은 무엇이었는지 조원들과 이야기해 보고, 이 시뮬레이션이 실제 자연 상황과 다른 점은 무엇인지 서술해보자.'
             ];
             let qHtml = '';
             Q.forEach(function (q, i) { qHtml += '<div class="q"><div class="qt">' + (i + 1) + '. ' + q + '</div><textarea class="ans"></textarea></div>'; });
@@ -3535,7 +3473,7 @@ window.onclick = function(event) {
             const doc = '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
                 + '<link rel="preconnect" href="https://fonts.gstatic.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">'
                 + '<title>실험 보고서 - ' + labels.title + '</title><style>' + css + '</style></head><body><div class="sheet">'
-                + '<div class="top"><div><b>2025학년도 2학기 통합과학2</b></div><div class="id">학번 : (<input>) &nbsp; 이름 : (<input>)</div></div>'
+                + '<div class="top"><div><b>2025학년도 2학기 통합과학2</b></div><div class="id">학번 : (<input value="' + reportStudentId + '">) &nbsp; 이름 : (<input value="' + reportStudentName + '">)</div></div>'
                 + '<div class="subj"><div class="k">주제</div><div class="v">자연선택 과정에 대한 모의실험 하기</div></div>'
                 + '<table class="book"><tr><th rowspan="2">교과서</th><th>대단원</th><th>중단원</th><th>소단원</th><th>페이지</th></tr>'
                 + '<tr><td>Ⅰ. 변화와 다양성</td><td>1. 생물다양성</td><td>2. 자연선택과 생물다양성</td><td>p. 26~27</td></tr></table>'
@@ -3555,7 +3493,7 @@ window.onclick = function(event) {
                 + '<script>var GAS_URL=' + JSON.stringify(GAS_URL) + ';var PACK_IDS=' + JSON.stringify(PACK_FOLDER_IDS) + ';function openUpload(){var g=document.getElementById("packGrid");if(!g.childElementCount){for(var i=1;i<=15;i++){var btn=document.createElement("button");btn.textContent=i+"팩";(function(n,b){b.onclick=function(){goPack(n,b);};})(i,btn);g.appendChild(btn);}}document.getElementById("uploadModal").classList.add("open");}function closeUpload(){document.getElementById("uploadModal").classList.remove("open");}function resetPackButtons(){var g=document.getElementById("packGrid");Array.prototype.forEach.call(g.children,function(b,idx){b.disabled=false;b.textContent=(idx+1)+"팩";});}<\/script>'
                 + '<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>'
                 + '<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>'
-                + '<script>async function buildPdf(){await (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve());var sheet=document.querySelector(".sheet");var kids=Array.prototype.slice.call(sheet.children);var blocks=[];kids.forEach(function(el){if(el.classList.contains("scroll")){blocks.push(el.querySelector("table"));}else if(!el.classList.contains("bar")){blocks.push(el);}});var JsPDF=window.jspdf.jsPDF;var pdf=new JsPDF("p","mm","a4");var pw=210,ph=297,m=10,iw=pw-m*2,pageH=ph-m*2;var y=m,first=true;for(var i=0;i<blocks.length;i++){var el=blocks[i];if(!el||el.offsetHeight===0)continue;var oc=function(d){d.querySelectorAll("input.cin").forEach(function(i){var s=d.createElement("span");s.textContent=i.value||"";s.style.cssText="display:block;text-align:center;font-size:12px;line-height:1.4";i.replaceWith(s);});d.querySelectorAll(".top input").forEach(function(i){var s=d.createElement("span");s.textContent=i.value||"";s.style.cssText="display:inline-block;width:90px;text-align:center;border-bottom:1px solid #999";i.replaceWith(s);});d.querySelectorAll("textarea").forEach(function(t){var v=t.value||"";var dv=d.createElement("div");dv.textContent=v;dv.style.cssText="white-space:pre-wrap;min-height:110px;border:1px solid #999;border-radius:6px;padding:8px;font-size:13px;text-align:left;line-height:1.6";t.replaceWith(dv);});};var canvas=await html2canvas(el,{scale:2,backgroundColor:"#ffffff",scrollX:0,scrollY:0,windowWidth:Math.max(document.documentElement.clientWidth,el.scrollWidth),onclone:oc});var h=canvas.height*iw/canvas.width;var img=canvas.toDataURL("image/jpeg",0.95);if(h<=pageH){if(!first&&y+h>m+pageH){pdf.addPage();y=m;}pdf.addImage(img,"JPEG",m,y,iw,h);y+=h+3;}else{if(!first){pdf.addPage();}var yy=m,hLeft=h;pdf.addImage(img,"JPEG",m,yy,iw,h);hLeft-=pageH;while(hLeft>0){pdf.addPage();yy=yy-pageH;pdf.addImage(img,"JPEG",m,yy,iw,h);hLeft-=pageH;}pdf.addPage();y=m;}first=false;}return pdf;}async function savePdf(){var b=document.getElementById("pdfBtn");if(!window.html2canvas||!window.jspdf){window.print();return;}b.disabled=true;b.textContent="PDF 생성 중...";try{var pdf=await buildPdf();pdf.save("실험보고서_' + labels.title + '.pdf");}catch(e){window.print();}b.disabled=false;b.textContent="PDF로 저장";}async function goPack(n,btn){var id=PACK_IDS[n-1];if(!id){alert(n+"팩의 구글 드라이브 폴더가 아직 설정되지 않았습니다.");return;}if(!window.html2canvas||!window.jspdf){alert("PDF 라이브러리를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");return;}var g=document.getElementById("packGrid");Array.prototype.forEach.call(g.children,function(b2){b2.disabled=true;});btn.textContent="업로드 중...";try{var pdf=await buildPdf();var uri=pdf.output("datauristring");var b64=uri.split(",")[1];var idEl=document.querySelectorAll(".top .id input");var sid=(idEl[0]&&idEl[0].value)?idEl[0].value.trim():"";var sname=(idEl[1]&&idEl[1].value)?idEl[1].value.trim():"";var fname="실험보고서_' + labels.title + '"+(sid?"_"+sid:"")+(sname?"_"+sname:"")+"_"+Date.now()+".pdf";await fetch(GAS_URL,{method:"POST",body:JSON.stringify({action:"uploadReport",packFolderId:id,fileName:fname,fileBase64:b64}),mode:"no-cors"});btn.textContent="완료!";setTimeout(function(){closeUpload();resetPackButtons();},900);}catch(e){alert("업로드 중 오류가 발생했습니다. PDF로 저장 후 다시 시도해주세요.");resetPackButtons();}}<\/script>'
+                + '<script>async function buildPdf(){await (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve());var sheet=document.querySelector(".sheet");var kids=Array.prototype.slice.call(sheet.children);var blocks=[];kids.forEach(function(el){if(el.classList.contains("scroll")){blocks.push(el.querySelector("table"));}else if(!el.classList.contains("bar")){blocks.push(el);}});var JsPDF=window.jspdf.jsPDF;var pdf=new JsPDF("p","mm","a4");var pw=210,ph=297,m=10,iw=pw-m*2,pageH=ph-m*2;var y=m,first=true;for(var i=0;i<blocks.length;i++){var el=blocks[i];if(!el||el.offsetHeight===0)continue;var oc=function(d){d.querySelectorAll("input.cin").forEach(function(i){var s=d.createElement("span");s.textContent=i.value||"";s.style.cssText="display:block;text-align:center;font-size:12px;line-height:1.4";i.replaceWith(s);});d.querySelectorAll(".top input").forEach(function(i){var s=d.createElement("span");s.textContent=i.value||"";s.style.cssText="display:inline-block;width:90px;text-align:center;border-bottom:1px solid #999";i.replaceWith(s);});d.querySelectorAll("textarea").forEach(function(t){var v=t.value||"";var dv=d.createElement("div");dv.textContent=v;dv.style.cssText="white-space:pre-wrap;min-height:110px;border:1px solid #999;border-radius:6px;padding:8px;font-size:13px;text-align:left;line-height:1.6";t.replaceWith(dv);});};var canvas=await html2canvas(el,{scale:2,backgroundColor:"#ffffff",scrollX:0,scrollY:0,windowWidth:Math.max(document.documentElement.clientWidth,el.scrollWidth),onclone:oc});var h=canvas.height*iw/canvas.width;var img=canvas.toDataURL("image/jpeg",0.95);if(h<=pageH){if(!first&&y+h>m+pageH){pdf.addPage();y=m;}pdf.addImage(img,"JPEG",m,y,iw,h);y+=h+3;}else{if(!first){pdf.addPage();}var yy=m,hLeft=h;pdf.addImage(img,"JPEG",m,yy,iw,h);hLeft-=pageH;while(hLeft>0){pdf.addPage();yy=yy-pageH;pdf.addImage(img,"JPEG",m,yy,iw,h);hLeft-=pageH;}pdf.addPage();y=m;}first=false;}return pdf;}function reportFileName(){var idEl=document.querySelectorAll(".top .id input");var sid=(idEl[0]&&idEl[0].value)?idEl[0].value.trim():"";var sname=(idEl[1]&&idEl[1].value)?idEl[1].value.trim():"";return (sid?sid+"_":"")+(sname?sname+"_":"")+"' + labels.title + '"+".pdf";}async function savePdf(){var b=document.getElementById("pdfBtn");if(!window.html2canvas||!window.jspdf){window.print();return;}b.disabled=true;b.textContent="PDF 생성 중...";try{var pdf=await buildPdf();pdf.save(reportFileName());}catch(e){window.print();}b.disabled=false;b.textContent="PDF로 저장";}async function goPack(n,btn){var id=PACK_IDS[n-1];if(!id){alert(n+"팩의 구글 드라이브 폴더가 아직 설정되지 않았습니다.");return;}if(!window.html2canvas||!window.jspdf){alert("PDF 라이브러리를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");return;}var g=document.getElementById("packGrid");Array.prototype.forEach.call(g.children,function(b2){b2.disabled=true;});btn.textContent="업로드 중...";try{var pdf=await buildPdf();var uri=pdf.output("datauristring");var b64=uri.split(",")[1];var fname=reportFileName();await fetch(GAS_URL,{method:"POST",body:JSON.stringify({action:"uploadReport",packFolderId:id,fileName:fname,fileBase64:b64}),mode:"no-cors"});btn.textContent="완료!";setTimeout(function(){closeUpload();resetPackButtons();},900);}catch(e){alert("업로드 중 오류가 발생했습니다. PDF로 저장 후 다시 시도해주세요.");resetPackButtons();}}<\/script>'
                 + '</body></html>';
 
             return doc;
@@ -3582,7 +3520,7 @@ window.onclick = function(event) {
             { sel: '#evoSetupSection', icon: 'i-branch', title: '진화 설정', text: '유전과 돌연변이를 켜고 끄며 진화 조건을 바꿔봐요.' },
             { sel: '#reproduceBtn', icon: 'i-refresh', title: '번식', text: '개체가 절반으로 줄면 이 버튼으로 다음 세대를 만들어요.' },
             { sel: '#statsPanel', icon: 'i-activity', title: '현재 상태', text: '평균 형질값과 분포가 세대마다 어떻게 변하는지 관찰하세요.' },
-            { sel: '#recordBtn', icon: 'i-clipboard', title: '기록모드', text: '세대별 데이터를 기록할 수 있어요.' }
+            { sel: '#reportBtn', icon: 'i-report', title: '보고서 쓰기', text: '학번과 이름을 입력하면 실험 보고서를 작성하고, 팩 폴더로 바로 제출할 수 있어요.' }
         ];
 
         const TOUR = { steps: [], i: 0, done: null, spot: null, tip: null, block: null };
@@ -3706,7 +3644,7 @@ window.onclick = function(event) {
 
     </script>
     <script src="/assets/sim-ui.js"></script>
-    <script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA)CNSA.mountTopbar();});</script>
+    <script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA){var bar=CNSA.mountTopbar({hubHref:'#'});if(bar){var home=bar.querySelector('.cnsa-home');if(home){home.addEventListener('click',function(e){e.preventDefault();backToSelection();});}}}});</script>
     
     <!-- Footer 여기에 추가 -->
     <div class="footer">
