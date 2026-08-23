@@ -1846,6 +1846,26 @@
         </div>
     </div>
 
+    <!-- 유전/돌연변이 설명 모달 -->
+    <div class="modal" id="geneticsInfoModal">
+        <div class="modal-content" style="max-width:440px;" role="dialog" aria-modal="true" aria-labelledby="geneticsInfoModalTitle">
+            <div class="modal-header">
+                <h3 id="geneticsInfoModalTitle"><svg class="ico" aria-hidden="true"><use href="#i-branch"/></svg>유전과 돌연변이, 뭐가 다를까?</h3>
+                <button class="modal-close cnsa-focusable" onclick="closeGeneticsInfo()" aria-label="닫기"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+            </div>
+            <div class="modal-body">
+                <div class="log-entry">
+                    <div class="log-date"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg> 유전</div>
+                    <div class="log-text">부모의 형질이 자식에게 그대로 전달돼요. 켜두면 부모 세대의 형질 분포가 자식 세대로 이어집니다.</div>
+                </div>
+                <div class="log-entry">
+                    <div class="log-date"><svg class="ico" aria-hidden="true"><use href="#i-spiral"/></svg> 돌연변이</div>
+                    <div class="log-text">낮은 확률로 형질이 무작위로 바뀌어요. 유전과 별개로, 새로운 형질이 우연히 나타나는 경우를 나타냅니다. 돌연변이율로 그 확률을 조절할 수 있어요.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 시뮬레이션 화면 -->
     <div class="simulation-screen" id="simulationScreen">
         <div class="sim-header">
@@ -1898,7 +1918,7 @@
             </div>
             
             <div class="control-section" id="evoSetupSection">
-                <h3><svg class="ico" aria-hidden="true"><use href="#i-branch"/></svg>진화 설정<button type="button" class="info-btn cnsa-focusable" onclick="showToast('유전: 부모의 형질이 자식에게 그대로 전달돼요. 돌연변이: 낮은 확률로 형질이 무작위로 바뀌어 새로운 변이가 나타나요.', 6000)" aria-label="유전과 돌연변이 차이 설명 보기">?</button></h3>
+                <h3><svg class="ico" aria-hidden="true"><use href="#i-branch"/></svg>진화 설정<button type="button" class="info-btn cnsa-focusable" onclick="openGeneticsInfo()" aria-label="유전과 돌연변이 차이 설명 보기">?</button></h3>
 
                 <div class="toggle-grid">
                     <label class="toggle-row">
@@ -2476,6 +2496,15 @@ function closeDevLog() {
     document.getElementById('devLogModal').style.display = 'none';
 }
 
+// 유전/돌연변이 설명 모달
+function openGeneticsInfo() {
+    document.getElementById('geneticsInfoModal').style.display = 'block';
+}
+
+function closeGeneticsInfo() {
+    document.getElementById('geneticsInfoModal').style.display = 'none';
+}
+
 function sanitizeReportField(v) {
     return String(v).trim().replace(/["<>]/g, '');
 }
@@ -2510,6 +2539,7 @@ window.onclick = function(event) {
     const devLogModal = document.getElementById('devLogModal');
     const setupModal = document.getElementById('setupModal');
     const nameModal = document.getElementById('nameModal');
+    const geneticsInfoModal = document.getElementById('geneticsInfoModal');
 
     if (event.target === tutorialModal) {
         tutorialModal.style.display = 'none';
@@ -2522,6 +2552,9 @@ window.onclick = function(event) {
     }
     if (event.target === nameModal) {
         nameModal.style.display = 'none';
+    }
+    if (event.target === geneticsInfoModal) {
+        geneticsInfoModal.style.display = 'none';
     }
 }
         // 모달 열기
@@ -3247,7 +3280,7 @@ window.onclick = function(event) {
             });
         });
 
-        const ALL_MODAL_IDS = ['tutorialModal', 'devLogModal', 'setupModal', 'nameModal'];
+        const ALL_MODAL_IDS = ['tutorialModal', 'devLogModal', 'setupModal', 'nameModal', 'geneticsInfoModal'];
 
         function getOpenModal() {
             for (const id of ALL_MODAL_IDS) {
