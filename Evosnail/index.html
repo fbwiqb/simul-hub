@@ -2624,6 +2624,9 @@ window.onclick = function(event) {
             document.getElementById('selectionScreen').style.display = 'none';
             document.getElementById('simulationScreen').style.display = '';
             document.getElementById('simulationScreen').classList.add('active');
+
+            const simBar = document.querySelector('.cnsa-simbar');
+            if (simBar) { simBar.style.display = ''; document.body.classList.add('cnsa-pad'); }
             
             const labels = scenarioLabels[currentScenario];
             document.getElementById('simTitle').textContent = labels.title;
@@ -2663,7 +2666,10 @@ window.onclick = function(event) {
             document.getElementById('simulationScreen').style.display = 'none';
             document.getElementById('simulationScreen').classList.remove('active');
             document.getElementById('selectionScreen').style.display = 'block';
-            
+
+            const simBar = document.querySelector('.cnsa-simbar');
+            if (simBar) { simBar.style.display = 'none'; document.body.classList.remove('cnsa-pad'); }
+
             // 그래프 초기화
             if (sideChart) {
                 sideChart.destroy();
@@ -3677,7 +3683,7 @@ window.onclick = function(event) {
 
     </script>
     <script src="/assets/sim-ui.js"></script>
-    <script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA){var bar=CNSA.mountTopbar({hubHref:'#'});if(bar){var home=bar.querySelector('.cnsa-home');if(home){home.addEventListener('click',function(e){e.preventDefault();backToSelection();});}}}});</script>
+    <script>document.addEventListener('DOMContentLoaded',function(){if(window.CNSA){var bar=CNSA.mountTopbar({hubHref:'#',pad:false,homeLabel:'홈으로'});if(bar){bar.style.display='none';var home=bar.querySelector('.cnsa-home');if(home){home.addEventListener('click',function(e){e.preventDefault();backToSelection();});}}}});</script>
     
     <!-- Footer 여기에 추가 -->
     <div class="footer">
