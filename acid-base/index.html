@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="cnsa-sim" content="산-염기 적정|통합과학2">
+    <meta name="cnsa-sim" content="산·염기 중화 반응|통합과학2">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='.9em' font-size='90'>🧪</text></svg>">
     <link rel="stylesheet" href="/assets/sim-ui.css">
-    <title>중화반응 시뮬레이션</title>
+    <title>산·염기 중화 반응</title>
 <style>
     body {
         margin: 0;
@@ -759,82 +760,515 @@
     @media (max-width: 900px) {
         .ion { touch-action: none; }
     }
+
+    /* 2026 classroom refresh: the beaker is the visual anchor. */
+    :root {
+        --lab-ink: #18324a;
+        --lab-muted: #60758a;
+        --lab-line: #d7e2ea;
+        --lab-paper: #ffffff;
+        --lab-bg: #edf4f8;
+        --lab-acid: #d94b55;
+        --lab-base: #2878c8;
+        --lab-neutral: #2f8f6b;
+    }
+
+    body {
+        padding: 18px;
+        color: var(--lab-ink);
+        background: linear-gradient(180deg, #e8f2f7 0, var(--lab-bg) 240px, #f7fafc 100%);
+        background-attachment: fixed;
+    }
+
+    .container {
+        max-width: 1480px;
+        padding: 24px;
+        background: var(--lab-paper);
+        border: 1px solid var(--lab-line);
+        border-radius: 18px;
+        box-shadow: 0 18px 50px rgba(44, 74, 98, 0.1);
+        backdrop-filter: none;
+    }
+
+    .app-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 22px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--lab-line);
+    }
+
+    .title-group { min-width: 0; }
+    .lesson-label {
+        margin: 0 0 5px;
+        color: var(--lab-base);
+        font-size: 13px;
+        font-weight: 750;
+    }
+
+    h1 {
+        margin: 0;
+        color: var(--lab-ink);
+        text-align: left;
+        font-size: clamp(1.7rem, 3vw, 2.45rem);
+        line-height: 1.15;
+    }
+
+    .header-description {
+        margin: 8px 0 0;
+        color: var(--lab-muted);
+        font-size: 15px;
+        line-height: 1.55;
+    }
+
+    .home-buttons {
+        flex: 0 0 auto;
+        justify-content: flex-end;
+        gap: 8px;
+        margin: 0;
+    }
+
+    .home-btn {
+        padding: 9px 14px;
+        min-height: 40px;
+        color: var(--lab-ink);
+        background: #f4f7f9;
+        border-color: var(--lab-line);
+        border-radius: 9px;
+        font-size: 14px;
+    }
+
+    .home-btn:hover {
+        color: var(--lab-ink);
+        background: #e8f0f5;
+        transform: none;
+    }
+
+    .main-content {
+        grid-template-columns: 270px minmax(500px, 1fr) 380px;
+        gap: 18px;
+        align-items: start;
+    }
+
+    .control-panel,
+    .simulation-area,
+    .graph-container {
+        border: 1px solid var(--lab-line);
+        border-radius: 14px;
+        box-shadow: none;
+    }
+
+    .control-panel {
+        padding: 18px;
+        background: #f6f9fb;
+    }
+
+    .simulation-area,
+    .graph-container { background: var(--lab-paper); }
+    .simulation-area { padding: 18px; }
+    .graph-container { padding: 18px; }
+
+    .control-section {
+        margin-bottom: 18px;
+        padding-bottom: 18px;
+        border-color: var(--lab-line);
+    }
+
+    .control-section h3,
+    .graph-container h3 {
+        margin: 0 0 11px;
+        color: var(--lab-ink);
+        font-size: 15px;
+    }
+
+    .solution-pair {
+        display: grid;
+        gap: 7px;
+    }
+
+    .solution-chip {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 11px;
+        border-radius: 9px;
+        color: var(--lab-ink);
+        background: #fff;
+        border: 1px solid var(--lab-line);
+        font-size: 13px;
+        font-weight: 650;
+    }
+
+    .solution-chip.acid { border-left: 4px solid var(--lab-acid); }
+    .solution-chip.base { border-left: 4px solid var(--lab-base); }
+
+    select,
+    input[type="range"],
+    button { border-radius: 9px; }
+
+    select {
+        color: var(--lab-ink);
+        background: #fff;
+        border-color: var(--lab-line);
+    }
+
+    button {
+        background: #294f6f;
+        box-shadow: none;
+    }
+
+    button:hover { transform: none; }
+    #resetBtn, #pauseBtn, #resetGraphBtn, #continuousBtn,
+    #shuffleShapesBtn, #toggleSpectatorBtn, #persistWaterBtn {
+        color: var(--lab-ink);
+        background: #fff;
+        border: 1px solid var(--lab-line);
+    }
+
+    #resetBtn:hover, #pauseBtn:hover, #resetGraphBtn:hover, #continuousBtn:hover,
+    #shuffleShapesBtn:hover, #toggleSpectatorBtn:hover, #persistWaterBtn:hover {
+        background: #eaf1f5;
+        filter: none;
+    }
+
+    .toggle-btn,
+    .addrate-btn {
+        color: var(--lab-muted);
+        background: #fff;
+        border-color: var(--lab-line);
+    }
+
+    .toggle-btn:hover,
+    .addrate-btn:hover {
+        color: var(--lab-ink);
+        background: #edf3f7;
+    }
+
+    .toggle-btn.active,
+    .addrate-btn.active {
+        color: #fff;
+        background: #294f6f;
+        box-shadow: none;
+    }
+
+    .experiment-status {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 46px;
+        margin-bottom: 14px;
+        padding: 10px 12px;
+        color: var(--lab-ink);
+        background: #f5f8fa;
+        border: 1px solid var(--lab-line);
+        border-radius: 10px;
+    }
+
+    .state-badge {
+        flex: 0 0 auto;
+        min-width: 60px;
+        padding: 5px 9px;
+        color: #fff;
+        background: #63788a;
+        border-radius: 999px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 750;
+    }
+
+    .state-badge.acidic { background: var(--lab-acid); }
+    .state-badge.basic { background: var(--lab-base); }
+    .state-badge.neutral { background: var(--lab-neutral); }
+    .state-summary { color: var(--lab-muted); font-size: 13px; line-height: 1.4; }
+
+    .dropper-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .dropper {
+        width: 100%;
+        min-height: 52px;
+        margin: 0;
+        border-radius: 11px;
+        box-shadow: none;
+        font-size: 16px;
+    }
+
+    #acidDropper { background: var(--lab-acid); }
+    #baseDropper { background: var(--lab-base); }
+
+    #beaker {
+        height: 410px;
+        margin-top: 14px;
+        background: linear-gradient(to bottom,
+            rgba(255,255,255,0) 0%,
+            rgba(255,255,255,0) 10%,
+            rgba(185,224,240,0.3) 10%,
+            rgba(166,213,234,0.58) 100%);
+        border-color: #7793a7;
+        border-width: 3px;
+        border-radius: 0 0 42px 42px;
+    }
+
+    .reaction-equation {
+        margin: 12px 0 0;
+        padding: 10px 12px;
+        color: var(--lab-ink);
+        background: #f1f7f4;
+        border-left: 4px solid var(--lab-neutral);
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 750;
+    }
+
+    .reaction-equation small {
+        display: block;
+        margin-top: 3px;
+        color: var(--lab-muted);
+        font-weight: 500;
+    }
+
+    .indicator-display {
+        min-height: 86px;
+        margin-top: 12px;
+        padding: 12px;
+        color: var(--lab-ink);
+        background: #f5f8fa;
+        border-color: var(--lab-line);
+    }
+
+    #ionGraph {
+        height: 300px;
+        border-color: var(--lab-line);
+        border-radius: 10px;
+    }
+
+    .graph-intro {
+        margin: -4px 0 12px;
+        color: var(--lab-muted);
+        font-size: 13px;
+        line-height: 1.45;
+    }
+
+    .graph-summary {
+        margin: 12px 0 0;
+        padding: 10px 12px;
+        color: var(--lab-ink);
+        background: #eef5f8;
+        border-radius: 9px;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 7px;
+        margin-top: 12px;
+        padding: 0;
+        background: transparent;
+        border: 0;
+    }
+
+    .stat-item {
+        margin: 0;
+        padding: 9px 10px;
+        background: #f6f9fb;
+        border: 1px solid #e2eaf0;
+        border-radius: 8px;
+    }
+
+    .stat-item:hover { background: #f6f9fb; }
+    .stat-label { color: var(--lab-muted); font-size: 12px; }
+    .stat-value { color: var(--lab-ink); }
+
+    .modal-content { border-radius: 14px; }
+    .modal-header {
+        color: #fff;
+        background: #294f6f;
+        border-radius: 14px 14px 0 0;
+    }
+    .log-entry { border-left-color: var(--lab-base); }
+
+    .footer {
+        color: var(--lab-muted);
+        background: transparent;
+        border: 0;
+    }
+
+    .overheat-toast {
+        position: fixed;
+        left: 50%;
+        bottom: 28px;
+        z-index: 10000;
+        width: min(520px, calc(100vw - 32px));
+        box-sizing: border-box;
+        padding: 16px 18px;
+        color: #fff;
+        background: #b53c45;
+        border: 2px solid rgba(255,255,255,0.7);
+        border-radius: 12px;
+        box-shadow: 0 16px 40px rgba(88, 28, 34, 0.28);
+        transform: translateX(-50%);
+        text-align: center;
+        line-height: 1.5;
+        font-weight: 700;
+    }
+
+    .overheat-toast small {
+        display: block;
+        margin-top: 3px;
+        font-weight: 500;
+        opacity: 0.95;
+    }
+
+    #beaker.overheated {
+        animation: boiling 0.45s infinite;
+        box-shadow: inset 0 -20px 45px rgba(217, 75, 85, 0.12), 0 0 0 4px rgba(217, 75, 85, 0.08);
+    }
+
+    #beaker.overheated::after {
+        content: '○  ◦  ○  ·  ◦  ○  ·  ○';
+        position: absolute;
+        left: 4%;
+        right: 4%;
+        bottom: -34px;
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 26px;
+        letter-spacing: 9px;
+        text-align: center;
+        text-shadow: 0 0 4px rgba(40, 120, 200, 0.3);
+        animation: bubbleRise 1.7s linear infinite;
+        pointer-events: none;
+    }
+
+    @keyframes bubbleRise {
+        from { transform: translateY(0) scale(0.8); opacity: 0; }
+        20% { opacity: 1; }
+        to { transform: translateY(-390px) scale(1.2); opacity: 0; }
+    }
+
+    @media (max-width: 1180px) {
+        .main-content { grid-template-columns: 260px minmax(0, 1fr); }
+        .graph-container { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 760px) {
+        body { padding: 8px; }
+        .container { padding: 14px; border-radius: 12px; }
+        .app-header { align-items: flex-start; flex-direction: column; gap: 12px; }
+        .home-buttons { width: 100%; justify-content: flex-start; }
+        .main-content { display: flex; flex-direction: column; gap: 12px; }
+        .simulation-area { order: 1; width: 100%; box-sizing: border-box; }
+        .graph-container { order: 2; width: 100%; box-sizing: border-box; }
+        .control-panel { order: 3; width: 100%; box-sizing: border-box; }
+        #beaker { height: 330px; }
+        .dropper { min-height: 54px; font-size: 15px; }
+        .experiment-status { align-items: flex-start; }
+        .stats { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            scroll-behavior: auto !important;
+        }
+    }
 </style>
 </head>
 <body>
     <div class="container">
-        <h1>🧪 중화반응 시뮬레이션</h1>
-    <!-- 홈 버튼 섹션 -->
-    <div class="home-buttons">
-        <button class="home-btn" onclick="showTutorial()">📖 사용법</button>
-        <button class="home-btn" onclick="showDevLog()">📝 개발자 로그</button>
-    </div>
+        <header class="app-header">
+            <div class="title-group">
+                <p class="lesson-label">통합과학2 · 생활 속 중화 반응</p>
+                <h1>산·염기 중화 반응</h1>
+                <p class="header-description">이온의 움직임을 관찰하고, 중화 전후에 무엇이 남는지 확인해 보세요.</p>
+            </div>
+            <div class="home-buttons">
+                <button class="home-btn" onclick="showTutorial()">사용법</button>
+                <button class="home-btn" onclick="showDevLog()">앱 정보</button>
+            </div>
+        </header>
         <div class="main-content">
             <!-- 컨트롤 패널 -->
             <div class="control-panel">
                 <div class="control-section">
-                    <h3>⚗️ 용액 정보</h3>
-                    <div class="control-group">
-                        <label>산성 용액: 염산 (HCl)</label>
-                    </div>
-                    <div class="control-group">
-                        <label>염기성 용액: 수산화 나트륨 (NaOH)</label>
+                    <h3>사용하는 용액</h3>
+                    <div class="solution-pair">
+                        <div class="solution-chip acid"><span>산성 용액</span><strong>염산 HCl</strong></div>
+                        <div class="solution-chip base"><span>염기성 용액</span><strong>NaOH</strong></div>
                     </div>
                 </div>
                 
                 <div class="control-section">
-                    <h3>🎨 지시약 선택</h3>
+                    <h3>관찰 방법</h3>
                     <select id="indicatorSelect" aria-label="지시약 선택">
-                        <option value="none">없음 (온도 측정)</option>
-                        <option value="btb">BTB 용액</option>
-                        <option value="phenol">페놀프탈레인</option>
+                        <option value="none">상대적 온도 변화</option>
+                        <option value="btb">BTB로 액성 확인</option>
+                        <option value="phenol">페놀프탈레인으로 액성 확인</option>
                     </select>
                 </div>
                     <div class="control-section">
-                    <h3>👁️ 표시 옵션</h3>
+                    <h3>입자 표시</h3>
                     <div class="toggle-group">
-                        <button class="toggle-btn active" id="ionModeBtn">이온식</button>
-                        <button class="toggle-btn" id="shapeModeBtn">도형</button>
+                        <button class="toggle-btn active" id="ionModeBtn" aria-pressed="true">이온식</button>
+                        <button class="toggle-btn" id="shapeModeBtn" aria-pressed="false">도형</button>
                     </div>
-                    <button id="shuffleShapesBtn">도형 뒤섞기 🔀</button>
-                    <button id="toggleSpectatorBtn">반응하지 않는 이온 숨기기</button>
-                    <button id="persistWaterBtn">물분자 사라지지 않기</button>
+                    <button id="shuffleShapesBtn">도형 배치 바꾸기</button>
+                    <button id="toggleSpectatorBtn" aria-pressed="false">구경꾼 이온 흐리게 보기</button>
+                    <button id="persistWaterBtn" aria-pressed="false">생성된 물 계속 보기</button>
                 </div>
                 
                 <div class="control-section">
-                    <h3>➕ 한 번에 첨가량</h3>
+                    <h3>한 번에 첨가할 양</h3>
                     <div class="addrate-group" role="group" aria-label="한 번 첨가할 때 추가되는 이온 묶음 수">
-                        <button class="addrate-btn active" id="addRate1" aria-pressed="true">×1</button>
-                        <button class="addrate-btn" id="addRate5" aria-pressed="false">×5</button>
-                        <button class="addrate-btn" id="addRate10" aria-pressed="false">×10</button>
+                        <button class="addrate-btn active" id="addRate1" aria-pressed="true">1묶음</button>
+                        <button class="addrate-btn" id="addRate5" aria-pressed="false">5묶음</button>
+                        <button class="addrate-btn" id="addRate10" aria-pressed="false">10묶음</button>
                     </div>
                     <button id="continuousBtn" aria-pressed="false">연속 첨가 모드: 꺼짐</button>
                 </div>
 
                 <div class="control-section">
-                    <h3>🔄 컨트롤</h3>
+                    <h3>실험 제어</h3>
                     <button id="resetBtn">초기화</button>
-                    <button id="pauseBtn">일시정지</button>
+                    <button id="pauseBtn" aria-pressed="false">일시정지</button>
                     <button id="resetGraphBtn">그래프 초기화</button>
                 </div>
                 </div> <!-- control-panel 닫기 -->
 
             <!-- 시뮬레이션 영역 -->
             <div class="simulation-area">
-                <div style="text-align: center;">
-                    <span class="dropper" id="acidDropper" role="button" tabindex="0" aria-label="산 염산 HCl 첨가">산 첨가 💧</span>
-                    <span class="dropper" id="baseDropper" role="button" tabindex="0" aria-label="염기 수산화 나트륨 NaOH 첨가">염기 첨가 💧</span>
+                <div class="experiment-status" role="status" aria-live="polite">
+                    <span class="state-badge" id="stateBadge">준비</span>
+                    <span class="state-summary" id="stateSummary">산 또는 염기를 첨가해 반응을 시작하세요.</span>
+                </div>
+                <div class="dropper-row">
+                    <button class="dropper" id="acidDropper" aria-label="염산 HCl 한 묶음 첨가">염산 HCl 첨가</button>
+                    <button class="dropper" id="baseDropper" aria-label="수산화 나트륨 NaOH 한 묶음 첨가">NaOH 첨가</button>
                 </div>
                 <div id="beaker" role="img" aria-label="비커 안 이온 움직임 영역"></div>
+                <div class="reaction-equation">
+                    H⁺ + OH⁻ → H₂O
+                    <small>Na⁺와 Cl⁻는 반응에 직접 참여하지 않고 용액에 남습니다.</small>
+                </div>
                 <div class="indicator-display" id="indicatorDisplay">
-                    지시약: 없음
+                    상대적 온도 변화: 0
                 </div>
             </div>
             
      <!-- 그래프 영역 -->
             <div class="graph-container">
-                <h3>📊 이온 수 변화 (상대값)</h3>
+                <h3>이온 수 변화</h3>
+                <p class="graph-intro">각 첨가 뒤 반응이 진행된 상태를 기록합니다. 아래의 산·염기 표시는 무엇을 넣었는지 나타냅니다.</p>
                 <canvas id="ionGraph" role="img" aria-label="가로축 첨가 횟수, 세로축 이온 수에 따른 H 플러스, OH 마이너스, Na 플러스, Cl 마이너스 이온 수 변화 그래프"></canvas>
+                <p class="graph-summary" id="graphSummary">아직 기록된 변화가 없습니다.</p>
                 
                 <div class="stats">
                     <div class="stat-item">
@@ -889,21 +1323,21 @@
                         <strong>1단계: 용액 첨가</strong><br>
                         • <strong>산 첨가 💧</strong>: 염산(HCl)을 추가합니다. H⁺와 Cl⁻ 이온이 생성됩니다<br>
                         • <strong>염기 첨가 💧</strong>: 수산화 나트륨(NaOH)을 추가합니다. Na⁺와 OH⁻ 이온이 생성됩니다<br>
-                        • 클릭할 때마다 2개의 이온이 추가됩니다<br><br>
+                        • 선택한 묶음 수에 따라 산과 염기의 이온이 같은 수만큼 추가됩니다<br><br>
                         
                         <strong>2단계: 중화 반응 관찰</strong><br>
                         • H⁺(빨간색)와 OH⁻(파란색) 이온이 만나면 물(H₂O) 분자가 생성됩니다<br>
                         • 중화 반응이 일어나면 온도가 상승합니다 (발열 반응)<br>
                         • 반응하지 않는 이온(Na⁺, Cl⁻)은 남아있습니다<br><br>
                         
-                        <strong>3단계: 지시약으로 pH 확인</strong><br>
+                        <strong>3단계: 지시약으로 액성 확인</strong><br>
                         • <strong>BTB 용액</strong>: 산성(노란색) → 중성(초록색) → 염기성(파란색)<br>
                         • <strong>페놀프탈레인</strong>: 산성/중성(무색) → 염기성(분홍색)<br>
-                        • <strong>없음</strong>: 온도 변화 그래프를 관찰할 수 있습니다<br><br>
+                        • <strong>상대적 온도 변화</strong>: 발열 반응의 경향을 관찰할 수 있습니다<br><br>
                         
                         <strong>4단계: 그래프 분석</strong><br>
                         • 오른쪽 그래프에서 각 이온의 수 변화를 확인하세요<br>
-                        • 중화점에서는 H⁺와 OH⁻ 이온 수가 같아집니다<br>
+                        • 중화된 상태에서는 반응에 참여한 H⁺와 OH⁻가 모두 소모됩니다<br>
                         • 통계 패널에서 현재 이온 수와 생성된 물 분자 수를 확인할 수 있습니다
                     </div>
                 </div>
@@ -923,8 +1357,8 @@
                             &nbsp;&nbsp;- 그래프 범례도 자동으로 변경됩니다<br><br>
                             
                             <strong>제어 옵션:</strong><br>
-                            • <strong>반응하지 않는 이온 숨기기</strong>: Na⁺와 Cl⁻ 이온을 숨겨 중화 반응에 집중할 수 있습니다<br>
-                            • <strong>물분자 사라지지 않기</strong>: 생성된 물 분자를 계속 화면에 표시합니다<br>
+                            • <strong>구경꾼 이온 흐리게 보기</strong>: Na⁺와 Cl⁻를 흐리게 하여 중화 반응에 집중할 수 있습니다<br>
+                            • <strong>생성된 물 계속 보기</strong>: 생성된 물 분자를 비커에 계속 표시합니다<br>
                             • <strong>일시정지</strong>: 이온의 움직임을 멈춰 관찰할 수 있습니다<br>
                             • <strong>초기화</strong>: 모든 이온과 설정을 초기 상태로 되돌립니다<br>
                             • <strong>그래프 초기화</strong>: 그래프 데이터만 초기화합니다
@@ -947,7 +1381,7 @@
                             • 도형 뒤섞기 기능으로 색과 도형만으로 이온을 구별해보세요<br><br>
                             
                             <strong>주의사항:</strong><br>
-                            • 이온을 너무 많이 추가하면 화면이 복잡해질 수 있습니다<br>
+                            • 이온을 너무 많이 추가하면 모형이 과열되며 안전 안내가 나타납니다<br>
                             • 필요시 초기화 버튼을 눌러 처음부터 시작하세요<br>
                             • 실제 실험실에서는 보안경과 보호장구를 착용해야 합니다
                         </div>
@@ -981,10 +1415,18 @@
     <div class="modal" id="devLogModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>📝 개발자 로그</h3>
+                <h3>앱 정보</h3>
                 <button class="modal-close" onclick="closeDevLog()">×</button>
             </div>
            <div class="modal-body">
+    <div class="log-entry">
+        <div class="log-date">2026. 9. 10.</div>
+        <div class="log-text">
+            <strong>교실 수업용 화면 개선</strong><br><br>
+            비커 중심 화면, 반응 후 그래프 기록, 현재 액성 안내, 상대적 온도 표현을 적용했습니다.
+            과도하게 반복하면 비커가 끓는 안전 안내도 나타납니다.
+        </div>
+    </div>
     <div class="log-entry">
         <div class="log-date">2025. 10. 30. (수)</div>
         <div class="log-text">
@@ -1013,7 +1455,7 @@
     <div class="log-entry">
         <div class="log-date">©️ 저작권 정보</div>
         <div class="log-text">
-            <strong>중화반응 시뮬레이션 v1.1</strong><br><br>
+            <strong>산·염기 중화 반응 v2.0</strong><br><br>
             ⓒ 2025 충남삼성고등학교 신도경 교사<br>
             이메일: <a href="mailto:pantarei01@cnsa.hs.kr">pantarei01@cnsa.hs.kr</a><br><br>
             
@@ -1070,14 +1512,16 @@ document.addEventListener('keydown', function(e) {
     this.isShapeMode = false;
     this.spectatorHidden = false;
     this.persistWater = false;
-    this.temperature = 25;
+    this.relativeHeat = 0;
     this.neutralizationCount = 0;
     this.waterMoleculeCount = 0;
     this.waterAnimations = [];
-    this.safetyViolation = false;
+    this.overheatWarningShown = false;
     this.addRate = 1;
     this.continuousMode = false;
     this.continuousTimer = null;
+    this.pendingGraphTimer = null;
+    this.lastAdditionType = null;
     
     // 도형 매핑 추가
     this.shapeMapping = {
@@ -1094,7 +1538,9 @@ document.addEventListener('keydown', function(e) {
         Na: [],
         Cl: [],
         total: [],
-        temperature: []
+        heat: [],
+        events: [],
+        neutralized: []
     };
     this.additionCount = 0;
     this.timeStep = 0;
@@ -1139,6 +1585,8 @@ document.addEventListener('keydown', function(e) {
                     b.classList.toggle('active', on);
                     b.setAttribute('aria-pressed', on ? 'true' : 'false');
                 });
+                document.getElementById('acidDropper').setAttribute('aria-label', `염산 HCl ${rate}묶음 첨가`);
+                document.getElementById('baseDropper').setAttribute('aria-label', `수산화 나트륨 NaOH ${rate}묶음 첨가`);
                 this.announce('한 번에 ' + rate + '묶음 첨가로 설정');
             }
 
@@ -1158,6 +1606,7 @@ document.addEventListener('keydown', function(e) {
                 if (this.isAddingIons && !this.continuousMode) return;
 
                 this.additionCount++;
+                this.lastAdditionType = 'acid';
 
                 // 염산 (HCl)만 추가
                 this.addIon('H', this.addRate);
@@ -1174,7 +1623,7 @@ document.addEventListener('keydown', function(e) {
                 this.isAddingIons = true;
                 setTimeout(() => {
                     this.updateStats();
-                    this.updateGraph();
+                    this.scheduleGraphUpdate();
                     this.updateIndicator();
                     this.isAddingIons = false;
                 }, 1500);
@@ -1184,6 +1633,7 @@ document.addEventListener('keydown', function(e) {
                 if (this.isAddingIons && !this.continuousMode) return;
 
                 this.additionCount++;
+                this.lastAdditionType = 'base';
 
                 // 수산화 나트륨 (NaOH)만 추가
                 this.addIon('Na', this.addRate);
@@ -1200,7 +1650,7 @@ document.addEventListener('keydown', function(e) {
                 this.isAddingIons = true;
                 setTimeout(() => {
                     this.updateStats();
-                    this.updateGraph();
+                    this.scheduleGraphUpdate();
                     this.updateIndicator();
                     this.isAddingIons = false;
                 }, 1500);
@@ -1295,6 +1745,8 @@ checkOverlap(x, y, size) {
                 this.isShapeMode = (mode === 'shape');
                 document.getElementById('ionModeBtn').classList.toggle('active', mode === 'ion');
                 document.getElementById('shapeModeBtn').classList.toggle('active', mode === 'shape');
+                document.getElementById('ionModeBtn').setAttribute('aria-pressed', mode === 'ion' ? 'true' : 'false');
+                document.getElementById('shapeModeBtn').setAttribute('aria-pressed', mode === 'shape' ? 'true' : 'false');
                 
                 this.ions.forEach(ionObj => {
                     this.updateIonDisplay(ionObj.element);
@@ -1333,7 +1785,8 @@ checkOverlap(x, y, size) {
             toggleSpectatorIons() {
                 this.spectatorHidden = !this.spectatorHidden;
                 const btn = document.getElementById('toggleSpectatorBtn');
-                btn.textContent = this.spectatorHidden ? '반응하지 않는 이온 보이기' : '반응하지 않는 이온 숨기기';
+                btn.textContent = this.spectatorHidden ? '구경꾼 이온 원래대로 보기' : '구경꾼 이온 흐리게 보기';
+                btn.setAttribute('aria-pressed', this.spectatorHidden ? 'true' : 'false');
                 
                 this.ions.forEach(ionObj => {
                     if (ionObj.isSpectator) {
@@ -1345,7 +1798,8 @@ checkOverlap(x, y, size) {
           togglePersistWater() {
     this.persistWater = !this.persistWater;
     const btn = document.getElementById('persistWaterBtn');
-    btn.textContent = this.persistWater ? '물분자 사라지기' : '물분자 사라지지 않기';
+    btn.textContent = this.persistWater ? '생성된 물 사라지게 하기' : '생성된 물 계속 보기';
+    btn.setAttribute('aria-pressed', this.persistWater ? 'true' : 'false');
     
     // 기존 물분자들에 소급 적용
     this.waterAnimations.forEach(water => {
@@ -1512,34 +1966,22 @@ checkNeutralization() {
                 
                 this.neutralizationCount++;
                 this.waterMoleculeCount++;
-                this.temperature += 2;
-                
-                // 온도 100도 체크 추가
-                if (this.temperature >= 100 && !this.safetyViolation) {
-                    this.showSafetyViolation();
+                this.relativeHeat = Math.min(100, this.relativeHeat + 4);
+
+                if (this.relativeHeat >= 85 && !this.overheatWarningShown) {
+                    this.showOverheatWarning();
                 }
                 
                 this.updateStats();
-                
-                // 물분자 아이콘 직접 추가
-                if (document.getElementById('indicatorSelect').value === 'none') {
-                    const waterDisplay = document.getElementById('waterMoleculeDisplay');
-                    if (waterDisplay) {
-                        const newWater = document.createElement('div');
-                        newWater.className = 'water-molecule-icon';
-                        newWater.textContent = 'H₂O';
-                        newWater.style.animation = 'fadeIn 0.5s';
-                        waterDisplay.appendChild(newWater);
-                    }
-                }
+                this.scheduleGraphUpdate(220);
                 
                 break;
             }
         }
     }
     
-    if (this.temperature > 25) {
-        this.temperature -= 0.01;
+    if (this.relativeHeat > 0) {
+        this.relativeHeat = Math.max(0, this.relativeHeat - 0.015);
     }
 }      
             checkCollision(elem1, elem2) {
@@ -1590,6 +2032,14 @@ checkNeutralization() {
                 this.drawGraph();
             }
             
+            scheduleGraphUpdate(delay = 350) {
+                if (this.pendingGraphTimer) clearTimeout(this.pendingGraphTimer);
+                this.pendingGraphTimer = setTimeout(() => {
+                    this.pendingGraphTimer = null;
+                    this.updateGraph();
+                }, delay);
+            }
+
             updateGraph() {
                 const counts = {
                     H: 0, OH: 0, Na: 0, Cl: 0
@@ -1599,14 +2049,21 @@ checkNeutralization() {
                     counts[ion.type]++;
                 });
                 
-                this.graphData.additions.push(this.additionCount);
-                Object.keys(counts).forEach(key => {
-                    this.graphData[key].push(counts[key]);
-                });
-                
                 const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
-                this.graphData.total.push(total);
-                this.graphData.temperature.push(this.temperature);
+                const neutralized = counts.H === 0 && counts.OH === 0 && this.waterMoleculeCount > 0;
+                const lastIndex = this.graphData.additions.length - 1;
+                const shouldReplace = lastIndex >= 0 && this.graphData.additions[lastIndex] === this.additionCount;
+                const write = (key, value) => {
+                    if (shouldReplace) this.graphData[key][lastIndex] = value;
+                    else this.graphData[key].push(value);
+                };
+
+                write('additions', this.additionCount);
+                Object.keys(counts).forEach(key => write(key, counts[key]));
+                write('total', total);
+                write('heat', this.relativeHeat);
+                write('events', this.lastAdditionType || 'start');
+                write('neutralized', neutralized);
                 
                 if (this.graphData.additions.length > 50) {
                     Object.keys(this.graphData).forEach(key => {
@@ -1615,6 +2072,23 @@ checkNeutralization() {
                 }
                 
                 this.drawGraph();
+                this.updateGraphSummary(counts);
+            }
+
+            updateGraphSummary(counts) {
+                const summary = document.getElementById('graphSummary');
+                if (!summary) return;
+                if (this.graphData.additions.length === 0) {
+                    summary.textContent = '아직 기록된 변화가 없습니다.';
+                } else if (counts.H > counts.OH) {
+                    summary.textContent = `H⁺가 ${counts.H}개 남아 산성입니다. Cl⁻는 반응하지 않고 남아 있습니다.`;
+                } else if (counts.OH > counts.H) {
+                    summary.textContent = `OH⁻가 ${counts.OH}개 남아 염기성입니다. Na⁺는 반응하지 않고 남아 있습니다.`;
+                } else if (this.waterMoleculeCount > 0) {
+                    summary.textContent = `H⁺와 OH⁻가 모두 반응했습니다. 물 ${this.waterMoleculeCount}개가 생성되었습니다.`;
+                } else {
+                    summary.textContent = '산 또는 염기를 첨가하면 반응 뒤의 이온 수가 기록됩니다.';
+                }
             }
             
             drawGraph() {
@@ -1628,7 +2102,7 @@ checkNeutralization() {
                 const padL = 42;
                 const padR = 14;
                 const padT = 16;
-                const padB = 34;
+                const padB = 48;
                 const plotW = width - padL - padR;
                 const plotH = height - padT - padB;
                 const x0 = padL;
@@ -1674,7 +2148,7 @@ checkNeutralization() {
                 ctx.font = 'bold 11px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'alphabetic';
-                ctx.fillText('첨가 횟수', x0 + plotW / 2, height - 6);
+                ctx.fillText('첨가 순서', x0 + plotW / 2, height - 4);
                 ctx.save();
                 ctx.translate(12, padT + plotH / 2);
                 ctx.rotate(-Math.PI / 2);
@@ -1695,11 +2169,17 @@ checkNeutralization() {
                     const step = Math.max(1, Math.ceil(n / 6));
                     for (let i = 0; i < n; i += step) {
                         ctx.fillText(String(this.graphData.additions[i]), px(i), y0 + 6);
+                        const event = this.graphData.events[i];
+                        ctx.fillStyle = event === 'acid' ? '#d94b55' : event === 'base' ? '#2878c8' : '#60758a';
+                        ctx.font = 'bold 9px sans-serif';
+                        ctx.fillText(event === 'acid' ? '산' : event === 'base' ? '염기' : '시작', px(i), y0 + 19);
+                        ctx.fillStyle = '#5a6b7b';
+                        ctx.font = '10px sans-serif';
                     }
 
                     let crossIndex = -1;
                     for (let i = 0; i < n; i++) {
-                        if (this.graphData.H[i] === this.graphData.OH[i] && this.graphData.H[i] > 0) {
+                        if (this.graphData.neutralized[i]) {
                             crossIndex = i;
                             break;
                         }
@@ -1718,7 +2198,7 @@ checkNeutralization() {
                         ctx.font = 'bold 10px sans-serif';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'top';
-                        ctx.fillText('중화점', cx, padT);
+                        ctx.fillText('중화', cx, padT);
                     }
 
                     ['H', 'OH', 'Na', 'Cl'].forEach(key => {
@@ -1775,49 +2255,20 @@ checkNeutralization() {
                 ctx.textBaseline = 'alphabetic';
             }
 
-            showSafetyViolation() {
-    this.safetyViolation = true;
-    this.isPaused = true;
-    
-    // 끓는 애니메이션 효과
-    const beaker = document.getElementById('beaker');
-    beaker.style.animation = 'boiling 0.5s infinite';
-    
-    // 경고 메시지 표시
-    setTimeout(() => {
-        const warningDiv = document.createElement('div');
-        warningDiv.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, #ff0000 0%, #ff6b6b 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            font-size: 20px;
-            font-weight: bold;
-            text-align: center;
-            z-index: 10000;
-            box-shadow: 0 10px 40px rgba(255, 0, 0, 0.5);
-            animation: warningPulse 1s infinite;
-        `;
-        warningDiv.innerHTML = `
-            ⚠️ 경고 ⚠️<br><br>
-            장난하라고 만든 것이 아닌데...<br>
-            당신은 실험실 안전 규칙을 어겼습니다.<br><br>
-            선생님은 이 일을 기억할 것입니다...
-        `;
-        document.body.appendChild(warningDiv);
-        
-        // 모든 버튼 비활성화
-        document.querySelectorAll('button, .dropper').forEach(btn => {
-            btn.disabled = true;
-            btn.style.opacity = '0.3';
-            btn.style.cursor = 'not-allowed';
-        });
-    }, 2000);
-}
+            showOverheatWarning() {
+                this.overheatWarningShown = true;
+                const beaker = document.getElementById('beaker');
+                beaker.classList.add('overheated');
+
+                const warningDiv = document.createElement('div');
+                warningDiv.className = 'overheat-toast';
+                warningDiv.setAttribute('role', 'alert');
+                warningDiv.innerHTML = `모형이 너무 뜨거워졌습니다!<small>실제 실험에서는 산과 염기를 소량씩 천천히 첨가하세요. 초기화하면 다시 시작할 수 있습니다.</small>`;
+                document.body.appendChild(warningDiv);
+                this.announce('모형 과열 경고. 실제 실험에서는 용액을 소량씩 천천히 첨가하세요.');
+
+                setTimeout(() => warningDiv.remove(), 8000);
+            }
             updateStats() {
                 const counts = {
                     H: 0, OH: 0, Na: 0, Cl: 0
@@ -1837,6 +2288,36 @@ checkNeutralization() {
                 const totalIons = this.ions.length;
                 document.getElementById('totalCount').textContent = totalIons;
                 document.getElementById('waterCount').textContent = this.waterMoleculeCount;
+                this.updateStateSummary(counts);
+            }
+
+            updateStateSummary(counts) {
+                const badge = document.getElementById('stateBadge');
+                const summary = document.getElementById('stateSummary');
+                const total = counts.H + counts.OH + counts.Na + counts.Cl;
+                badge.className = 'state-badge';
+
+                if (total === 0 && this.waterMoleculeCount === 0) {
+                    badge.textContent = '준비';
+                    summary.textContent = '산 또는 염기를 첨가해 반응을 시작하세요.';
+                } else if (counts.H > counts.OH) {
+                    badge.classList.add('acidic');
+                    badge.textContent = '산성';
+                    summary.textContent = `H⁺가 ${counts.H}개 남아 있습니다.`;
+                } else if (counts.OH > counts.H) {
+                    badge.classList.add('basic');
+                    badge.textContent = '염기성';
+                    summary.textContent = `OH⁻가 ${counts.OH}개 남아 있습니다.`;
+                } else if (counts.H > 0) {
+                    badge.textContent = '반응 중';
+                    summary.textContent = 'H⁺와 OH⁻가 만나 물을 만들고 있습니다.';
+                } else {
+                    badge.classList.add('neutral');
+                    badge.textContent = '중성';
+                    summary.textContent = `H⁺와 OH⁻가 모두 반응해 물 ${this.waterMoleculeCount}개가 생성되었습니다.`;
+                }
+
+                this.beaker.setAttribute('aria-label', `비커 안 이온: H 플러스 ${counts.H}개, OH 마이너스 ${counts.OH}개, Na 플러스 ${counts.Na}개, Cl 마이너스 ${counts.Cl}개`);
             }
             
 updateIndicator() {
@@ -1845,6 +2326,7 @@ updateIndicator() {
     
     const hCount = this.ions.filter(ion => ion.type === 'H').length;
     const ohCount = this.ions.filter(ion => ion.type === 'OH').length;
+    const hasNoSolution = this.ions.length === 0 && this.waterMoleculeCount === 0;
     
     let phClass = 'ph-neutral';
     let phText = '중성';
@@ -1869,7 +2351,7 @@ updateIndicator() {
                         <div>
                             <div style="font-size: 24px;">🌡️</div>
                             <div id="tempDisplay" style="font-size: 18px; font-weight: bold;">
-                                ${this.temperature.toFixed(1)}°C
+                                상대 온도 +${this.relativeHeat.toFixed(1)}
                             </div>
                             <div id="reactionCount" style="font-size: 12px; color: #666;">
                                 중화 반응: ${this.neutralizationCount}회
@@ -1880,26 +2362,40 @@ updateIndicator() {
                 </div>
             `;
         } else {
-            // 온도와 반응 횟수만 업데이트
+            // 상대 온도와 반응 횟수만 업데이트
             const tempDisplay = document.getElementById('tempDisplay');
             const reactionCount = document.getElementById('reactionCount');
             if (tempDisplay) {
-                tempDisplay.style.color = this.temperature > 30 ? '#ff5252' : '#333';
-                tempDisplay.textContent = `${this.temperature.toFixed(1)}°C`;
+                tempDisplay.style.color = this.relativeHeat > 55 ? '#d94b55' : '#18324a';
+                tempDisplay.textContent = `상대 온도 +${this.relativeHeat.toFixed(1)}`;
             }
             if (reactionCount) {
                 reactionCount.textContent = `중화 반응: ${this.neutralizationCount}회`;
             }
         }
         
-        display.style.background = this.temperature > 30 ? '#ffe0e0' : '#f8f9fa';
-        display.style.color = '#333';
+        const waterDisplay = document.getElementById('waterMoleculeDisplay');
+        if (waterDisplay) {
+            while (waterDisplay.children.length < this.waterMoleculeCount) {
+                const water = document.createElement('div');
+                water.className = 'water-molecule-icon';
+                water.textContent = 'H₂O';
+                waterDisplay.appendChild(water);
+            }
+        }
+
+        display.style.background = this.relativeHeat > 55 ? '#fff0f0' : '#f5f8fa';
+        display.style.color = '#18324a';
         
         this.drawTemperatureGraph();
         
     } else if (indicator === 'btb') {
         // BTB 배경색 변경
-        if (phClass === 'ph-acidic') {
+        if (hasNoSolution) {
+            display.style.background = '#f5f8fa';
+            display.style.color = '#60758a';
+            display.textContent = 'BTB: 용액을 첨가하세요';
+        } else if (phClass === 'ph-acidic') {
             display.style.background = '#fff59d';  // 노란색
             display.style.color = '#f57f17';
             display.textContent = 'BTB: 노란색 (산성)';
@@ -1913,7 +2409,11 @@ updateIndicator() {
             display.textContent = 'BTB: 파란색 (염기성)';
         }
     } else if (indicator === 'phenol') {
-        if (phClass === 'ph-basic') {
+        if (hasNoSolution) {
+            display.style.background = '#f5f8fa';
+            display.style.color = '#60758a';
+            display.textContent = '페놀프탈레인: 용액을 첨가하세요';
+        } else if (phClass === 'ph-basic') {
             display.style.background = '#ff69b4';
             display.style.color = 'white';
             display.textContent = '페놀프탈레인: 분홍색 (염기성)';
@@ -1936,18 +2436,17 @@ updateIndicator() {
                 ctx.fillStyle = '#fff';
                 ctx.fillRect(0, 0, width, height);
                 
-                if (this.graphData.temperature.length > 0) {
-                    const data = this.graphData.temperature.slice(-30);
-                    const maxTemp = Math.max(...data, 40);
-                    const minTemp = 20;
+                if (this.graphData.heat.length > 0) {
+                    const data = this.graphData.heat.slice(-30);
+                    const maxHeat = Math.max(...data, 10);
                     
                     ctx.strokeStyle = '#ff5252';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
                     
-                    data.forEach((temp, index) => {
-                        const x = (index / (data.length - 1)) * (width - 10) + 5;
-                        const y = height - ((temp - minTemp) / (maxTemp - minTemp)) * (height - 10) - 5;
+                    data.forEach((heat, index) => {
+                        const x = data.length === 1 ? width / 2 : (index / (data.length - 1)) * (width - 10) + 5;
+                        const y = height - (heat / maxHeat) * (height - 10) - 5;
                         
                         if (index === 0) {
                             ctx.moveTo(x, y);
@@ -1959,9 +2458,9 @@ updateIndicator() {
                     ctx.stroke();
                     
                     if (data.length > 0) {
-                        const lastTemp = data[data.length - 1];
-                        const lastX = width - 5;
-                        const lastY = height - ((lastTemp - minTemp) / (maxTemp - minTemp)) * (height - 10) - 5;
+                        const lastHeat = data[data.length - 1];
+                        const lastX = data.length === 1 ? width / 2 : width - 5;
+                        const lastY = height - (lastHeat / maxHeat) * (height - 10) - 5;
                         
                         ctx.fillStyle = '#ff5252';
                         ctx.beginPath();
@@ -1975,6 +2474,7 @@ updateIndicator() {
                 this.isPaused = !this.isPaused;
                 const btn = document.getElementById('pauseBtn');
                 btn.textContent = this.isPaused ? '재생' : '일시정지';
+                btn.setAttribute('aria-pressed', this.isPaused ? 'true' : 'false');
             }
             
             resetGraph() {
@@ -1985,7 +2485,9 @@ updateIndicator() {
                     Na: [],
                     Cl: [],
                     total: [],
-                    temperature: []
+                    heat: [],
+                    events: [],
+                    neutralized: []
                 };
                 this.additionCount = 0;
                 
@@ -2006,25 +2508,21 @@ updateIndicator() {
                 
                 const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
                 this.graphData.total.push(total);
-                this.graphData.temperature.push(this.temperature);
+                this.graphData.heat.push(this.relativeHeat);
+                this.graphData.events.push('start');
+                this.graphData.neutralized.push(counts.H === 0 && counts.OH === 0 && this.waterMoleculeCount > 0);
                 
                 this.drawGraph();
+                this.updateGraphSummary(counts);
             }
             
 reset() {
-    // 안전 위반 상태 리셋
-    if (this.safetyViolation) {
-        this.safetyViolation = false;
-        document.getElementById('beaker').style.animation = '';
-        const warningDiv = document.querySelector('div[style*="경고"]');
-        if (warningDiv) warningDiv.remove();
-        
-        // 버튼 재활성화
-        document.querySelectorAll('button, .dropper').forEach(btn => {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.style.cursor = 'pointer';
-        });
+    this.overheatWarningShown = false;
+    document.getElementById('beaker').classList.remove('overheated');
+    document.querySelectorAll('.overheat-toast').forEach(warning => warning.remove());
+    if (this.pendingGraphTimer) {
+        clearTimeout(this.pendingGraphTimer);
+        this.pendingGraphTimer = null;
     }
     
     // 이온 제거
@@ -2042,9 +2540,30 @@ reset() {
     }
     
     // 상태 변수 초기화
-    this.temperature = 25;
+    this.relativeHeat = 0;
     this.neutralizationCount = 0;
     this.waterMoleculeCount = 0;
+    this.isPaused = false;
+    this.isAddingIons = false;
+    this.continuousMode = false;
+    this.spectatorHidden = false;
+    this.persistWater = false;
+    this.isShapeMode = false;
+    this.shapeMapping = { H: 'triangle', OH: 'star', Na: 'square', Cl: 'circle' };
+    document.getElementById('pauseBtn').textContent = '일시정지';
+    document.getElementById('pauseBtn').setAttribute('aria-pressed', 'false');
+    document.getElementById('continuousBtn').textContent = '연속 첨가 모드: 꺼짐';
+    document.getElementById('continuousBtn').setAttribute('aria-pressed', 'false');
+    document.getElementById('toggleSpectatorBtn').textContent = '구경꾼 이온 흐리게 보기';
+    document.getElementById('toggleSpectatorBtn').setAttribute('aria-pressed', 'false');
+    document.getElementById('persistWaterBtn').textContent = '생성된 물 계속 보기';
+    document.getElementById('persistWaterBtn').setAttribute('aria-pressed', 'false');
+    document.getElementById('ionModeBtn').classList.add('active');
+    document.getElementById('shapeModeBtn').classList.remove('active');
+    document.getElementById('ionModeBtn').setAttribute('aria-pressed', 'true');
+    document.getElementById('shapeModeBtn').setAttribute('aria-pressed', 'false');
+    document.getElementById('indicatorSelect').value = 'none';
+    this.setAddRate(1);
     
     // 그래프 데이터 초기화
     this.graphData = {
@@ -2054,14 +2573,18 @@ reset() {
         Na: [],
         Cl: [],
         total: [],
-        temperature: []
+        heat: [],
+        events: [],
+        neutralized: []
     };
     this.additionCount = 0;
     this.timeStep = 0;
+    this.lastAdditionType = null;
     
     // UI 업데이트
     this.updateStats();
     this.drawGraph();
+    this.updateGraphSummary({ H: 0, OH: 0, Na: 0, Cl: 0 });
     this.updateIndicator();
 }
         }
@@ -2088,7 +2611,7 @@ reset() {
     </script>
     <!-- Footer -->
 <div class="footer">
-    ⓒ 2025 충남삼성고등학교 신도경T<br>
+    ⓒ 2025–2026 충남삼성고등학교 신도경T<br>
     <a href="mailto:pantarei01@cnsa.hs.kr">pantarei01@cnsa.hs.kr</a>
 </div>
     <script src="/assets/sim-ui.js"></script>
