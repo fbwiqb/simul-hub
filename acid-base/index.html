@@ -1865,7 +1865,8 @@ checkOverlap(x, y, size) {
     const beakerW = this.beaker.offsetWidth;
     const beakerH = this.beaker.offsetHeight;
     const ionSize = 40;
-    const maxSpeed = 3;
+    const reactionSpeedMultiplier = 2;
+    const maxSpeed = 3 * reactionSpeedMultiplier;
     const pruneSq = 600 * 600;
     const reactionPairs = NeutralizationPhysics.pairOppositeIons(hIons, ohIons, pruneSq);
     const partners = new Map();
@@ -1890,7 +1891,7 @@ checkOverlap(x, y, size) {
                 const dy = target.y - y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 if (distance > 0) {
-                    const force = 200 / (distance + 50);
+                    const force = (200 * reactionSpeedMultiplier) / (distance + 50);
                     ionObj.vx += force * dx / distance;
                     ionObj.vy += force * dy / distance;
                 }
