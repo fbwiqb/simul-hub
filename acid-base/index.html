@@ -1614,20 +1614,16 @@ document.addEventListener('keydown', function(e) {
                 this.addIon('Cl', this.addRate);
                 this.announce('산 ' + this.addRate + '묶음 첨가');
 
-                if (this.continuousMode) {
-                    this.updateStats();
-                    this.updateGraph();
-                    this.updateIndicator();
-                    return;
-                }
+                this.updateStats();
+                this.updateIndicator();
+                this.scheduleGraphUpdate(120);
+
+                if (this.continuousMode) return;
 
                 this.isAddingIons = true;
                 setTimeout(() => {
-                    this.updateStats();
-                    this.scheduleGraphUpdate();
-                    this.updateIndicator();
                     this.isAddingIons = false;
-                }, 1500);
+                }, 150);
             }
 
             addBase() {
@@ -1641,20 +1637,16 @@ document.addEventListener('keydown', function(e) {
                 this.addIon('OH', this.addRate);
                 this.announce('염기 ' + this.addRate + '묶음 첨가');
 
-                if (this.continuousMode) {
-                    this.updateStats();
-                    this.updateGraph();
-                    this.updateIndicator();
-                    return;
-                }
+                this.updateStats();
+                this.updateIndicator();
+                this.scheduleGraphUpdate(120);
+
+                if (this.continuousMode) return;
 
                 this.isAddingIons = true;
                 setTimeout(() => {
-                    this.updateStats();
-                    this.scheduleGraphUpdate();
-                    this.updateIndicator();
                     this.isAddingIons = false;
-                }, 1500);
+                }, 150);
             }
             
       addIon(type, count = 1) {
@@ -1962,7 +1954,7 @@ checkNeutralization() {
         }
 
         this.updateStats();
-        this.scheduleGraphUpdate(220);
+        this.scheduleGraphUpdate(80);
     });
     
     if (this.relativeHeat > 0) {
@@ -2007,10 +1999,16 @@ checkNeutralization() {
                 this.drawGraph();
             }
             
-            scheduleGraphUpdate(delay = 350) {
+            scheduleGraphUpdate(delay = 120) {
                 if (this.pendingGraphTimer) clearTimeout(this.pendingGraphTimer);
                 this.pendingGraphTimer = setTimeout(() => {
                     this.pendingGraphTimer = null;
+                    const hasH = this.ions.some(ion => ion.type === 'H');
+                    const hasOH = this.ions.some(ion => ion.type === 'OH');
+                    if (hasH && hasOH) {
+                        this.scheduleGraphUpdate(80);
+                        return;
+                    }
                     this.updateGraph();
                 }, delay);
             }
