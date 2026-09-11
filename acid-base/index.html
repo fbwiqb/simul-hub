@@ -480,8 +480,6 @@
         display: flex;
         flex-wrap: wrap;
         gap: 5px;
-        margin-top: 10px;
-        min-height: 30px;
         padding: 5px;
         background: rgba(200,230,255,0.1);
         border-radius: 5px;
@@ -760,6 +758,8 @@
     @media (max-width: 900px) {
         .ion { touch-action: none; }
     }
+    .water-molecules:empty { display: none; }
+    .water-molecules:not(:empty) { margin-bottom: 8px; }
 
     /* 2026 classroom refresh: the beaker is the visual anchor. */
     :root {
@@ -861,8 +861,10 @@
     }
 
     .control-panel {
-        padding: 18px;
+        max-height: calc(100vh - 92px);
+        padding: 14px;
         background: #f6f9fb;
+        overflow-y: auto;
     }
 
     .simulation-area,
@@ -871,9 +873,22 @@
     .graph-container { padding: 18px; }
 
     .control-section {
-        margin-bottom: 18px;
-        padding-bottom: 18px;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
         border-color: var(--lab-line);
+    }
+
+    .experiment-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .experiment-actions button {
+        min-height: 38px;
+        margin: 0;
+        padding: 7px 4px;
+        font-size: 12px;
     }
 
     .control-section h3,
@@ -921,14 +936,14 @@
     }
 
     button:hover { transform: none; }
-    #resetBtn, #pauseBtn, #resetGraphBtn, #continuousBtn,
+    #resetBtn, #pauseBtn, #resetGraphBtn,
     #shuffleShapesBtn, #toggleSpectatorBtn, #persistWaterBtn {
         color: var(--lab-ink);
         background: #fff;
         border: 1px solid var(--lab-line);
     }
 
-    #resetBtn:hover, #pauseBtn:hover, #resetGraphBtn:hover, #continuousBtn:hover,
+    #resetBtn:hover, #pauseBtn:hover, #resetGraphBtn:hover,
     #shuffleShapesBtn:hover, #toggleSpectatorBtn:hover, #persistWaterBtn:hover {
         background: #eaf1f5;
         filter: none;
@@ -1034,13 +1049,63 @@
     }
 
     .indicator-display {
-        min-height: 86px;
+        min-height: 0;
         margin-top: 12px;
         padding: 12px;
         color: var(--lab-ink);
         background: #f5f8fa;
         border-color: var(--lab-line);
     }
+
+    .observation-default {
+        margin: 0 0 10px;
+        color: var(--lab-muted);
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    .indicator-checks {
+        display: grid;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .indicator-choice {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        min-height: 42px;
+        padding: 9px 11px;
+        color: var(--lab-ink);
+        background: #fff;
+        border: 1px solid var(--lab-line);
+        border-radius: 9px;
+        cursor: pointer;
+    }
+
+    .indicator-choice input {
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        accent-color: #294f6f;
+    }
+
+    .indicator-results {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .indicator-result {
+        padding: 10px;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 750;
+        text-align: center;
+    }
+
+    .indicator-result[hidden] { display: none; }
 
     #ionGraph {
         height: 300px;
@@ -1166,7 +1231,7 @@
         .main-content { display: flex; flex-direction: column; gap: 12px; }
         .simulation-area { order: 1; width: 100%; box-sizing: border-box; }
         .graph-container { order: 2; width: 100%; box-sizing: border-box; }
-        .control-panel { order: 3; width: 100%; box-sizing: border-box; }
+        .control-panel { order: 3; width: 100%; max-height: none; overflow: visible; box-sizing: border-box; }
         #beaker { height: 330px; }
         .dropper { min-height: 54px; font-size: 15px; }
         .experiment-status { align-items: flex-start; }
@@ -1199,6 +1264,24 @@
             <!-- 컨트롤 패널 -->
             <div class="control-panel">
                 <div class="control-section">
+                    <h3>한 번에 첨가할 양</h3>
+                    <div class="addrate-group" role="group" aria-label="한 번 첨가할 때 추가되는 이온 묶음 수">
+                        <button class="addrate-btn active" id="addRate1" aria-pressed="true">1묶음</button>
+                        <button class="addrate-btn" id="addRate5" aria-pressed="false">5묶음</button>
+                        <button class="addrate-btn" id="addRate10" aria-pressed="false">10묶음</button>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>실험 제어</h3>
+                    <div class="experiment-actions">
+                        <button id="resetBtn">초기화</button>
+                        <button id="pauseBtn" aria-pressed="false">일시정지</button>
+                        <button id="resetGraphBtn">그래프 초기화</button>
+                    </div>
+                </div>
+
+                <div class="control-section">
                     <h3>사용하는 용액</h3>
                     <div class="solution-pair">
                         <div class="solution-chip acid"><span>산성 용액</span><strong>염산 HCl</strong></div>
@@ -1208,11 +1291,11 @@
                 
                 <div class="control-section">
                     <h3>관찰 방법</h3>
-                    <select id="indicatorSelect" aria-label="지시약 선택">
-                        <option value="none">상대적 온도 변화</option>
-                        <option value="btb">BTB로 액성 확인</option>
-                        <option value="phenol">페놀프탈레인으로 액성 확인</option>
-                    </select>
+                    <p class="observation-default">상대적 온도 변화는 항상 표시됩니다. 필요한 지시약을 추가로 선택하세요.</p>
+                    <div class="indicator-checks" role="group" aria-label="추가로 관찰할 지시약">
+                        <label class="indicator-choice"><input type="checkbox" id="btbIndicator"> BTB 용액</label>
+                        <label class="indicator-choice"><input type="checkbox" id="phenolIndicator"> 페놀프탈레인</label>
+                    </div>
                 </div>
                     <div class="control-section">
                     <h3>입자 표시</h3>
@@ -1225,22 +1308,6 @@
                     <button id="persistWaterBtn" aria-pressed="false">생성된 물 계속 보기</button>
                 </div>
                 
-                <div class="control-section">
-                    <h3>한 번에 첨가할 양</h3>
-                    <div class="addrate-group" role="group" aria-label="한 번 첨가할 때 추가되는 이온 묶음 수">
-                        <button class="addrate-btn active" id="addRate1" aria-pressed="true">1묶음</button>
-                        <button class="addrate-btn" id="addRate5" aria-pressed="false">5묶음</button>
-                        <button class="addrate-btn" id="addRate10" aria-pressed="false">10묶음</button>
-                    </div>
-                    <button id="continuousBtn" aria-pressed="false">연속 첨가 모드: 꺼짐</button>
-                </div>
-
-                <div class="control-section">
-                    <h3>실험 제어</h3>
-                    <button id="resetBtn">초기화</button>
-                    <button id="pauseBtn" aria-pressed="false">일시정지</button>
-                    <button id="resetGraphBtn">그래프 초기화</button>
-                </div>
                 </div> <!-- control-panel 닫기 -->
 
             <!-- 시뮬레이션 영역 -->
@@ -1259,7 +1326,21 @@
                     <small>Na⁺와 Cl⁻는 반응에 직접 참여하지 않고 용액에 남습니다.</small>
                 </div>
                 <div class="indicator-display" id="indicatorDisplay">
-                    상대적 온도 변화: 0
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="water-molecules" id="waterMoleculeDisplay"></div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+                            <div>
+                                <div style="font-size: 24px;">🌡️</div>
+                                <div id="tempDisplay" style="font-size: 18px; font-weight: bold;">상대 온도 +0.0</div>
+                                <div id="reactionCount" style="font-size: 12px; color: #666;">중화 반응: 0회</div>
+                            </div>
+                            <canvas id="tempGraph" width="200" height="80" style="border: 1px solid #ddd; border-radius: 5px; background: white;"></canvas>
+                        </div>
+                    </div>
+                    <div class="indicator-results" id="indicatorResults">
+                        <div class="indicator-result" id="btbResult" hidden></div>
+                        <div class="indicator-result" id="phenolResult" hidden></div>
+                    </div>
                 </div>
             </div>
             
@@ -1519,8 +1600,6 @@ document.addEventListener('keydown', function(e) {
     this.waterAnimations = [];
     this.overheatWarningShown = false;
     this.addRate = 1;
-    this.continuousMode = false;
-    this.continuousTimer = null;
     this.pendingGraphTimer = null;
     this.lastAdditionType = null;
     
@@ -1570,12 +1649,12 @@ document.addEventListener('keydown', function(e) {
                 document.getElementById('persistWaterBtn').addEventListener('click', () => this.togglePersistWater());
                 document.getElementById('resetBtn').addEventListener('click', () => this.reset());
                 document.getElementById('pauseBtn').addEventListener('click', () => this.togglePause());
-                document.getElementById('indicatorSelect').addEventListener('change', () => this.updateIndicator());
+                document.getElementById('btbIndicator').addEventListener('change', () => this.updateIndicator());
+                document.getElementById('phenolIndicator').addEventListener('change', () => this.updateIndicator());
                 document.getElementById('resetGraphBtn').addEventListener('click', () => this.resetGraph());
                 document.getElementById('addRate1').addEventListener('click', () => this.setAddRate(1));
                 document.getElementById('addRate5').addEventListener('click', () => this.setAddRate(5));
                 document.getElementById('addRate10').addEventListener('click', () => this.setAddRate(10));
-                document.getElementById('continuousBtn').addEventListener('click', () => this.toggleContinuous());
             }
 
             setAddRate(rate) {
@@ -1591,21 +1670,11 @@ document.addEventListener('keydown', function(e) {
                 this.announce('한 번에 ' + rate + '묶음 첨가로 설정');
             }
 
-            toggleContinuous() {
-                this.continuousMode = !this.continuousMode;
-                const btn = document.getElementById('continuousBtn');
-                btn.textContent = '연속 첨가 모드: ' + (this.continuousMode ? '켜짐' : '꺼짐');
-                btn.setAttribute('aria-pressed', this.continuousMode ? 'true' : 'false');
-                this.announce(this.continuousMode ? '연속 첨가 모드 켜짐. 첨가 버튼이 잠기지 않습니다.' : '연속 첨가 모드 꺼짐.');
-            }
-
             announce(text) {
                 if (window.CNSA && CNSA.srAnnounce) CNSA.srAnnounce(text);
             }
             
             addAcid() {
-                if (this.isAddingIons && !this.continuousMode) return;
-
                 this.additionCount++;
                 this.lastAdditionType = 'acid';
 
@@ -1617,18 +1686,9 @@ document.addEventListener('keydown', function(e) {
                 this.updateStats();
                 this.updateIndicator();
                 this.scheduleGraphUpdate(120);
-
-                if (this.continuousMode) return;
-
-                this.isAddingIons = true;
-                setTimeout(() => {
-                    this.isAddingIons = false;
-                }, 150);
             }
 
             addBase() {
-                if (this.isAddingIons && !this.continuousMode) return;
-
                 this.additionCount++;
                 this.lastAdditionType = 'base';
 
@@ -1640,13 +1700,6 @@ document.addEventListener('keydown', function(e) {
                 this.updateStats();
                 this.updateIndicator();
                 this.scheduleGraphUpdate(120);
-
-                if (this.continuousMode) return;
-
-                this.isAddingIons = true;
-                setTimeout(() => {
-                    this.isAddingIons = false;
-                }, 150);
             }
             
       addIon(type, count = 1) {
@@ -2295,108 +2348,52 @@ checkNeutralization() {
             }
             
 updateIndicator() {
-    const indicator = document.getElementById('indicatorSelect').value;
     const display = document.getElementById('indicatorDisplay');
-    
     const hCount = this.ions.filter(ion => ion.type === 'H').length;
     const ohCount = this.ions.filter(ion => ion.type === 'OH').length;
     const hasNoSolution = this.ions.length === 0 && this.waterMoleculeCount === 0;
-    
-    let phClass = 'ph-neutral';
-    let phText = '중성';
-    
-    if (hCount > ohCount) {
-        phClass = 'ph-acidic';
-        phText = '산성';
-    } else if (ohCount > hCount) {
-        phClass = 'ph-basic';
-        phText = '염기성';
-    }
-    
-    display.className = 'indicator-display';
-    
-    if (indicator === 'none') {
-        // 처음 한 번만 구조 생성
-        if (!document.getElementById('waterMoleculeDisplay')) {
-            display.innerHTML = `
-                <div style="display: flex; flex-direction: column; align-items: center;">
-                    <div class="water-molecules" id="waterMoleculeDisplay" style="min-height: 40px;"></div>
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 10px;">
-                        <div>
-                            <div style="font-size: 24px;">🌡️</div>
-                            <div id="tempDisplay" style="font-size: 18px; font-weight: bold;">
-                                상대 온도 +${this.relativeHeat.toFixed(1)}
-                            </div>
-                            <div id="reactionCount" style="font-size: 12px; color: #666;">
-                                중화 반응: ${this.neutralizationCount}회
-                            </div>
-                        </div>
-                        <canvas id="tempGraph" width="200" height="80" style="border: 1px solid #ddd; border-radius: 5px; background: white;"></canvas>
-                    </div>
-                </div>
-            `;
-        } else {
-            // 상대 온도와 반응 횟수만 업데이트
-            const tempDisplay = document.getElementById('tempDisplay');
-            const reactionCount = document.getElementById('reactionCount');
-            if (tempDisplay) {
-                tempDisplay.style.color = this.relativeHeat > 55 ? '#d94b55' : '#18324a';
-                tempDisplay.textContent = `상대 온도 +${this.relativeHeat.toFixed(1)}`;
-            }
-            if (reactionCount) {
-                reactionCount.textContent = `중화 반응: ${this.neutralizationCount}회`;
-            }
-        }
-        
-        const waterDisplay = document.getElementById('waterMoleculeDisplay');
-        if (waterDisplay) {
-            while (waterDisplay.children.length < this.waterMoleculeCount) {
-                const water = document.createElement('div');
-                water.className = 'water-molecule-icon';
-                water.textContent = 'H₂O';
-                waterDisplay.appendChild(water);
-            }
-        }
+    const phState = hCount > ohCount ? 'acidic' : ohCount > hCount ? 'basic' : 'neutral';
+    const tempDisplay = document.getElementById('tempDisplay');
+    const reactionCount = document.getElementById('reactionCount');
+    tempDisplay.style.color = this.relativeHeat > 55 ? '#d94b55' : '#18324a';
+    tempDisplay.textContent = `상대 온도 +${this.relativeHeat.toFixed(1)}`;
+    reactionCount.textContent = `중화 반응: ${this.neutralizationCount}회`;
 
-        display.style.background = this.relativeHeat > 55 ? '#fff0f0' : '#f5f8fa';
-        display.style.color = '#18324a';
-        
-        this.drawTemperatureGraph();
-        
-    } else if (indicator === 'btb') {
-        // BTB 배경색 변경
-        if (hasNoSolution) {
-            display.style.background = '#f5f8fa';
-            display.style.color = '#60758a';
-            display.textContent = 'BTB: 용액을 첨가하세요';
-        } else if (phClass === 'ph-acidic') {
-            display.style.background = '#fff59d';  // 노란색
-            display.style.color = '#f57f17';
-            display.textContent = 'BTB: 노란색 (산성)';
-        } else if (phClass === 'ph-neutral') {
-            display.style.background = '#a5d6a7';  // 초록색
-            display.style.color = '#2e7d32';
-            display.textContent = 'BTB: 초록색 (중성)';
-        } else if (phClass === 'ph-basic') {
-            display.style.background = '#90caf9';  // 파란색
-            display.style.color = '#1565c0';
-            display.textContent = 'BTB: 파란색 (염기성)';
-        }
-    } else if (indicator === 'phenol') {
-        if (hasNoSolution) {
-            display.style.background = '#f5f8fa';
-            display.style.color = '#60758a';
-            display.textContent = '페놀프탈레인: 용액을 첨가하세요';
-        } else if (phClass === 'ph-basic') {
-            display.style.background = '#ff69b4';
-            display.style.color = 'white';
-            display.textContent = '페놀프탈레인: 분홍색 (염기성)';
-        } else {
-            display.style.background = '#f8f9fa';
-            display.style.color = '#666';
-            display.textContent = '페놀프탈레인: 무색 (산성/중성)';
-        }
+    const waterDisplay = document.getElementById('waterMoleculeDisplay');
+    while (waterDisplay.children.length < this.waterMoleculeCount) {
+        const water = document.createElement('div');
+        water.className = 'water-molecule-icon';
+        water.textContent = 'H₂O';
+        waterDisplay.appendChild(water);
     }
+
+    display.style.background = this.relativeHeat > 55 ? '#fff0f0' : '#f5f8fa';
+    display.style.color = '#18324a';
+    this.drawTemperatureGraph();
+
+    const showResult = (checkboxId, resultId, states) => {
+        const checked = document.getElementById(checkboxId).checked;
+        const result = document.getElementById(resultId);
+        result.hidden = !checked;
+        if (!checked) return;
+        const state = hasNoSolution ? states.empty : states[phState];
+        result.textContent = state.text;
+        result.style.background = state.background;
+        result.style.color = state.color;
+    };
+
+    showResult('btbIndicator', 'btbResult', {
+        empty: { text: 'BTB: 용액을 첨가하세요', background: '#eef2f4', color: '#60758a' },
+        acidic: { text: 'BTB: 노란색 (산성)', background: '#fff59d', color: '#8a6000' },
+        neutral: { text: 'BTB: 초록색 (중성)', background: '#a5d6a7', color: '#1f6125' },
+        basic: { text: 'BTB: 파란색 (염기성)', background: '#90caf9', color: '#0d5590' }
+    });
+    showResult('phenolIndicator', 'phenolResult', {
+        empty: { text: '페놀프탈레인: 용액을 첨가하세요', background: '#eef2f4', color: '#60758a' },
+        acidic: { text: '페놀프탈레인: 무색 (산성)', background: '#fff', color: '#56636d' },
+        neutral: { text: '페놀프탈레인: 무색 (중성)', background: '#fff', color: '#56636d' },
+        basic: { text: '페놀프탈레인: 분홍색 (염기성)', background: '#ff69b4', color: '#fff' }
+    });
 }
             drawTemperatureGraph() {
                 const canvas = document.getElementById('tempGraph');
@@ -2518,16 +2515,12 @@ reset() {
     this.neutralizationCount = 0;
     this.waterMoleculeCount = 0;
     this.isPaused = false;
-    this.isAddingIons = false;
-    this.continuousMode = false;
     this.spectatorHidden = false;
     this.persistWater = false;
     this.isShapeMode = false;
     this.shapeMapping = { H: 'triangle', OH: 'star', Na: 'square', Cl: 'circle' };
     document.getElementById('pauseBtn').textContent = '일시정지';
     document.getElementById('pauseBtn').setAttribute('aria-pressed', 'false');
-    document.getElementById('continuousBtn').textContent = '연속 첨가 모드: 꺼짐';
-    document.getElementById('continuousBtn').setAttribute('aria-pressed', 'false');
     document.getElementById('toggleSpectatorBtn').textContent = '구경꾼 이온 흐리게 보기';
     document.getElementById('toggleSpectatorBtn').setAttribute('aria-pressed', 'false');
     document.getElementById('persistWaterBtn').textContent = '생성된 물 계속 보기';
@@ -2536,7 +2529,8 @@ reset() {
     document.getElementById('shapeModeBtn').classList.remove('active');
     document.getElementById('ionModeBtn').setAttribute('aria-pressed', 'true');
     document.getElementById('shapeModeBtn').setAttribute('aria-pressed', 'false');
-    document.getElementById('indicatorSelect').value = 'none';
+    document.getElementById('btbIndicator').checked = false;
+    document.getElementById('phenolIndicator').checked = false;
     this.setAddRate(1);
     
     // 그래프 데이터 초기화
