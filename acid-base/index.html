@@ -196,7 +196,7 @@
         justify-content: center;
         font-weight: bold;
         font-size: 14px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.2s ease;
         cursor: grab;
         box-shadow: 0 3px 10px rgba(0,0,0,0.25);
     }
@@ -1466,6 +1466,7 @@
 </div>
         </div>
     </div>
+    <script src="particle-physics.js"></script>
     <script>
         // 모달 함수들
 let activeModalId = null;
@@ -1874,18 +1875,12 @@ checkOverlap(x, y, size) {
     const ionSize = 40;
     const maxSpeed = 3;
     const pruneSq = 600 * 600;
-
-    const nearest = (x, y, targets) => {
-        let best = null;
-        let bestSq = Infinity;
-        for (let i = 0; i < targets.length; i++) {
-            const tdx = targets[i].x - x;
-            const tdy = targets[i].y - y;
-            const sq = tdx * tdx + tdy * tdy;
-            if (sq < bestSq) { bestSq = sq; best = targets[i]; }
-        }
-        return best && bestSq <= pruneSq ? best : null;
-    };
+    const reactionPairs = NeutralizationPhysics.pairOppositeIons(hIons, ohIons, pruneSq);
+    const partners = new Map();
+    reactionPairs.forEach(({ h, oh }) => {
+        partners.set(h, oh);
+        partners.set(oh, h);
+    });
 
     this.ions.forEach(ionObj => {
         let x = ionObj.x;
@@ -1897,7 +1892,7 @@ checkOverlap(x, y, size) {
             x = ionObj.baseX;
             y = ionObj.baseY;
         } else {
-            const target = nearest(x, y, ionObj.type === 'H' ? ohIons : hIons);
+            const target = partners.get(ionObj);
             if (target) {
                 const dx = target.x - x;
                 const dy = target.y - y;
@@ -1949,56 +1944,36 @@ checkNeutralization() {
     const hIons = this.ions.filter(ion => ion.type === 'H');
     const ohIons = this.ions.filter(ion => ion.type === 'OH');
     
-    for (let i = hIons.length - 1; i >= 0; i--) {
-        for (let j = ohIons.length - 1; j >= 0; j--) {
-            const h = hIons[i];
-            const oh = ohIons[j];
-            
-            if (this.checkCollision(h.element, oh.element)) {
-                this.createWaterAnimation(h.element, oh.element);
-                
-                h.element.remove();
-                oh.element.remove();
-                
-                this.ions = this.ions.filter(ion => ion !== h && ion !== oh);
-                hIons.splice(i, 1);
-                ohIons.splice(j, 1);
-                
-                this.neutralizationCount++;
-                this.waterMoleculeCount++;
-                this.relativeHeat = Math.min(100, this.relativeHeat + 4);
+    const reactionPairs = NeutralizationPhysics.pairOppositeIons(hIons, ohIons);
+    reactionPairs.forEach(({ h, oh }) => {
+        if (!NeutralizationPhysics.areIonsTouching(h, oh, 40)) return;
 
-                if (this.relativeHeat >= 85 && !this.overheatWarningShown) {
-                    this.showOverheatWarning();
-                }
-                
-                this.updateStats();
-                this.scheduleGraphUpdate(220);
-                
-                break;
-            }
+        this.createWaterAnimation(h, oh);
+        h.element.remove();
+        oh.element.remove();
+        this.ions = this.ions.filter(ion => ion !== h && ion !== oh);
+
+        this.neutralizationCount++;
+        this.waterMoleculeCount++;
+        this.relativeHeat = Math.min(100, this.relativeHeat + 4);
+
+        if (this.relativeHeat >= 85 && !this.overheatWarningShown) {
+            this.showOverheatWarning();
         }
-    }
+
+        this.updateStats();
+        this.scheduleGraphUpdate(220);
+    });
     
     if (this.relativeHeat > 0) {
         this.relativeHeat = Math.max(0, this.relativeHeat - 0.015);
     }
 }      
-            checkCollision(elem1, elem2) {
-                const rect1 = elem1.getBoundingClientRect();
-                const rect2 = elem2.getBoundingClientRect();
-                
-                return !(rect1.right < rect2.left || 
-                        rect1.left > rect2.right || 
-                        rect1.bottom < rect2.top || 
-                        rect1.top > rect2.bottom);
-            }
-            
-            createWaterAnimation(hElem, ohElem) {
+            createWaterAnimation(hIon, ohIon) {
                 const water = document.createElement('div');
                 water.className = 'water-animation';
-                water.style.left = hElem.style.left;
-                water.style.top = hElem.style.top;
+                water.style.left = ((hIon.x + ohIon.x) / 2) + 'px';
+                water.style.top = ((hIon.y + ohIon.y) / 2) + 'px';
                 water.textContent = 'H₂O';
                 
                 if (this.persistWater) {
