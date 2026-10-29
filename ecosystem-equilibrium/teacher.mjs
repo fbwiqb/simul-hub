@@ -101,10 +101,10 @@ export class TeacherWorkspace{
    if(a.draft?.reason)dialog.append(el('h3',{},'작성 중인 이유 · 미확정'),el('pre',{},a.draft.reason));
    const until=el('input',{type:'datetime-local',required:true,'aria-label':'이 학생의 연장 종료 시간'});
    const reason=el('input',{required:true,minLength:2,placeholder:'기기 장애 등 연장 사유','aria-label':'연장 사유'});
-   dialog.append(el('h3',{},'이 학생의 응시 시간 연장'),el('p',{class:'help'},'먼저 분반에 해당 시간을 열어 주세요. 확정한 답안은 유지됩니다.'),
+   dialog.append(el('div',{class:'nonprint'},el('h3',{},'이 학생의 응시 시간 연장'),el('p',{class:'help'},'먼저 분반에 해당 시간을 열어 주세요. 확정한 답안은 유지됩니다.'),
     el('form',{onSubmit:async event=>{event.preventDefault();await this.command('teacher_extend',{student_id:studentId,until:kst(until.value),reason:reason.value});close();}},
      el('div',{class:'form-row'},field('연장 종료 · 한국 시간',until),field('사유',reason)),
-     el('button',{class:'btn',type:'submit'},'이 학생만 연장 허용')));
+     el('button',{class:'btn',type:'submit'},'이 학생만 연장 허용'))));
   }
   dialog.append(el('div',{class:'actions'},button('인쇄 / PDF로 저장',()=>window.print(),'quiet')));
   document.body.append(dialog);dialog.showModal();
