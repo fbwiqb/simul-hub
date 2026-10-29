@@ -1,4 +1,5 @@
 import {el,button,roleNames,directionNames} from './ui.mjs';
+import {pyramidSvg} from './pyramid.mjs';
 const roles=['producer','primary','secondary'];
 
 export class StudentWorkspace {
@@ -178,17 +179,17 @@ export class StudentWorkspace {
   this.saved=el('p',{class:'saved','aria-live':'polite'},'');work.append(this.saved);
   return el('div',{class:'two-col'},story,work);
  }
- diagram(values,target=null){
+ diagram(values,target=null,reference=values,prediction=false){
   const names=Object.fromEntries(this.state.model_chain.map(o=>[o.role,o.label]));
-  const box=el('div',{class:'diagram','aria-label':'확인한 단계의 생태계 상대량'});
+  const box=el('figure',{class:'diagram pyramid-figure','aria-label':'생태계 피라미드'});
+  const labels=el('div',{class:'pyramid-labels'});
   for(const role of [...roles].reverse()){
-   const index=roles.indexOf(role),bar=el('div',{class:'bar '+role});
-   bar.style.width=(values[index]/160*100)+'%';
-   box.append(el('div',{class:'bar-row'+(target===role?' target':'')},
-    el('label',{},roleNames[role],el('small',{},names[role])),
-    el('div',{class:'bar-track'},bar),el('output',{},values[index])));
+   labels.append(el('div',{class:'pyramid-label '+role+(target===role?' target':'')},
+    el('strong',{},roleNames[role]),el('small',{},names[role])));
   }
-  box.append(el('p',{class:'help'},'각 층의 처음 상태를 각각 100으로 놓은 상대량입니다. 층 사이의 절대 개체수·질량을 비교하는 그림이 아닙니다.'));
+  box.append(el('div',{class:'pyramid-layout'},labels,pyramidSvg(values,{reference,target,prediction})),
+   el('figcaption',{class:'help'},prediction?'색 면: 내 예측 · 점선: 직전 단계':'색 면: 확인한 상태 · 변한 층의 점선: 직전 단계'),
+   el('p',{class:'help'},'각 층의 처음 상태를 각각 100으로 놓은 상대량입니다. 층 사이의 절대 개체수·질량을 비교하는 그림이 아닙니다.'));
   return box;
  }
  explore(){
@@ -196,6 +197,12 @@ export class StudentWorkspace {
   this.stage=Math.max(0,Math.min(this.stage,s.question?.step??s.answered));
   const pending=this.stage===s.question?.step;
   const frame=s.frames[pending?s.answered:this.stage]||s.frames[0];
+  const reference=pending?frame.values:(s.frames[Math.max(0,this.stage-1)]||frame).values;
+  const shown=[...frame.values];
+  if(pending&&this.choice){
+   const index=roles.indexOf(s.question.target);
+   shown[index]=Math.max(40,Math.min(160,shown[index]+(this.choice==='increase'?30:this.choice==='decrease'?-30:0)));
+  }
   const phases=el('div',{class:'phases'});
   const stageButton=(i,label=String(i))=>{
    const b=button(label,()=>{this.stage=i;this.render();},'',i>s.answered&&i!==s.question?.step);
@@ -209,7 +216,7 @@ export class StudentWorkspace {
   }
   const figure=el('section',{class:'card'},el('h2',{},'관찰 단계'),
    el('p',{class:'help'},'서로 겹쳐 일어날 수 있는 반응을 한 층씩 나누어 살펴봅니다. 회복 가능한 조건을 가정합니다.'),
-   phases,this.diagram(frame.values,pending?s.question.target:null),
+   phases,this.diagram(shown,pending?s.question.target:null,reference,pending&&!!this.choice),
    el('div',{class:'nav-actions'},button('이전 변화',()=>{this.stage--;this.render();},'',this.stage===0),
     button('다음 변화',()=>{this.stage++;this.render();},'',this.stage>=(s.question?.step??s.answered))));
   const work=el('section',{class:'card'});
