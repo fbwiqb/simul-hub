@@ -63,7 +63,7 @@ export class StudentWorkspace {
   if(this.view==='situation'&&!this.state.chain)this.render();
  }
  conflictNotice(){
-  if(!this.conflictDraft)return null;
+  if(!this.conflictDraft)return document.createDocumentFragment();
   return el('details',{class:'feedback'},el('summary',{},'다른 창의 최신 초안을 불러왔습니다. 이 창의 미저장 글 보기'),
    el('pre',{style:'white-space:pre-wrap'},[this.conflictDraft.reason,this.conflictDraft.essay].filter(Boolean).join('\n\n')));
  }
