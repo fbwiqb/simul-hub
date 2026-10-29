@@ -51,7 +51,7 @@ export class TeacherWorkspace{
   this.statBox.replaceChildren(...[['대상',students.length],['미응시',students.length-started-done],['진행·시간 종료',started],['제출 완료',done]].map(([name,n])=>el('div',{class:'stat'},name,el('b',{},n))));
   this.tableBox.replaceChildren(table(['분반','학번','이름','진행','마지막 저장','기록'],students.map(x=>{
    const closed=x.started_at&&!x.submitted_at&&(x.window_closed||new Date(x.deadline)<=new Date(s.server_time));
-   const status=x.submitted_at?'제출 완료':!x.started_at?'미응시':(closed?'시간 종료 · ':'')+(x.chain_confirmed?'먹이사슬 확정 · ':'')+x.answered+'/6';
+   const status=x.submitted_at?'제출 완료':!x.started_at?'미응시':(closed?'시간 종료 · ':'')+(x.chain_confirmed?'먹이사슬 확정 · ':'')+'예측 '+x.answered+'/5';
    return [x.section+'팩',x.id,el('span',{},x.name,x.note?el('small',{class:'help'},' · 명부 확인'):null),status,formatTime(x.updated_at),
     button('답안 보기',()=>this.record(x.id),'',!x.started_at)];
   })));
@@ -90,6 +90,7 @@ export class TeacherWorkspace{
   dialog.append(el('p',{},c.public.title+' · '+(a.submitted_at?'최종 제출 '+formatTime(a.submitted_at):'미제출')),
    el('h3',{},'먹이사슬 · 첫 확정 답안'),el('p',{},a.chain?a.chain.map(id=>labels.get(id)||id).join(' → '):'미확정'),
    el('p',{class:'help'},'모형: '+c.solution.chain.map(o=>o.label).join(' → ')));
+  dialog.append(el('h3',{},'1단계 · 제시된 상황'),el('p',{},c.solution.frames[1].explanation));
   for(const answer of data.answers||[]){
    const frame=c.solution.frames[answer.step];
    dialog.append(el('h3',{},(answer.step<=3?'변화':'회복')+' '+answer.step+'단계 · '+directionNames[answer.choice]),
@@ -114,19 +115,19 @@ export class TeacherWorkspace{
   const now=new Date().toISOString().slice(0,10);
   if(format==='json'){
    const encoded=JSON.stringify(data,null,2),verified=JSON.parse(encoded);
-   if(verified.format!=='cnsa-ecosystem-assessment-v1'||!Array.isArray(verified.students||[]))throw new Error('백업 자료를 확인하지 못했습니다.');
+   if(verified.format!=='cnsa-ecosystem-assessment-v2'||!Array.isArray(verified.students||[]))throw new Error('백업 자료를 확인하지 못했습니다.');
    download(encoded,'통합과학2_생태계_원본백업_'+now+'.json');
    this.options.notice('원본 백업을 내려받았습니다. 학생 명부와 답안 수를 확인해 보관하세요.');return;
   }
   const cases=new Map(data.cases.map(c=>[c.id,c]));
   const attempts=new Map((data.attempts||[]).map(a=>[a.student_id,a]));
-  const headers=['분반','학번','이름','상황','먹이사슬 첫 답안',...Array.from({length:6},(_,i)=>[(i+1)+'단계 선택',(i+1)+'단계 이유',(i+1)+'단계 확정시각']).flat(),'정리하기','상태','최종 제출시각'];
+  const headers=['분반','학번','이름','상황','먹이사슬 첫 답안','1단계 제시 상황',...Array.from({length:5},(_,i)=>[(i+2)+'단계 선택',(i+2)+'단계 이유',(i+2)+'단계 확정시각']).flat(),'정리하기','상태','최종 제출시각'];
   const rows=(data.students||[]).map(s=>{
    const a=attempts.get(s.student_id),c=a?cases.get(a.case_id):null;
    const labels=new Map((c?.public_data.organisms||[]).map(o=>[o.id,o.label]));
    const answers=(data.answers||[]).filter(x=>x.student_id===s.student_id);
-   return [s.section_id,s.student_id,s.name,c?.title||'',a?.chain?.map(id=>labels.get(id)||id).join(' → ')||'',
-    ...Array.from({length:6},(_,i)=>{const r=answers.find(x=>x.step===i+1);return[r?directionNames[r.choice]:'',r?.reason||'',r?.confirmed_at||''];}).flat(),
+   return [s.section_id,s.student_id,s.name,c?.title||'',a?.chain?.map(id=>labels.get(id)||id).join(' → ')||'',c?.public_data.article.event||'',
+    ...Array.from({length:5},(_,i)=>{const r=answers.find(x=>x.step===i+2);return[r?directionNames[r.choice]:'',r?.reason||'',r?.confirmed_at||''];}).flat(),
     a?.essay||a?.draft?.essay||'',a?.submitted_at?'제출 완료':a?'미제출':'미응시',a?.submitted_at||''];
   });
   download('\ufeff'+[headers,...rows].map(row=>row.map(csvCell).join(',')).join('\r\n'),'통합과학2_생태계_채점자료_'+now+'.csv','text/csv;charset=utf-8');

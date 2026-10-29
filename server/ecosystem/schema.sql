@@ -40,7 +40,7 @@ CREATE TABLE eco2026.attempts (
 );
 CREATE TABLE eco2026.answers (
  student_id text NOT NULL REFERENCES eco2026.attempts,
- step integer NOT NULL CHECK(step BETWEEN 1 AND 6),
+ step integer NOT NULL CHECK(step BETWEEN 2 AND 6),
  choice text NOT NULL CHECK(choice IN('increase','decrease','stable')),
  reason text NOT NULL CHECK(length(trim(reason)) BETWEEN 1 AND 4000),
  confirmed_at timestamptz NOT NULL DEFAULT clock_timestamp(),
@@ -92,14 +92,16 @@ BEGIN
   SELECT * INTO STRICT c FROM eco2026.cases WHERE id=a.case_id;
   SELECT count(*) INTO n FROM eco2026.answers WHERE student_id=student;
   result:=result||jsonb_build_object('status','active','deadline',expiry,'revision',a.revision,'rerolls',a.rerolls,
-    'case',c.public_data,'chain',a.chain,'chain_at',a.chain_at,'draft',a.draft,'answered',n);
+    'case',c.public_data,'chain',a.chain,'chain_at',a.chain_at,'draft',a.draft,'answered',n,
+    'prediction_total',5,'observed_step',CASE WHEN a.chain IS NOT NULL THEN n+1 ELSE 0 END,
+    'workflow_version','given-first-v2');
   IF a.chain IS NOT NULL THEN
    result:=result||jsonb_build_object('model_chain',c.solution->'chain',
-    'frames',(SELECT jsonb_agg(value ORDER BY ordinality) FROM jsonb_array_elements(c.solution->'frames') WITH ORDINALITY WHERE ordinality<=n+1),
+    'frames',(SELECT jsonb_agg(value ORDER BY ordinality) FROM jsonb_array_elements(c.solution->'frames') WITH ORDINALITY WHERE ordinality<=n+2),
     'answers',(SELECT coalesce(jsonb_agg(jsonb_build_object('step',step,'choice',choice,'reason',reason,'confirmed_at',confirmed_at) ORDER BY step),'[]'::jsonb) FROM eco2026.answers WHERE student_id=student));
-   IF n<6 THEN
-    target:=c.solution->'frames'->(n+1);
-    result:=result||jsonb_build_object('question',jsonb_build_object('step',n+1,'phase',CASE WHEN n<3 THEN 'change' ELSE 'recovery' END,
+   IF n<5 THEN
+    target:=c.solution->'frames'->(n+2);
+    result:=result||jsonb_build_object('question',jsonb_build_object('step',n+2,'phase',CASE WHEN n<2 THEN 'change' ELSE 'recovery' END,
        'target',target->>'targetRole','target_name',c.solution->'role_names'->>(target->>'targetRole')));
    ELSE
     result:=result||jsonb_build_object('essay_prompt',(SELECT value->>'text' FROM eco2026.settings WHERE key='essay_prompt'));
@@ -205,7 +207,8 @@ BEGIN
       'case',(SELECT jsonb_build_object('public',public_data,'solution',solution,'version',bank_version) FROM eco2026.cases WHERE id=(SELECT case_id FROM eco2026.attempts WHERE student_id=s.student_id)));
    END IF;
    INSERT INTO eco2026.audit(actor,action,detail) VALUES(p_email,'teacher_export',p_payload);
-   RETURN jsonb_build_object('format','cnsa-ecosystem-assessment-v1','exported_at',clock_timestamp(),'exported_by',p_email,
+   RETURN jsonb_build_object('format','cnsa-ecosystem-assessment-v2','exported_at',clock_timestamp(),'exported_by',p_email,
+    'workflow',(SELECT value FROM eco2026.settings WHERE key='workflow'),
     'sections',(SELECT jsonb_agg(to_jsonb(x)) FROM eco2026.sections x WHERE t.admin OR x.id=ANY(t.section_ids)),
     'teachers',(SELECT jsonb_agg(to_jsonb(x)) FROM eco2026.teachers x WHERE t.admin OR x.email=p_email),
     'students',(SELECT jsonb_agg(to_jsonb(x)) FROM eco2026.students x WHERE t.admin OR x.section_id=ANY(t.section_ids)),
@@ -256,6 +259,7 @@ BEGIN
   PERFORM eco2026.fail(409,'이미 확정한 먹이사슬은 바꿀 수 없습니다.');
  END IF;
  IF p_action='answer' THEN
+  IF (p_payload->>'step')::integer=1 THEN PERFORM eco2026.fail(400,'1단계는 주어진 상황입니다. 2단계부터 예측해 주세요.'); END IF;
   SELECT * INTO existing FROM eco2026.answers WHERE student_id=s.student_id AND step=(p_payload->>'step')::integer;
   IF FOUND THEN
    IF existing.choice=p_payload->>'choice' AND existing.reason=trim(p_payload->>'reason') THEN RETURN eco2026.payload(s.student_id); END IF;
@@ -279,19 +283,19 @@ BEGIN
   END IF;
   UPDATE eco2026.attempts SET chain=p_payload->'chain',chain_at=clock_timestamp(),draft='{}' WHERE student_id=s.student_id;
  ELSIF p_action='answer' THEN
-  IF a.chain IS NULL OR (p_payload->>'step')::integer<>n+1 OR n>=6 THEN PERFORM eco2026.fail(409,'현재 단계의 예측만 확정할 수 있습니다.'); END IF;
+  IF a.chain IS NULL OR (p_payload->>'step')::integer<>n+2 OR n>=5 THEN PERFORM eco2026.fail(409,'현재 단계의 예측만 확정할 수 있습니다.'); END IF;
   IF coalesce(p_payload->>'choice','') NOT IN('increase','decrease','stable')
      OR length(trim(coalesce(p_payload->>'reason',''))) NOT BETWEEN 1 AND 4000 THEN
    PERFORM eco2026.fail(400,'증감 방향을 선택하고 먹이 관계를 바탕으로 이유를 써 주세요.');
   END IF;
-  INSERT INTO eco2026.answers(student_id,step,choice,reason) VALUES(s.student_id,n+1,p_payload->>'choice',trim(p_payload->>'reason'));
+  INSERT INTO eco2026.answers(student_id,step,choice,reason) VALUES(s.student_id,n+2,p_payload->>'choice',trim(p_payload->>'reason'));
   UPDATE eco2026.attempts SET draft=draft-'choice'-'reason' WHERE student_id=s.student_id;
  ELSIF p_action='draft' THEN
   IF jsonb_typeof(p_payload->'draft')<>'object' OR octet_length((p_payload->'draft')::text)>98304 THEN PERFORM eco2026.fail(400,'저장할 내용을 확인해 주세요.'); END IF;
   UPDATE eco2026.attempts SET draft=p_payload->'draft' WHERE student_id=s.student_id;
  ELSIF p_action='submit' THEN
-  IF a.chain IS NULL OR n<>6 OR length(trim(coalesce(p_payload->>'essay',''))) NOT BETWEEN 1 AND 12000 THEN
-   PERFORM eco2026.fail(400,'먹이사슬과 여섯 단계 예측을 완료하고 정리하기를 작성해 주세요.');
+  IF a.chain IS NULL OR n<>5 OR length(trim(coalesce(p_payload->>'essay',''))) NOT BETWEEN 1 AND 12000 THEN
+   PERFORM eco2026.fail(400,'먹이사슬과 2~6단계 예측을 완료하고 정리하기를 작성해 주세요.');
   END IF;
   UPDATE eco2026.attempts SET essay=trim(p_payload->>'essay'),submitted_at=clock_timestamp(),draft='{}' WHERE student_id=s.student_id;
  ELSIF p_action<>'start' THEN PERFORM eco2026.fail(400,'지원하지 않는 작업입니다.');

@@ -42,23 +42,35 @@ BEGIN
   UPDATE eco2026.attempts SET case_id=c.id WHERE student_id='99991';
   r:=public.eco_gateway(uid,'99991@cnsa.hs.kr','chain',
    jsonb_build_object('revision',0,'chain',(SELECT jsonb_agg(value->'id' ORDER BY ordinality) FROM jsonb_array_elements(c.solution->'chain') WITH ORDINALITY)));
-  IF jsonb_array_length(r->'frames')<>1 OR r->'question'?'expectedChoice' THEN RAISE EXCEPTION 'Future frame leak'; END IF;
+  IF jsonb_array_length(r->'frames')<>2 OR r->'question'?'expectedChoice'
+     OR (r->>'answered')::int<>0 OR (r->>'observed_step')::int<>1
+     OR (r->'question'->>'step')::int<>2 OR jsonb_array_length(r->'answers')<>0
+     OR r->'frames'->1<>c.solution->'frames'->1 THEN RAISE EXCEPTION 'Given first-stage boundary failed'; END IF;
+  BEGIN
+   PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',1,'choice','stable','reason','제시된 상황을 답안으로 저장하려는 시도'));
+   RAISE EXCEPTION 'Given first stage accepted as student response';
+  EXCEPTION WHEN SQLSTATE 'PT400' THEN NULL; END;
+  BEGIN
+   PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','submit',jsonb_build_object('revision',r->'revision','essay','예측을 건너뛴 제출'));
+   RAISE EXCEPTION 'Skipped all predictions';
+  EXCEPTION WHEN SQLSTATE 'PT400' THEN NULL; END;
   BEGIN
    PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','chain',jsonb_build_object('revision',r->'revision','chain','[]'::jsonb));
    RAISE EXCEPTION 'First chain overwritten';
   EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
   BEGIN
-   PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',2,'choice','stable','reason','future'));
+   PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',3,'choice','stable','reason','future'));
    RAISE EXCEPTION 'Skipped future stage';
   EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
-  FOR i IN 1..6 LOOP
+  FOR i IN 2..6 LOOP
    BEGIN
     PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',i,'choice','stable','reason',' '));
     RAISE EXCEPTION 'Blank reason accepted';
    EXCEPTION WHEN SQLSTATE 'PT400' THEN NULL; END;
    choice:=c.solution->'frames'->i->>'expectedChoice';
    r:=public.eco_gateway(uid,'99991@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',i,'choice',choice,'reason','먹이 관계를 바탕으로 작성한 검증 이유'));
-   IF jsonb_array_length(r->'frames')<>i+1 OR (r->>'answered')::int<>i THEN RAISE EXCEPTION 'Observed frame boundary failed'; END IF;
+   IF jsonb_array_length(r->'frames')<>i+1 OR (r->>'answered')::int<>i-1
+      OR (r->>'observed_step')::int<>i THEN RAISE EXCEPTION 'Observed frame boundary failed'; END IF;
    IF i<6 AND r?'essay_prompt' THEN RAISE EXCEPTION 'Final prompt revealed before completion of inquiry'; END IF;
    IF i=6 AND length(coalesce(r->>'essay_prompt',''))<10 THEN RAISE EXCEPTION 'Final prompt missing after inquiry'; END IF;
    IF i<6 AND (r->'question'->>'step')::int<>i+1 THEN RAISE EXCEPTION 'Question sequence failed'; END IF;
@@ -68,6 +80,7 @@ BEGIN
     RAISE EXCEPTION 'Confirmed reason overwritten';
    EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
   END LOOP;
+  IF EXISTS(SELECT 1 FROM eco2026.answers WHERE student_id='99991' AND step=1) THEN RAISE EXCEPTION 'Fabricated first-stage response found'; END IF;
   r:=public.eco_gateway(uid,'99991@cnsa.hs.kr','submit',jsonb_build_object('revision',r->'revision','essay',CASE WHEN attempts=0 THEN repeat('가',12000) ELSE '환경 변화의 사례와 근거를 연결한 검증 답안' END));
   IF r->>'status'<>'completed' OR r?'case' OR r?'frames' OR r?'answers' THEN RAISE EXCEPTION 'Completed content leakage'; END IF;
   r:=public.eco_gateway(uid,'99991@cnsa.hs.kr','start');
@@ -79,8 +92,9 @@ BEGIN
  r:=public.eco_gateway(uid,'eco-test-teacher@example.test','state');
  IF jsonb_array_length(r->'roster')<>1 OR jsonb_array_length(r->'sections')<>1 THEN RAISE EXCEPTION 'Teacher cohort isolation failed'; END IF;
  r:=public.eco_gateway(uid,'eco-test-teacher@example.test','teacher_export');
- IF r->>'format'<>'cnsa-ecosystem-assessment-v1' OR jsonb_array_length(r->'students')<>1
-    OR jsonb_array_length(r->'answers')<>6 OR jsonb_array_length(r->'cases')<>60 THEN
+ IF r->>'format'<>'cnsa-ecosystem-assessment-v2' OR jsonb_array_length(r->'students')<>1
+    OR jsonb_array_length(r->'answers')<>5 OR jsonb_array_length(r->'cases')<>60
+    OR r->'workflow'->'given_steps'<>'[1]'::jsonb THEN
   RAISE EXCEPTION 'Scoped original export failed';
  END IF;
  BEGIN
@@ -109,4 +123,4 @@ BEGIN
 END;
 $test$;
 ROLLBACK;
-SELECT 'passed' AS result,60 AS scenarios,360 AS predictions,'all fixtures rolled back' AS isolation;
+SELECT 'passed' AS result,60 AS scenarios,60 AS given_first_stages,300 AS predictions,'all fixtures rolled back' AS isolation;

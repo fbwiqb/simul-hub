@@ -122,17 +122,18 @@ function startDemo(data){
  let sample=initial();
  function derive(){
   if(sample.chain){
-   sample.model_chain=data.solution.chain;sample.frames=data.solution.frames.slice(0,sample.answered+1);
-   sample.question=sample.answered<6?{step:sample.answered+1,phase:sample.answered<3?'change':'recovery',
-    target:data.solution.frames[sample.answered+1].targetRole,target_name:data.solution.role_names[data.solution.frames[sample.answered+1].targetRole]}:null;
+   sample.observed_step=sample.answered+1;sample.prediction_total=5;
+   sample.model_chain=data.solution.chain;sample.frames=data.solution.frames.slice(0,sample.answered+2);
+   sample.question=sample.answered<5?{step:sample.answered+2,phase:sample.answered<2?'change':'recovery',
+    target:data.solution.frames[sample.answered+2].targetRole,target_name:data.solution.role_names[data.solution.frames[sample.answered+2].targetRole]}:null;
   }
   return sample;
  }
  const back=()=>{demo=false;dispose();if(state?.role==='teacher')apply(state,'return');void reload();};
  const reset=()=>{workspace?.dispose();sample=initial();mount();};
  const reveal=()=>{
-  sample.chain=data.solution.chain.map(o=>o.id);sample.answered=6;
-  sample.answers=data.solution.frames.slice(1).map((f,i)=>({step:i+1,choice:f.expectedChoice,reason:f.explanation}));
+  sample.chain=data.solution.chain.map(o=>o.id);sample.answered=5;
+  sample.answers=data.solution.frames.slice(2).map((f,i)=>({step:i+2,choice:f.expectedChoice,reason:f.explanation}));
   derive();workspace.update(sample,'answer');workspace.view='explore';workspace.stage=1;workspace.render();
  };
  const send=async(op,payload={})=>{

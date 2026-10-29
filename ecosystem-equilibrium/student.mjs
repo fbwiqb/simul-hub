@@ -1,6 +1,7 @@
 import {el,button,roleNames,directionNames} from './ui.mjs';
 import {pyramidSvg} from './pyramid.mjs';
 const roles=['producer','primary','secondary'];
+const observedStep=state=>state.observed_step??(state.chain?Math.min(6,(state.answered||0)+1):0);
 
 export class StudentWorkspace {
  constructor(container,state,command,options={}){
@@ -10,8 +11,8 @@ export class StudentWorkspace {
  adopt(state,reset=false){
   const changed=this.state?.case?.id!==state.case?.id;
   if(reset||changed){
-   this.view=state.chain?(state.answered===6&&state.draft?.essay?'report':'explore'):'situation';
-   this.stage=state.question?.step||state.answered||0;
+   this.view=state.chain?(state.answered===5&&state.draft?.essay?'report':'explore'):'situation';
+   this.stage=(state.draft?.reason||state.draft?.choice)&&state.question?state.question.step:observedStep(state);
    this.chainDraft=[...(state.chain||state.draft?.chain||[])];
    this.reason=state.draft?.reason||'';this.choice=state.draft?.choice||'';this.essay=state.draft?.essay||'';
    this.draftBaseRevision=state.revision;this.dirty=false;this.draftGeneration=0;
@@ -36,9 +37,9 @@ export class StudentWorkspace {
   if(action&&['answer','chain','reroll'].includes(action)){this.dirty=false;this.draftBaseRevision=state.revision;}
   if(action==='answer'||state.answered>(previous?.answered||0)){
    clearTimeout(this.saveTimer);this.dirty=false;this.draftBaseRevision=state.revision;
-   this.reason='';this.choice='';this.stage=state.answered;this.view='explore';
+   this.reason='';this.choice='';this.stage=observedStep(state);this.view='explore';
   }
-  if(state.chain&&!previous?.chain)this.chainDraft=[...state.chain];
+  if(action==='chain'||(state.chain&&!previous?.chain)){this.chainDraft=[...state.chain];this.stage=1;this.view='explore';}
   this.render();
  }
  syncDraft(state){
@@ -114,8 +115,8 @@ export class StudentWorkspace {
   const article=s.case.article;
   const tabs=el('nav',{class:'tabs','aria-label':'수행평가 활동',role:'tablist'});
   for(const [view,label,disabled] of [
-   ['situation','상황 페이지',false],['explore','탐구 '+(s.answered||0)+'/6',!s.chain],
-   ['report','정리하기',s.answered!==6]]){
+   ['situation','상황 페이지',false],['explore','탐구 '+(s.answered||0)+'/5',!s.chain],
+   ['report','정리하기',s.answered!==5]]){
    const b=button(label,()=>this.chooseView(view),'',disabled);
    b.className='';b.setAttribute('role','tab');b.setAttribute('aria-selected',String(this.view===view));
    b.addEventListener('keydown',event=>{
@@ -194,9 +195,10 @@ export class StudentWorkspace {
  }
  explore(){
   const s=this.state;
-  this.stage=Math.max(0,Math.min(this.stage,s.question?.step??s.answered));
+  const observed=observedStep(s);
+  this.stage=Math.max(0,Math.min(this.stage,s.question?.step??observed));
   const pending=this.stage===s.question?.step;
-  const frame=s.frames[pending?s.answered:this.stage]||s.frames[0];
+  const frame=s.frames[pending?observed:this.stage]||s.frames[0];
   const reference=pending?frame.values:(s.frames[Math.max(0,this.stage-1)]||frame).values;
   const shown=[...frame.values];
   if(pending&&this.choice){
@@ -205,8 +207,9 @@ export class StudentWorkspace {
   }
   const phases=el('div',{class:'phases'});
   const stageButton=(i,label=String(i))=>{
-   const b=button(label,()=>{this.stage=i;this.render();},'',i>s.answered&&i!==s.question?.step);
+   const b=button(label,()=>{this.stage=i;this.render();},'',i>observed&&i!==s.question?.step);
    b.className='stage'+(i===this.stage?' current':'');b.setAttribute('aria-label',i===0?'처음 상태':(i<=3?'변화 ':'회복 ')+i+'단계');
+   if(i===1)b.setAttribute('title','상황에서 주어진 변화');
    if(i===this.stage)b.setAttribute('aria-current','step');return b;
   };
   phases.append(stageButton(0,'처음'));
@@ -218,7 +221,7 @@ export class StudentWorkspace {
    el('p',{class:'help'},'서로 겹쳐 일어날 수 있는 반응을 한 층씩 나누어 살펴봅니다. 회복 가능한 조건을 가정합니다.'),
    phases,this.diagram(shown,pending?s.question.target:null,reference,pending&&!!this.choice),
    el('div',{class:'nav-actions'},button('이전 변화',()=>{this.stage--;this.render();},'',this.stage===0),
-    button('다음 변화',()=>{this.stage++;this.render();},'',this.stage>=(s.question?.step??s.answered))));
+    button('다음 변화',()=>{this.stage++;this.render();},'',this.stage>=(s.question?.step??observed))));
   const work=el('section',{class:'card'});
   if(pending){
    work.append(el('span',{class:'pill'},(s.question.phase==='change'?'변화':'회복')+' '+s.question.step+'단계 예측'),
@@ -241,7 +244,11 @@ export class StudentWorkspace {
     el('div',{class:'actions'},confirm),el('p',{class:'help'},'첫 예측과 이유가 저장된 뒤 모형의 변화를 확인합니다. 확정한 답안은 수정할 수 없습니다.'));
   }else if(this.stage===0){
    work.append(el('h2',{},'처음의 안정된 상태'),el('p',{},frame.explanation),
-    el('div',{class:'actions'},button('다음 변화 예측',()=>{this.stage=1;this.render();},'primary')));
+    el('div',{class:'actions'},button('제시된 1단계 보기',()=>{this.stage=1;this.render();},'primary')));
+  }else if(this.stage===1){
+   work.append(el('span',{class:'pill'},'변화 1단계 · 제시된 상황'),el('h2',{},frame.label),el('p',{},frame.explanation),
+    el('p',{class:'help'},'1단계는 상황에서 주어진 변화입니다. 2단계부터 먹이 관계를 바탕으로 예측하세요.'),
+    el('div',{class:'actions'},button(s.answered?'2단계 보기':'2단계 예측하기',()=>{this.stage=2;this.render();},'primary')));
   }else{
    const answer=s.answers.find(a=>a.step===this.stage),matches=answer.choice===frame.expectedChoice;
    work.append(el('span',{class:'pill'},'확정한 '+this.stage+'단계'),el('h2',{},frame.label),
