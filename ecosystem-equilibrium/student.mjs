@@ -2,11 +2,21 @@ import {el,button,roleNames,directionNames} from './ui.mjs';
 import {pyramidSvg} from './pyramid.mjs';
 const roles=['producer','primary','secondary'];
 const observedStep=state=>state.observed_step??(state.chain?Math.min(6,(state.answered||0)+1):0);
+const backupPrefix='eco2026-unsaved:';
+const sameDraft=(a={},b={})=>JSON.stringify([a.chain||[],a.choice||'',a.reason||'',a.essay||''])===JSON.stringify([b.chain||[],b.choice||'',b.reason||'',b.essay||'']);
+export function clearUnsaved(studentId){
+ try{
+  if(studentId){localStorage.removeItem(backupPrefix+studentId);return;}
+  const keys=[];for(let i=0;i<localStorage.length;i++)keys.push(localStorage.key(i));
+  for(const key of keys)if(key?.startsWith(backupPrefix))localStorage.removeItem(key);
+ }catch{}
+}
 
 export class StudentWorkspace {
  constructor(container,state,command,options={}){
   this.container=container;this.command=command;this.options=options;this.view='situation';this.stage=0;this.busy=false;
   this.adopt(state,true);this.render();
+  if(this.dirty)this.saveTimer=setTimeout(()=>void this.saveDraft(),650);
  }
  adopt(state,reset=false){
   const changed=this.state?.case?.id!==state.case?.id;
@@ -16,6 +26,7 @@ export class StudentWorkspace {
    this.chainDraft=[...(state.chain||state.draft?.chain||[])];
    this.reason=state.draft?.reason||'';this.choice=state.draft?.choice||'';this.essay=state.draft?.essay||'';
    this.draftBaseRevision=state.revision;this.dirty=false;this.draftGeneration=0;
+   this.restoreBackup(state);
   }
   if(state.chain)this.chainDraft=[...state.chain];
   this.state=state;
@@ -28,13 +39,14 @@ export class StudentWorkspace {
   if(action==='draft'){this.draftBaseRevision=state.revision;return;}
   if(action==='conflict'){
    if(this.dirty)this.conflictDraft={reason:this.reason,essay:this.essay};
-   this.syncDraft(state);this.render();return;
+   this.syncDraft(state);this.clearBackup();this.render();return;
   }
   if(!action&&sameActivity){
    if(!this.dirty&&!this.saving&&previous.revision!==state.revision){this.syncDraft(state);this.patchDraft();}
+   else if(this.dirty&&this.saveFailed&&!this.saving){this.saveFailed=false;void this.saveDraft();}
    return;
   }
-  if(action&&['answer','chain','reroll'].includes(action)){this.dirty=false;this.draftBaseRevision=state.revision;}
+  if(action&&['answer','chain','reroll'].includes(action)){this.dirty=false;this.draftBaseRevision=state.revision;this.saveStatus='';this.clearBackup();}
   if(action==='answer'||state.answered>(previous?.answered||0)){
    clearTimeout(this.saveTimer);this.dirty=false;this.draftBaseRevision=state.revision;
    this.reason='';this.choice='';this.stage=observedStep(state);this.view='explore';
@@ -74,9 +86,34 @@ export class StudentWorkspace {
   try{await this.command(action,payload);}
   finally{this.busy=false;if(this.state.status==='active'&&this.container.isConnected)this.render();}
  }
+ backupKey(state=this.state){return this.options?.demo||!state?.student?.id?null:backupPrefix+state.student.id;}
+ writeBackup(){
+  const key=this.backupKey();if(!key)return;
+  try{localStorage.setItem(key,JSON.stringify({case:this.state.case?.id,answered:this.state.answered||0,chained:Boolean(this.state.chain),
+   base:this.draftBaseRevision,draft:{chain:[...this.chainDraft],choice:this.choice,reason:this.reason,essay:this.essay}}));}catch{}
+ }
+ clearBackup(state=this.state){if(this.backupKey(state))clearUnsaved(state.student.id);}
+ restoreBackup(state){
+  const key=this.backupKey(state);if(!key)return;
+  let backup;try{backup=JSON.parse(localStorage.getItem(key)||'null');}catch{}
+  if(!backup?.draft)return;
+  if(backup.case!==state.case?.id||backup.answered!==(state.answered||0)||backup.chained!==Boolean(state.chain)||sameDraft(backup.draft,state.draft)){
+   this.clearBackup(state);return;
+  }
+  if(backup.base!==state.revision){
+   if(backup.draft.reason||backup.draft.essay)this.conflictDraft={reason:backup.draft.reason,essay:backup.draft.essay};
+   return;
+  }
+  if(!state.chain)this.chainDraft=[...(backup.draft.chain||[])];
+  this.reason=backup.draft.reason||'';this.choice=backup.draft.choice||'';this.essay=backup.draft.essay||'';
+  if(state.chain&&state.question&&(this.reason||this.choice))this.stage=state.question.step;
+  if(state.chain&&state.answered===5&&this.essay)this.view='report';
+  this.dirty=true;this.draftGeneration=1;this.saveStatus='이 기기에 보관한 글을 불러왔습니다. 서버에 저장하는 중…';
+ }
+ setStatus(text){this.saveStatus=text;if(this.saved)this.saved.textContent=text;}
  queueDraft(){
-  this.dirty=true;this.draftGeneration++;
-  if(this.saved)this.saved.textContent='저장 중…';
+  this.dirty=true;this.draftGeneration++;this.writeBackup();
+  this.setStatus('저장 중…');
   clearTimeout(this.saveTimer);
   this.saveTimer=setTimeout(()=>void this.saveDraft(),650);
  }
@@ -95,11 +132,15 @@ export class StudentWorkspace {
     if(!result)throw new Error('Draft was not saved');
     if(result.status!=='active')return result;
     this.draftBaseRevision=result.revision;
-    if(this.draftGeneration===generation)this.dirty=false;
-    if(this.saved)this.saved.textContent=this.dirty?'저장 중…':'서버에 임시 저장됨';
+    if(this.draftGeneration===generation){this.dirty=false;this.clearBackup();}
+    this.saveFailed=false;this.setStatus(this.dirty?'저장 중…':'서버에 임시 저장됨');
     if(this.dirty&&!this.disposed)this.saveTimer=setTimeout(()=>void this.saveDraft(),650);
     return result;
-   }catch{if(this.saved)this.saved.textContent='아직 저장되지 않았습니다. 연결 후 다시 입력하거나 확정해 주세요.';return null;}
+   }catch{
+    this.saveFailed=true;
+    this.setStatus(this.backupKey()?'연결이 끊겨 이 기기에 임시 보관했습니다. 연결되면 자동으로 저장합니다. 이 창을 닫지 마세요.':'아직 저장되지 않았습니다. 연결 후 다시 입력하거나 확정해 주세요.');
+    return null;
+   }
    finally{this.saving=false;}
   })();
   return this.inFlight;
@@ -177,7 +218,7 @@ export class StudentWorkspace {
      button('다시 놓기',()=>{this.chainDraft=[];this.render();this.queueDraft();},'quiet',this.busy)),
     el('div',{class:'actions'},button(s.rerolls?'상황 바꾸기 사용 완료':'상황 바꾸기 · 1회',()=>this.send('reroll'),'',!!s.rerolls||this.busy)));
   }
-  this.saved=el('p',{class:'saved','aria-live':'polite'},'');work.append(this.saved);
+  this.saved=el('p',{class:'saved','aria-live':'polite'},this.saveStatus||'');work.append(this.saved);
   return el('div',{class:'two-col'},story,work);
  }
  diagram(values,target=null,reference=values,prediction=false){
@@ -239,7 +280,7 @@ export class StudentWorkspace {
    const confirm=button(this.busy?'저장 중…':'예측 확정하고 변화 확인',()=>this.send('answer',{
     step:s.question.step,choice:this.choice,reason:this.reason}),'primary',!this.choice||!this.reason.trim()||this.busy);
    this.confirmButton=confirm;
-   this.saved=el('p',{class:'saved','aria-live':'polite'},'');
+   this.saved=el('p',{class:'saved','aria-live':'polite'},this.saveStatus||'');
    work.append(choices,el('label',{htmlFor:'prediction-reason'},'먹이 관계를 바탕으로 예측한 이유'),reason,this.saved,this.conflictNotice(),
     el('div',{class:'actions'},confirm),el('p',{class:'help'},'첫 예측과 이유가 저장된 뒤 모형의 변화를 확인합니다. 확정한 답안은 수정할 수 없습니다.'));
   }else if(this.stage===0){
@@ -266,7 +307,7 @@ export class StudentWorkspace {
    onInput:event=>{this.essay=event.target.value;submit.disabled=!this.essay.trim()||this.busy;this.queueDraft();}});
   const submit=button(this.busy?'제출 중…':'수행평가 최종 제출',()=>this.send('submit',{essay:this.essay}),'primary',!this.essay.trim()||this.busy);
   this.submitButton=submit;
-  this.saved=el('p',{class:'saved','aria-live':'polite'},'');
+  this.saved=el('p',{class:'saved','aria-live':'polite'},this.saveStatus||'');
   return el('section',{class:'card essay'},el('p',{class:'eyebrow'},'정리하기 · 자유 서술형'),el('h2',{},s.essay_prompt),
    el('p',{class:'help'},'문항의 요구사항을 모두 다루고, 사례와 근거를 연결하세요.'),
    el('label',{htmlFor:'interpretation'},'나의 설명'),essay,this.saved,this.conflictNotice(),

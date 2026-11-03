@@ -1,5 +1,5 @@
 import {el,button,formatTime} from './ui.mjs';
-import {StudentWorkspace} from './student.mjs';
+import {StudentWorkspace,clearUnsaved} from './student.mjs';
 import {TeacherWorkspace} from './teacher.mjs';
 
 const main=document.querySelector('#main'),identity=document.querySelector('#identity'),noticeBox=document.querySelector('#notice');
@@ -16,10 +16,13 @@ async function api(op,payload){
  const url=new URL('/api/ecosystem',location.origin);url.searchParams.set('op',op);
  if(!write)for(const [key,value] of Object.entries(payload||{}))url.searchParams.set(key,String(value));
  const body=write?JSON.stringify(payload):null;
- const response=await fetch(url,{method:write?'POST':'GET',credentials:'same-origin',cache:'no-store',
-  keepalive:write&&new TextEncoder().encode(body).byteLength<60000,signal:AbortSignal.timeout(25000),
-  ...(write?{headers:{'Content-Type':'application/json'},body}:{})});
- const data=await response.json();
+ let response,data;
+ try{
+  response=await fetch(url,{method:write?'POST':'GET',credentials:'same-origin',cache:'no-store',
+   keepalive:write&&new TextEncoder().encode(body).byteLength<60000,signal:AbortSignal.timeout(25000),
+   ...(write?{headers:{'Content-Type':'application/json'},body}:{})});
+  data=await response.json();
+ }catch{throw new Error('인터넷 연결이 불안정합니다. 연결되면 자동으로 다시 시도합니다.');}
  if(epoch!==authEpoch){const error=new Error('로그인 상태가 변경되었습니다.');error.status=401;throw error;}
  if(!response.ok){const error=new Error(data.error||'연결을 확인하고 다시 시도해 주세요.');error.status=response.status;throw error;}
  return data;
@@ -77,6 +80,7 @@ function apply(next,action){
   clock();return;
  }
  if(next.status==='completed'){
+  clearUnsaved(next.student.id);
   waiting('제출이 완료되었습니다.','최종 제출한 답안은 수정하거나 다시 열 수 없습니다.',
    el('p',{class:'help'},'접수 시각 '+formatTime(next.receipt.submitted_at)+' · 접수 번호 '+next.receipt.id.slice(0,8)));return;
  }
@@ -110,7 +114,7 @@ function command(op,payload={}){
  serial=job;return job;
 }
 async function logout(){
- authEpoch++;demo=false;dispose();seenTime=0;state=null;
+ authEpoch++;demo=false;dispose();seenTime=0;state=null;clearUnsaved();
  try{await api('logout',{});}catch(error){notice(error.message,true);}
  login();
 }
@@ -156,6 +160,7 @@ document.addEventListener('visibilitychange',()=>{
 });
 window.addEventListener('pageshow',event=>{if(event.persisted){dispose();main.replaceChildren(el('div',{class:'waiting'},'응시 상태를 다시 확인합니다.'));void reload();}});
 window.addEventListener('online',()=>void reload());
+window.addEventListener('beforeunload',event=>{if(mode==='student'&&workspace?.dirty){event.preventDefault();event.returnValue='';}});
 setInterval(()=>{if(!document.hidden&&!demo)void reload();},6000);
 setInterval(clock,1000);
 void reload();
