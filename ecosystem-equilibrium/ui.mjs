@@ -1,5 +1,5 @@
 export const roleNames={producer:'생산자 자원량',primary:'1차 소비자',secondary:'2차 소비자'};
-export const directionNames={increase:'증가',decrease:'감소',stable:'유지'};
+export const directionNames={increase:'증가',decrease:'감소'};
 export function el(tag,attrs={},...children){
  const node=document.createElement(tag);
  for(const [key,value] of Object.entries(attrs)){

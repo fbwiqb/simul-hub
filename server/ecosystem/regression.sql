@@ -47,7 +47,7 @@ BEGIN
      OR (r->'question'->>'step')::int<>2 OR jsonb_array_length(r->'answers')<>0
      OR r->'frames'->1<>c.solution->'frames'->1 THEN RAISE EXCEPTION 'Given first-stage boundary failed'; END IF;
   BEGIN
-   PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',1,'choice','stable','reason','제시된 상황을 답안으로 저장하려는 시도'));
+   PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',1,'choice','decrease','reason','제시된 상황을 답안으로 저장하려는 시도'));
    RAISE EXCEPTION 'Given first stage accepted as student response';
   EXCEPTION WHEN SQLSTATE 'PT400' THEN NULL; END;
   BEGIN
@@ -59,20 +59,18 @@ BEGIN
    RAISE EXCEPTION 'First chain overwritten';
   EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
   BEGIN
-   PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',3,'choice','stable','reason','future'));
+   PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',3,'choice','decrease','reason','future'));
    RAISE EXCEPTION 'Skipped future stage';
   EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
   FOR i IN 2..6 LOOP
    BEGIN
-    PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',i,'choice','stable','reason',' '));
+    PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',i,'choice','decrease','reason',' '));
     RAISE EXCEPTION 'Blank reason accepted';
    EXCEPTION WHEN SQLSTATE 'PT400' THEN NULL; END;
    choice:=c.solution->'frames'->i->>'expectedChoice';
    r:=public.eco_gateway(uid,'99991@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',i,'choice',choice,'reason','먹이 관계를 바탕으로 작성한 검증 이유'));
    IF jsonb_array_length(r->'frames')<>i+1 OR (r->>'answered')::int<>i-1
       OR (r->>'observed_step')::int<>i THEN RAISE EXCEPTION 'Observed frame boundary failed'; END IF;
-   IF i<6 AND r?'essay_prompt' THEN RAISE EXCEPTION 'Final prompt revealed before completion of inquiry'; END IF;
-   IF i=6 AND length(coalesce(r->>'essay_prompt',''))<10 THEN RAISE EXCEPTION 'Final prompt missing after inquiry'; END IF;
    IF i<6 AND (r->'question'->>'step')::int<>i+1 THEN RAISE EXCEPTION 'Question sequence failed'; END IF;
    IF (c.solution->'frames'->i->>'phase')<>(CASE WHEN i<=3 THEN 'change' ELSE 'recovery' END) THEN RAISE EXCEPTION 'Phase contract failed'; END IF;
    BEGIN
@@ -122,5 +120,55 @@ BEGIN
  EXCEPTION WHEN SQLSTATE 'PT403' THEN NULL; END;
 END;
 $test$;
+DO $explore$
+DECLARE uid uuid:='00000000-0000-4000-8000-000000000001'; r jsonb; ids jsonb; i integer; t text:='eco-test-teacher@example.test';
+BEGIN
+ PERFORM set_config('request.jwt.claims','{"role":"service_role"}',true);
+ INSERT INTO eco2026.students(student_id,email,name,section_id) VALUES
+  ('99993','99993@cnsa.hs.kr','검증 학생 C',99992),('99994','99994@cnsa.hs.kr','검증 학생 D',99992);
+ UPDATE eco2026.teachers SET section_ids='{99991,99992}' WHERE email=t;
+ PERFORM public.eco_gateway(uid,t,'teacher_makeup','{"student_id":"99993","minutes":20,"reason":"결시"}');
+ r:=public.eco_gateway('00000000-0000-4000-8000-000000000003','99993@cnsa.hs.kr','state');
+ IF r->>'status'<>'ready' THEN RAISE EXCEPTION 'Make-up window did not open'; END IF;
+ r:=public.eco_gateway('00000000-0000-4000-8000-000000000004','99994@cnsa.hs.kr','state');
+ IF r->>'status'<>'waiting' THEN RAISE EXCEPTION 'Make-up window leaked to classmate'; END IF;
+ BEGIN
+  PERFORM public.eco_gateway(uid,t,'teacher_makeup','{"student_id":"99993","minutes":0,"reason":"결시"}');
+  RAISE EXCEPTION 'Zero make-up accepted';
+ EXCEPTION WHEN SQLSTATE 'PT400' THEN NULL; END;
+ BEGIN
+  PERFORM public.eco_gateway(uid,t,'teacher_window','{"section":99992,"start_now":true,"minutes":0}');
+  RAISE EXCEPTION 'Zero window accepted';
+ EXCEPTION WHEN SQLSTATE 'PT400' THEN NULL; END;
+ PERFORM public.eco_gateway(uid,t,'teacher_window','{"section":99992,"start_now":true,"minutes":20}');
+ r:=public.eco_gateway('00000000-0000-4000-8000-000000000004','99994@cnsa.hs.kr','state');
+ IF r->>'status'<>'ready' OR (r->>'deadline')::timestamptz>clock_timestamp()+interval '21 minutes' THEN RAISE EXCEPTION 'Minutes window wrong'; END IF;
+ r:=public.eco_gateway('00000000-0000-4000-8000-000000000003','99993@cnsa.hs.kr','start');
+ SELECT jsonb_agg(o->'id') INTO ids FROM jsonb_array_elements(r->'case'->'organisms') o;
+ r:=public.eco_gateway('00000000-0000-4000-8000-000000000003','99993@cnsa.hs.kr','chain',jsonb_build_object('revision',r->'revision','chain',ids));
+ IF NOT r?'question' OR r?'essay_prompt' THEN RAISE EXCEPTION 'Question state wrong'; END IF;
+ BEGIN
+  PERFORM public.eco_gateway('00000000-0000-4000-8000-000000000003','99993@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',2,'choice','stable','reason','유지'));
+  RAISE EXCEPTION 'Stable choice accepted';
+ EXCEPTION WHEN SQLSTATE 'PT400' THEN NULL; END;
+ BEGIN
+  PERFORM public.eco_gateway('00000000-0000-4000-8000-000000000003','99993@cnsa.hs.kr','submit',jsonb_build_object('revision',r->'revision'));
+  RAISE EXCEPTION 'Submit before predictions accepted';
+ EXCEPTION WHEN SQLSTATE 'PT400' THEN NULL; END;
+ FOR i IN 2..6 LOOP
+  r:=public.eco_gateway('00000000-0000-4000-8000-000000000003','99993@cnsa.hs.kr','answer',jsonb_build_object('revision',r->'revision','step',i,'choice','increase','reason','이유'));
+ END LOOP;
+ IF r?'essay_prompt' THEN RAISE EXCEPTION 'Essay prompt still sent'; END IF;
+ r:=public.eco_gateway(uid,t,'teacher_makeup','{"student_id":"99993","minutes":20,"reason":"재확인"}');
+ r:=public.eco_gateway('00000000-0000-4000-8000-000000000003','99993@cnsa.hs.kr','state');
+ IF (r->>'answered')::integer<>5 THEN RAISE EXCEPTION 'Make-up lost answers'; END IF;
+ r:=public.eco_gateway('00000000-0000-4000-8000-000000000003','99993@cnsa.hs.kr','submit',jsonb_build_object('revision',r->'revision'));
+ IF r->>'status'<>'completed' THEN RAISE EXCEPTION 'Submit without essay failed'; END IF;
+ BEGIN
+  PERFORM public.eco_gateway(uid,t,'teacher_makeup','{"student_id":"99993","minutes":20,"reason":"재응시"}');
+  RAISE EXCEPTION 'Make-up reopened a submitted attempt';
+ EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
+END;
+$explore$;
 ROLLBACK;
 SELECT 'passed' AS result,60 AS scenarios,60 AS given_first_stages,300 AS predictions,'all fixtures rolled back' AS isolation;

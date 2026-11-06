@@ -33,7 +33,7 @@ function login(message){
  const link=el('a',{class:'btn primary',href:'/api/ecosystem?op=login'},'구글 계정으로 로그인');
  main.replaceChildren(el('section',{class:'login'},el('p',{class:'eyebrow'},'2026학년도 2학기 · 통합과학2 수행평가'),
   el('h2',{},'먹이 관계로 연결된 생태계,\n변화와 회복을 예측해 봅시다.'),
-  el('div',{class:'steps'},['상황 읽고 먹이사슬 작성','변화·회복 예측','정리하기'].map(x=>el('span',{},x))),
+  el('div',{class:'steps'},['상황 읽고 먹이사슬 작성','변화·회복 예측'].map(x=>el('span',{},x))),
   el('p',{},'학생은 학교 구글 계정으로 로그인하세요. 담당 분반의 응시 시간이 열리면 시작할 수 있습니다.'),
   el('p',{class:'help'},'승인된 교사 계정은 같은 버튼으로 교사용 화면에 들어갑니다.'),
   message?el('p',{role:'alert'},message):null,el('div',{class:'actions'},link)));
@@ -81,7 +81,7 @@ function apply(next,action){
  }
  if(next.status==='completed'){
   clearUnsaved(next.student.id);
-  waiting('제출이 완료되었습니다.','최종 제출한 답안은 수정하거나 다시 열 수 없습니다.',
+  waiting('제출이 완료되었습니다.','최종 제출한 답안은 수정하거나 다시 열 수 없습니다. 정리하기는 리로스쿨에서 합니다.',
    el('p',{class:'help'},'접수 시각 '+formatTime(next.receipt.submitted_at)+' · 접수 번호 '+next.receipt.id.slice(0,8)));return;
  }
  if(next.status==='ready'){

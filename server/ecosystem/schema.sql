@@ -41,7 +41,7 @@ CREATE TABLE eco2026.attempts (
 CREATE TABLE eco2026.answers (
  student_id text NOT NULL REFERENCES eco2026.attempts,
  step integer NOT NULL CHECK(step BETWEEN 2 AND 6),
- choice text NOT NULL CHECK(choice IN('increase','decrease','stable')),
+ choice text NOT NULL CHECK(choice IN('increase','decrease')),
  reason text NOT NULL CHECK(length(trim(reason)) BETWEEN 1 AND 4000),
  confirmed_at timestamptz NOT NULL DEFAULT clock_timestamp(),
  PRIMARY KEY(student_id,step)
@@ -51,6 +51,7 @@ CREATE TABLE eco2026.audit (
  actor text NOT NULL, action text NOT NULL, student_id text,
  detail jsonb NOT NULL DEFAULT '{}', at timestamptz NOT NULL DEFAULT clock_timestamp()
 );
+ALTER TABLE eco2026.windows ADD COLUMN student_id text REFERENCES eco2026.students(student_id);
 CREATE INDEX eco_windows_section_time ON eco2026.windows(section_id,opens_at,closes_at);
 CREATE INDEX eco_audit_student ON eco2026.audit(student_id,at);
 
@@ -103,14 +104,12 @@ BEGIN
     target:=c.solution->'frames'->(n+2);
     result:=result||jsonb_build_object('question',jsonb_build_object('step',n+2,'phase',CASE WHEN n<2 THEN 'change' ELSE 'recovery' END,
        'target',target->>'targetRole','target_name',c.solution->'role_names'->>(target->>'targetRole')));
-   ELSE
-    result:=result||jsonb_build_object('essay_prompt',(SELECT value->>'text' FROM eco2026.settings WHERE key='essay_prompt'));
    END IF;
   END IF;
   RETURN result;
  END IF;
  SELECT * INTO w FROM eco2026.windows
- WHERE section_id=s.section_id AND NOT closed AND opens_at<=clock_timestamp() AND closes_at>clock_timestamp()
+ WHERE section_id=s.section_id AND (student_id IS NULL OR student_id=s.student_id) AND NOT closed AND opens_at<=clock_timestamp() AND closes_at>clock_timestamp()
  ORDER BY opens_at DESC LIMIT 1;
  IF FOUND THEN RETURN result||jsonb_build_object('status','ready','deadline',w.closes_at); END IF;
  RETURN result||jsonb_build_object('status','waiting','message','아직 이 분반의 수행평가 시간이 열리지 않았습니다.');
@@ -175,9 +174,9 @@ BEGIN
    IF NOT t.admin AND NOT section=ANY(t.section_ids) THEN PERFORM eco2026.fail(403,'담당 분반만 열 수 있습니다.'); END IF;
    PERFORM pg_advisory_xact_lock(section::bigint+202610290000);
    start_time:=CASE WHEN coalesce((p_payload->>'start_now')::boolean,false) THEN clock_timestamp() ELSE (p_payload->>'opens_at')::timestamptz END;
-   end_time:=(p_payload->>'closes_at')::timestamptz;
+   end_time:=coalesce((p_payload->>'closes_at')::timestamptz,start_time+make_interval(mins=>least(greatest(coalesce((p_payload->>'minutes')::integer,0),0),180)));
    IF start_time IS NULL OR end_time IS NULL OR end_time<=start_time THEN PERFORM eco2026.fail(400,'시작·종료 시간을 확인해 주세요.'); END IF;
-   IF EXISTS(SELECT 1 FROM eco2026.windows WHERE section_id=section AND NOT closed AND opens_at<end_time AND closes_at>start_time) THEN
+   IF EXISTS(SELECT 1 FROM eco2026.windows WHERE section_id=section AND student_id IS NULL AND NOT closed AND opens_at<end_time AND closes_at>start_time) THEN
     PERFORM eco2026.fail(409,'겹치는 응시 시간이 있습니다. 기존 시간을 먼저 종료해 주세요.');
    END IF;
    INSERT INTO eco2026.windows(section_id,opens_at,closes_at,created_by) VALUES(section,start_time,end_time,p_email);
@@ -185,6 +184,18 @@ BEGIN
    SELECT * INTO w FROM eco2026.windows WHERE id=(p_payload->>'window_id')::uuid FOR UPDATE;
    IF NOT FOUND OR (NOT t.admin AND NOT w.section_id=ANY(t.section_ids)) THEN PERFORM eco2026.fail(403,'담당 분반의 시간만 종료할 수 있습니다.'); END IF;
    UPDATE eco2026.windows SET closed=true WHERE id=w.id;
+  ELSIF p_action='teacher_makeup' THEN
+   SELECT * INTO s FROM eco2026.students WHERE student_id=p_payload->>'student_id';
+   IF NOT FOUND OR (NOT t.admin AND NOT s.section_id=ANY(t.section_ids)) THEN PERFORM eco2026.fail(403,'담당 학생만 변경할 수 있습니다.'); END IF;
+   PERFORM pg_advisory_xact_lock(hashtextextended(s.email,0));
+   SELECT * INTO a FROM eco2026.attempts WHERE student_id=s.student_id FOR UPDATE;
+   IF FOUND AND a.submitted_at IS NOT NULL THEN PERFORM eco2026.fail(409,'제출 완료 답안은 다시 열 수 없습니다.'); END IF;
+   IF coalesce((p_payload->>'minutes')::integer,0) NOT BETWEEN 1 AND 180 THEN PERFORM eco2026.fail(400,'응시 시간(분)을 확인해 주세요.'); END IF;
+   IF length(trim(coalesce(p_payload->>'reason','')))<2 THEN PERFORM eco2026.fail(400,'보충 사유를 기록해 주세요.'); END IF;
+   start_time:=clock_timestamp();end_time:=start_time+make_interval(mins=>(p_payload->>'minutes')::integer);
+   INSERT INTO eco2026.windows(section_id,student_id,opens_at,closes_at,created_by) VALUES(s.section_id,s.student_id,start_time,end_time,p_email) RETURNING * INTO w;
+   UPDATE eco2026.attempts SET window_id=w.id,extension_until=NULL,revision=revision+1,updated_at=clock_timestamp() WHERE student_id=s.student_id;
+   INSERT INTO eco2026.audit(actor,action,student_id,detail) VALUES(p_email,p_action,s.student_id,jsonb_build_object('minutes',p_payload->'minutes','reason',trim(p_payload->>'reason')));
   ELSIF p_action='teacher_extend' THEN
    SELECT * INTO s FROM eco2026.students WHERE student_id=p_payload->>'student_id';
    IF NOT FOUND OR (NOT t.admin AND NOT s.section_id=ANY(t.section_ids)) THEN PERFORM eco2026.fail(403,'담당 학생만 변경할 수 있습니다.'); END IF;
@@ -194,7 +205,7 @@ BEGIN
    end_time:=(p_payload->>'until')::timestamptz;
    IF end_time IS NULL OR end_time<=clock_timestamp() THEN PERFORM eco2026.fail(400,'연장 종료 시간을 확인해 주세요.'); END IF;
    IF length(trim(coalesce(p_payload->>'reason','')))<2 THEN PERFORM eco2026.fail(400,'연장 사유를 기록해 주세요.'); END IF;
-   SELECT * INTO w FROM eco2026.windows WHERE section_id=s.section_id AND NOT closed
+   SELECT * INTO w FROM eco2026.windows WHERE section_id=s.section_id AND student_id IS NULL AND NOT closed
     AND opens_at<=clock_timestamp() AND closes_at>=end_time ORDER BY opens_at DESC LIMIT 1;
    IF NOT FOUND THEN PERFORM eco2026.fail(409,'먼저 해당 분반에 연장 시간을 열어 주세요.'); END IF;
    UPDATE eco2026.attempts SET window_id=w.id,extension_until=end_time,revision=revision+1,updated_at=clock_timestamp() WHERE student_id=s.student_id;
@@ -236,7 +247,7 @@ BEGIN
  IF p_action='state' THEN RETURN eco2026.payload(s.student_id); END IF;
  SELECT * INTO a FROM eco2026.attempts WHERE student_id=s.student_id FOR UPDATE;
  IF p_action='start' AND NOT FOUND THEN
-  SELECT * INTO w FROM eco2026.windows WHERE section_id=s.section_id AND NOT closed
+  SELECT * INTO w FROM eco2026.windows WHERE section_id=s.section_id AND (student_id IS NULL OR student_id=s.student_id) AND NOT closed
    AND opens_at<=clock_timestamp() AND closes_at>clock_timestamp() ORDER BY opens_at DESC LIMIT 1 FOR SHARE;
   IF NOT FOUND THEN PERFORM eco2026.fail(403,'지금은 응시 시간이 아닙니다.'); END IF;
   SELECT id INTO chosen FROM eco2026.cases ORDER BY random() LIMIT 1;
@@ -284,7 +295,7 @@ BEGIN
   UPDATE eco2026.attempts SET chain=p_payload->'chain',chain_at=clock_timestamp(),draft='{}' WHERE student_id=s.student_id;
  ELSIF p_action='answer' THEN
   IF a.chain IS NULL OR (p_payload->>'step')::integer<>n+2 OR n>=5 THEN PERFORM eco2026.fail(409,'현재 단계의 예측만 확정할 수 있습니다.'); END IF;
-  IF coalesce(p_payload->>'choice','') NOT IN('increase','decrease','stable')
+  IF coalesce(p_payload->>'choice','') NOT IN('increase','decrease')
      OR length(trim(coalesce(p_payload->>'reason',''))) NOT BETWEEN 1 AND 4000 THEN
    PERFORM eco2026.fail(400,'증감 방향을 선택하고 먹이 관계를 바탕으로 이유를 써 주세요.');
   END IF;
@@ -294,10 +305,10 @@ BEGIN
   IF jsonb_typeof(p_payload->'draft')<>'object' OR octet_length((p_payload->'draft')::text)>98304 THEN PERFORM eco2026.fail(400,'저장할 내용을 확인해 주세요.'); END IF;
   UPDATE eco2026.attempts SET draft=p_payload->'draft' WHERE student_id=s.student_id;
  ELSIF p_action='submit' THEN
-  IF a.chain IS NULL OR n<>5 OR length(trim(coalesce(p_payload->>'essay',''))) NOT BETWEEN 1 AND 12000 THEN
-   PERFORM eco2026.fail(400,'먹이사슬과 2~6단계 예측을 완료하고 정리하기를 작성해 주세요.');
+  IF a.chain IS NULL OR n<>5 THEN
+   PERFORM eco2026.fail(400,'먹이사슬과 2~6단계 예측을 완료해 주세요.');
   END IF;
-  UPDATE eco2026.attempts SET essay=trim(p_payload->>'essay'),submitted_at=clock_timestamp(),draft='{}' WHERE student_id=s.student_id;
+  UPDATE eco2026.attempts SET submitted_at=clock_timestamp(),draft='{}' WHERE student_id=s.student_id;
  ELSIF p_action<>'start' THEN PERFORM eco2026.fail(400,'지원하지 않는 작업입니다.');
  END IF;
  UPDATE eco2026.attempts SET revision=revision+1,updated_at=clock_timestamp() WHERE student_id=s.student_id;

@@ -3,6 +3,14 @@ const kst=value=>value?new Date(value+'+09:00').toISOString():null;
 const table=(headers,rows)=>el('table',{},el('thead',{},el('tr',{},headers.map(h=>el('th',{},h)))),
  el('tbody',{},rows.map(cells=>el('tr',{},cells.map(c=>el('td',{},c))))));
 
+export function progressLabel(x,closed){
+ if(x.submitted_at)return '제출 완료';
+ if(!x.started_at)return '미응시';
+ if(!closed)return '진행 중 · 예측 '+x.answered+'/5';
+ if(x.answered===5)return '예측 완료 · 미제출';
+ return '미완료 · '+(x.chain_confirmed?'예측 '+x.answered+'/5':'먹이사슬 미확정');
+}
+
 export class TeacherWorkspace{
  constructor(container,state,api,command,options){
   this.container=container;this.state=state;this.api=api;this.command=command;this.options=options;this.filter='all';this.render();
@@ -23,15 +31,15 @@ export class TeacherWorkspace{
   this.windowsBox=el('div',{class:'windows'});
   const section=el('select',{'aria-label':'응시 시간을 열 분반'},s.sections.map(x=>el('option',{value:x.id},x.label+' · '+x.teacher_name)));
   const opens=el('input',{type:'datetime-local',required:true,'aria-label':'시작 시간'});
-  const closes=el('input',{type:'datetime-local',required:true,'aria-label':'종료 시간'});
+  const minutes=el('input',{type:'number',min:1,max:180,value:20,required:true,'aria-label':'응시 시간(분)'});
   const open=async startNow=>{
-   if(!closes.value||(!startNow&&!opens.value)){this.options.notice('시작·종료 시간을 입력해 주세요.',true);return;}
-   await this.command('teacher_window',{section:Number(section.value),start_now:startNow,opens_at:kst(opens.value),closes_at:kst(closes.value)});
+   if(!Number(minutes.value)||(!startNow&&!opens.value)){this.options.notice('시작 시간과 응시 시간(분)을 입력해 주세요.',true);return;}
+   await this.command('teacher_window',{section:Number(section.value),start_now:startNow,opens_at:kst(opens.value),minutes:Number(minutes.value)});
   };
   const scheduling=el('section',{class:'card'},el('h2',{},'분반별 응시 시간'),
-   field('분반',section),el('div',{class:'form-row'},field('시작 · 한국 시간',opens),field('종료 · 한국 시간',closes)),
+   field('분반',section),el('div',{class:'form-row'},field('시작 · 한국 시간',opens),field('응시 시간(분)',minutes)),
    el('div',{class:'actions'},button('예약 시간 열기',()=>open(false),'primary'),button('지금 시작하기',()=>open(true))),
-   el('p',{class:'help'},'완료한 학생은 시간을 다시 열어도 재응시할 수 없습니다. 시간 연장은 학생별로 사유를 남겨 허용합니다.'),
+   el('p',{class:'help'},'제출한 학생은 다시 응시할 수 없습니다. 결시나 기기 고장은 진행 현황의 보충 열기로 그 학생만 다시 엽니다.'),
    this.windowsBox);
   const demoSelect=el('select',{'aria-label':'교사용 데모 상황'},s.cases.map(c=>el('option',{value:c.id},c.title)));
   const demo=el('section',{class:'card'},el('h2',{},'전체 상황 · 데모'),
@@ -51,14 +59,27 @@ export class TeacherWorkspace{
   this.statBox.replaceChildren(...[['대상',students.length],['미응시',students.length-started-done],['진행·시간 종료',started],['제출 완료',done]].map(([name,n])=>el('div',{class:'stat'},name,el('b',{},n))));
   this.tableBox.replaceChildren(table(['분반','학번','이름','진행','마지막 저장','기록'],students.map(x=>{
    const closed=x.started_at&&!x.submitted_at&&(x.window_closed||new Date(x.deadline)<=new Date(s.server_time));
-   const status=x.submitted_at?'제출 완료':!x.started_at?'미응시':(closed?'시간 종료 · ':'')+(x.chain_confirmed?'먹이사슬 확정 · ':'')+'예측 '+x.answered+'/5';
+   const status=progressLabel(x,closed);
    return [x.section+'팩',x.id,el('span',{},x.name,x.note?el('small',{class:'help'},' · 명부 확인'):null),status,formatTime(x.updated_at),
-    button('답안 보기',()=>this.record(x.id),'',!x.started_at)];
+    el('div',{class:'actions'},button('답안 보기',()=>this.record(x.id),'',!x.started_at),
+     x.submitted_at?null:button('보충 열기',()=>this.makeup(x)))];
   })));
   this.windowsBox.replaceChildren(...s.windows.map(w=>el('div',{class:'window-item'},
-   el('span',{},w.section_id+'팩 · '+formatTime(w.opens_at)+' ~ '+formatTime(w.closes_at),
+   el('span',{},w.section_id+'팩 · '+(w.student_id?w.student_id+' 보충 · ':'')+formatTime(w.opens_at)+' ~ '+formatTime(w.closes_at),
     el('small',{class:'help'},w.closed?' · 종료 처리됨':new Date(w.closes_at)<=new Date(s.server_time)?' · 시간 종료':' · 예약/진행')),
    button('종료',()=>this.command('teacher_close',{window_id:w.id}),'danger',w.closed||new Date(w.closes_at)<=new Date(s.server_time)))));
+ }
+ makeup(x){
+  const dialog=el('dialog',{class:'record','aria-label':x.name+' 보충 열기'});
+  dialog.addEventListener('close',()=>dialog.remove());
+  const minutes=el('input',{type:'number',min:1,max:180,value:20,required:true});
+  const reason=el('input',{required:true,minLength:2,placeholder:'결시, 기기 고장 등'});
+  dialog.append(el('div',{class:'record-head'},el('h2',{},x.section+'팩 · '+x.id+' '+x.name+' 보충'),button('닫기',()=>dialog.close())),
+   el('p',{class:'help'},'지금부터 이 학생만 응시할 수 있습니다. 확정한 답은 유지되고 못 한 단계부터 이어서 합니다.'),
+   el('form',{onSubmit:async event=>{event.preventDefault();await this.command('teacher_makeup',{student_id:x.id,minutes:Number(minutes.value),reason:reason.value});dialog.close();}},
+    el('div',{class:'form-row'},field('응시 시간(분)',minutes),field('사유',reason)),
+    el('button',{class:'btn primary',type:'submit'},'이 학생만 열기')));
+  document.body.append(dialog);dialog.showModal();
  }
  teacherApproval(){
   const s=this.state;
@@ -97,15 +118,8 @@ export class TeacherWorkspace{
     el('pre',{},answer.reason),el('p',{class:'help'},'모형: '+directionNames[frame.expectedChoice]+' · '+frame.explanation),
     el('p',{class:'help'},'확정 시각 '+formatTime(answer.confirmed_at)));
   }
-  dialog.append(el('h3',{},this.state.essay_prompt),el('pre',{},a.essay||a.draft?.essay||'미작성'));
   if(!a.submitted_at){
    if(a.draft?.reason)dialog.append(el('h3',{},'작성 중인 이유 · 미확정'),el('pre',{},a.draft.reason));
-   const until=el('input',{type:'datetime-local',required:true,'aria-label':'이 학생의 연장 종료 시간'});
-   const reason=el('input',{required:true,minLength:2,placeholder:'기기 장애 등 연장 사유','aria-label':'연장 사유'});
-   dialog.append(el('div',{class:'nonprint'},el('h3',{},'이 학생의 응시 시간 연장'),el('p',{class:'help'},'먼저 분반에 해당 시간을 열어 주세요. 확정한 답안은 유지됩니다.'),
-    el('form',{onSubmit:async event=>{event.preventDefault();await this.command('teacher_extend',{student_id:studentId,until:kst(until.value),reason:reason.value});close();}},
-     el('div',{class:'form-row'},field('연장 종료 · 한국 시간',until),field('사유',reason)),
-     el('button',{class:'btn',type:'submit'},'이 학생만 연장 허용'))));
   }
   dialog.append(el('div',{class:'actions'},button('인쇄 / PDF로 저장',()=>window.print(),'quiet')));
   document.body.append(dialog);dialog.showModal();
@@ -121,14 +135,14 @@ export class TeacherWorkspace{
   }
   const cases=new Map(data.cases.map(c=>[c.id,c]));
   const attempts=new Map((data.attempts||[]).map(a=>[a.student_id,a]));
-  const headers=['분반','학번','이름','상황','먹이사슬 첫 답안','1단계 제시 상황',...Array.from({length:5},(_,i)=>[(i+2)+'단계 선택',(i+2)+'단계 이유',(i+2)+'단계 확정시각']).flat(),'정리하기','상태','최종 제출시각'];
+  const headers=['분반','학번','이름','상황','먹이사슬 첫 답안','1단계 제시 상황',...Array.from({length:5},(_,i)=>[(i+2)+'단계 선택',(i+2)+'단계 이유',(i+2)+'단계 확정시각']).flat(),'상태','최종 제출시각'];
   const rows=(data.students||[]).map(s=>{
    const a=attempts.get(s.student_id),c=a?cases.get(a.case_id):null;
    const labels=new Map((c?.public_data.organisms||[]).map(o=>[o.id,o.label]));
    const answers=(data.answers||[]).filter(x=>x.student_id===s.student_id);
    return [s.section_id,s.student_id,s.name,c?.title||'',a?.chain?.map(id=>labels.get(id)||id).join(' → ')||'',c?.public_data.article.event||'',
     ...Array.from({length:5},(_,i)=>{const r=answers.find(x=>x.step===i+2);return[r?directionNames[r.choice]:'',r?.reason||'',r?.confirmed_at||''];}).flat(),
-    a?.essay||a?.draft?.essay||'',a?.submitted_at?'제출 완료':a?'미제출':'미응시',a?.submitted_at||''];
+    progressLabel({submitted_at:a?.submitted_at,started_at:a?.started_at,answered:answers.length,chain_confirmed:!!a?.chain},true),a?.submitted_at||''];
   });
   download('\ufeff'+[headers,...rows].map(row=>row.map(csvCell).join(',')).join('\r\n'),'통합과학2_생태계_채점자료_'+now+'.csv','text/csv;charset=utf-8');
  }
