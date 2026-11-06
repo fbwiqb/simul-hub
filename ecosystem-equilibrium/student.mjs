@@ -281,7 +281,7 @@ export class StudentWorkspace {
     el('strong',{},roleNames[role]),el('small',{},names[role])));
   }
   box.append(el('div',{class:'pyramid-layout'},labels,pyramidSvg(values,{reference,target,prediction})),
-   el('figcaption',{class:'help'},prediction?'색 면: 내 예측 · 점선: 직전 단계':'색 면: 확인한 상태 · 변한 층의 점선: 직전 단계'),
+   el('figcaption',{class:'help'},prediction?'색 면: 내 예측 · 점선: 직전 단계':target?'점선: 직전 단계. 이 층이 점선보다 늘어날지 줄어들지 고르세요.':'색 면: 확인한 상태 · 변한 층의 점선: 직전 단계'),
    el('p',{class:'help'},'층의 폭은 증가와 감소 방향만 나타냅니다. 층끼리 양을 비교하는 그림이 아닙니다.'));
   return box;
  }

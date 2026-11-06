@@ -19,11 +19,11 @@ export function pyramidSvg(values,{reference=values,target=null,prediction=false
   const group=svgElement('g',{'data-role':roles[i]});
   const layer=svgElement('polygon',{class:'pyramid-layer'+(target===roles[i]?' target':'')+(onLayer?' tappable':''),
    'data-role':roles[i],points:pyramidPoints(i,values[i]),fill:['#b6ce70','#80bdc8','#e8a992'][i],
-   stroke:target===roles[i]?'#297e83':'#ffffff','stroke-width':target===roles[i]?3:2,
+   stroke:target===roles[i]&&prediction?'#297e83':'#ffffff','stroke-width':target===roles[i]&&prediction?3:2,
    'fill-opacity':!filled(i)?0.25:prediction&&target===roles[i]?0.78:1,'stroke-linejoin':'round'});
   if(onLayer)layer.addEventListener('click',()=>onLayer(i));
   group.append(layer);
-  if(reference[i]!==values[i])group.append(svgElement('polygon',{class:'pyramid-reference','data-role':roles[i],
+  if(reference[i]!==values[i]||target===roles[i])group.append(svgElement('polygon',{class:'pyramid-reference','data-role':roles[i],
    points:pyramidPoints(i,reference[i]),fill:'none',stroke:'#526b77','stroke-width':1.8,'stroke-dasharray':'6 5'}));
   svg.append(group);
  }
