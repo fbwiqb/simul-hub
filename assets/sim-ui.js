@@ -1,6 +1,7 @@
 (function (global) {
   var CNSA = {};
-  var HUB_HREF = '/';
+  var HUB_ORIGIN = 'https://simul.cnsatools.com';
+  var HUB_HREF = HUB_ORIGIN + '/';
 
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) {
@@ -12,7 +13,7 @@
     try { if (sessionStorage.getItem('cnsa_from_hub') === '1') return true; } catch (e) {}
     try {
       var r = document.referrer ? new URL(document.referrer) : null;
-      if (r && r.origin === location.origin && (r.pathname === '/' || r.pathname === '/index.html')) {
+      if (r && (r.origin === HUB_ORIGIN || (r.origin === location.origin && (r.pathname === '/' || r.pathname === '/index.html')))) {
         try { sessionStorage.setItem('cnsa_from_hub', '1'); } catch (e) {}
         return true;
       }

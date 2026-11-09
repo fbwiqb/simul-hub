@@ -90,3 +90,9 @@
   - `magnet/` (7 images), `enso-simulation/` (15 images) — image assets.
 - Previously individual GitHub repos, consolidated 2026-02-06.
 - `quake-volcano/` integrated from the standalone `quake-volcano-korean` Vercel project on 2026-06-12 (that standalone project is now redundant).
+
+## Standalone deployments (2026-11-09)
+
+- Each simulation except `ecosystem-equilibrium/` is also deployed as its own Vercel project named `<name>-sim` (map in `scripts/standalone.py`). The hub cards link to those `*.vercel.app` URLs and `vercel.json` redirects the old `/<folder>/` paths there.
+- After editing a simulation, push the hub as usual and run `python -X utf8 scripts/standalone.py <folder>` to redeploy that standalone project. `.standalone-links/` keeps each project link; `.standalone/` is the ignored build output.
+- `assets/sim-ui.js` shows the topbar hub link only when the visitor came from `https://simul.cnsatools.com` (referrer or session flag).

@@ -1,16 +1,159 @@
 {
-  "regions": ["icn1"],
-  "functions": { "api/ecosystem.mjs": { "maxDuration": 30 } },
+  "regions": [
+    "icn1"
+  ],
+  "functions": {
+    "api/ecosystem.mjs": {
+      "maxDuration": 30
+    }
+  },
   "headers": [
     {
       "source": "/ecosystem-equilibrium/:path*",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "same-origin" },
-        { "key": "Cache-Control", "value": "no-cache" },
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'"
+        }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/spectrum",
+      "destination": "https://spectrum-sim.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/spectrum/:path*",
+      "destination": "https://spectrum-sim.vercel.app/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/stellar-evolution",
+      "destination": "https://stellar-evolution-sim.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/stellar-evolution/:path*",
+      "destination": "https://stellar-evolution-sim.vercel.app/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/quake-volcano",
+      "destination": "https://quake-volcano-sim.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/quake-volcano/:path*",
+      "destination": "https://quake-volcano-sim.vercel.app/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/central-dogma",
+      "destination": "https://central-dogma-sim.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/central-dogma/:path*",
+      "destination": "https://central-dogma-sim.vercel.app/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/thermalbalance",
+      "destination": "https://radiation-balance-sim.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/thermalbalance/:path*",
+      "destination": "https://radiation-balance-sim.vercel.app/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/magnet",
+      "destination": "https://magnet-sim.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/magnet/:path*",
+      "destination": "https://magnet-sim.vercel.app/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/Evosnail",
+      "destination": "https://evosnail-sim.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/Evosnail/:path*",
+      "destination": "https://evosnail-sim.vercel.app/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/enso-simulation",
+      "destination": "https://enso-sim.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/enso-simulation/:path*",
+      "destination": "https://enso-sim.vercel.app/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/acid-base",
+      "destination": "https://acid-base-sim.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/acid-base/:path*",
+      "destination": "https://acid-base-sim.vercel.app/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/neuronsimul",
+      "destination": "https://action-potential-sim.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/neuronsimul/:path*",
+      "destination": "https://action-potential-sim.vercel.app/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/musclesimul",
+      "destination": "https://muscle-sim.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/musclesimul/:path*",
+      "destination": "https://muscle-sim.vercel.app/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/glycolysis",
+      "destination": "https://cell-respiration-sim.vercel.app/",
+      "permanent": false
+    },
+    {
+      "source": "/glycolysis/:path*",
+      "destination": "https://cell-respiration-sim.vercel.app/:path*",
+      "permanent": false
     }
   ]
 }
