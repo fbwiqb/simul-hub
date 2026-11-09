@@ -8,6 +8,18 @@
     });
   }
 
+  function cameFromHub() {
+    try { if (sessionStorage.getItem('cnsa_from_hub') === '1') return true; } catch (e) {}
+    try {
+      var r = document.referrer ? new URL(document.referrer) : null;
+      if (r && r.origin === location.origin && (r.pathname === '/' || r.pathname === '/index.html')) {
+        try { sessionStorage.setItem('cnsa_from_hub', '1'); } catch (e) {}
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
   CNSA.mountTopbar = function (opts) {
     opts = opts || {};
     if (document.querySelector('.cnsa-simbar')) return null;
@@ -25,10 +37,11 @@
     var bar = document.createElement('div');
     bar.className = 'cnsa-simbar';
     bar.setAttribute('role', 'banner');
+    var showHome = opts.hubHref ? true : cameFromHub();
     bar.innerHTML =
-      '<a class="cnsa-home cnsa-focusable" href="' + (opts.hubHref || HUB_HREF) + '" aria-label="' + esc(homeLabel) + ' 홈으로 이동">' +
+      (showHome ? '<a class="cnsa-home cnsa-focusable" href="' + (opts.hubHref || HUB_HREF) + '" aria-label="' + esc(homeLabel) + ' 홈으로 이동">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>' +
-      '<span>' + esc(homeLabel) + '</span></a>' +
+      '<span>' + esc(homeLabel) + '</span></a>' : '') +
       '<div class="cnsa-titlewrap"><span class="cnsa-title">' + esc(title) + '</span>' +
       (unit ? '<span class="cnsa-unit">' + esc(unit) + '</span>' : '') +
       '</div><div class="cnsa-spacer"></div><div class="cnsa-slot" id="cnsaSlot"></div>';
