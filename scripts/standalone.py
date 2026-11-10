@@ -45,7 +45,7 @@ def build(folder, project):
 
 def deploy(dst, project):
     env = dict(os.environ)
-    env['NODE_OPTIONS'] = '--require=C:/Users/신도경/.claude/codex-legacy/helpers/vercel-ascii-host.cjs'
+    env['NODE_OPTIONS'] = '--require=C:/Users/신도경/.claude/scripts/vercel-ascii-host.cjs'
     cfg = str(Path.home() / '.vercel-profiles' / 'simul')
     r = subprocess.run(['vercel', 'deploy', '--prod', '--yes', '--global-config', cfg],
                        cwd=dst, env=env, capture_output=True, text=True, encoding='utf-8', shell=True)
