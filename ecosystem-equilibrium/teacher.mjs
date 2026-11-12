@@ -1,5 +1,11 @@
 import {el,button,field,formatTime,download,csvCell,directionNames} from './ui.mjs';
-const kst=value=>value?new Date(value+'+09:00').toISOString():null;
+export const periods=[['1','1교시','08:40','09:30'],['2','2교시','09:40','10:30'],['3','3교시','10:40','11:30'],['4A','4교시 A','11:40','12:30'],['4B','4교시 B','12:30','13:20'],['5','5교시','13:30','14:20'],['6','6교시','14:30','15:20'],['7','7교시','15:30','16:20']];
+export function periodWindow(date,period,minutes){
+ const p=periods.find(x=>x[0]===period);if(!date||!p||!(minutes>0))return null;
+ const end=new Date(date+'T'+p[3]+':00+09:00'),start=new Date(end.getTime()-minutes*60000);
+ return {opens_at:start.toISOString(),closes_at:end.toISOString()};
+}
+const todayKst=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
 const table=(headers,rows)=>el('table',{},el('thead',{},el('tr',{},headers.map(h=>el('th',{},h)))),
  el('tbody',{},rows.map(cells=>el('tr',{},cells.map(c=>el('td',{},c))))));
 
@@ -30,15 +36,23 @@ export class TeacherWorkspace{
   const progress=el('section',{class:'card full'},el('div',{class:'teacher-head'},el('h2',{},'학생 진행 현황'),filter),this.statBox,this.tableBox);
   this.windowsBox=el('div',{class:'windows'});
   const section=el('select',{'aria-label':'응시 시간을 열 분반'},s.sections.map(x=>el('option',{value:x.id},x.label+' · '+x.teacher_name)));
-  const opens=el('input',{type:'datetime-local',required:true,'aria-label':'시작 시간'});
-  const minutes=el('input',{type:'number',min:1,max:180,value:20,required:true,'aria-label':'응시 시간(분)'});
+  const day=el('input',{type:'date',required:true,value:todayKst(),'aria-label':'응시 날짜'});
+  const period=el('select',{'aria-label':'교시'},periods.map(x=>el('option',{value:x[0]},x[1]+' ('+x[2]+'~'+x[3]+')')));
+  const minutes=el('input',{type:'number',min:1,max:50,value:20,required:true,'aria-label':'응시 시간(분)'});
+  const preview=el('p',{class:'help'});
+  const hm=iso=>new Date(new Date(iso).getTime()+9*3600000).toISOString().slice(11,16);
+  const showPreview=()=>{const w=periodWindow(day.value,period.value,Number(minutes.value));preview.textContent=w?'학생 접속 가능: '+day.value+' '+hm(w.opens_at)+' ~ '+hm(w.closes_at)+' (교시 끝에서 '+minutes.value+'분)':'날짜와 응시 시간(분)을 확인해 주세요.';};
+  for(const x of [day,period,minutes])x.addEventListener('input',showPreview);period.addEventListener('change',showPreview);showPreview();
   const open=async startNow=>{
-   if(!Number(minutes.value)||(!startNow&&!opens.value)){this.options.notice('시작 시간과 응시 시간(분)을 입력해 주세요.',true);return;}
-   await this.command('teacher_window',{section:Number(section.value),start_now:startNow,opens_at:kst(opens.value),minutes:Number(minutes.value)});
+   if(startNow){if(!Number(minutes.value)){this.options.notice('응시 시간(분)을 입력해 주세요.',true);return;}
+    await this.command('teacher_window',{section:Number(section.value),start_now:true,minutes:Number(minutes.value)});return;}
+   const w=periodWindow(day.value,period.value,Number(minutes.value));
+   if(!w){this.options.notice('날짜, 교시, 응시 시간(분)을 입력해 주세요.',true);return;}
+   await this.command('teacher_window',{section:Number(section.value),start_now:false,...w});
   };
   const scheduling=el('section',{class:'card'},el('h2',{},'분반별 응시 시간'),
-   field('분반',section),el('div',{class:'form-row'},field('시작 · 한국 시간',opens),field('응시 시간(분)',minutes)),
-   el('div',{class:'actions'},button('예약 시간 열기',()=>open(false),'primary'),button('지금 시작하기',()=>open(true))),
+   field('분반',section),el('div',{class:'form-row'},field('날짜',day),field('교시',period),field('응시 시간(분)',minutes)),preview,
+   el('div',{class:'actions'},button('이 교시로 열기',()=>open(false),'primary'),button('지금부터 열기',()=>open(true))),
    el('p',{class:'help'},'제출한 학생은 다시 응시할 수 없습니다. 결시나 기기 고장은 진행 현황의 보충 열기로 그 학생만 다시 엽니다.'),
    this.windowsBox);
   const demoSelect=el('select',{'aria-label':'교사용 데모 상황'},s.cases.map(c=>el('option',{value:c.id},c.title)));

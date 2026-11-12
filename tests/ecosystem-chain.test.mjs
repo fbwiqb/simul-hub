@@ -46,3 +46,10 @@ test('교사 화면은 제출, 미제출, 미완료를 나눠 보여 준다',()=
  assert.equal(progressLabel({started_at:'t',answered:0,chain_confirmed:false},true),'미완료 · 먹이사슬 미확정');
  assert.equal(progressLabel({started_at:'t',answered:5,submitted_at:'t'},true),'제출 완료');
 });
+
+test('periodWindow ends at the period end', async () => {
+  const {periodWindow} = await import('../ecosystem-equilibrium/teacher.mjs');
+  assert.deepEqual(periodWindow('2026-11-16','3',20), {opens_at:'2026-11-16T02:10:00.000Z', closes_at:'2026-11-16T02:30:00.000Z'});
+  assert.deepEqual(periodWindow('2026-11-16','4B',20), {opens_at:'2026-11-16T04:00:00.000Z', closes_at:'2026-11-16T04:20:00.000Z'});
+  assert.equal(periodWindow('', '3', 20), null);
+});
