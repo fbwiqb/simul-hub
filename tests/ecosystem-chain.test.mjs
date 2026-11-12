@@ -53,3 +53,12 @@ test('periodWindow ends at the period end', async () => {
   assert.deepEqual(periodWindow('2026-11-16','4B',20), {opens_at:'2026-11-16T04:00:00.000Z', closes_at:'2026-11-16T04:20:00.000Z'});
   assert.equal(periodWindow('', '3', 20), null);
 });
+
+test('classSlots lists only the section class periods ahead', async () => {
+  const {classSlots} = await import('../ecosystem-equilibrium/teacher.mjs');
+  const now = Date.parse('2026-11-13T05:00:00Z');
+  const s13 = classSlots(13, now, 7).map(x => x.date + ' ' + x.period);
+  assert.deepEqual(s13, ['2026-11-13 5','2026-11-16 5','2026-11-17 5','2026-11-18 5']);
+  const s3 = classSlots(3, now, 4).map(x => x.date + ' ' + x.period);
+  assert.deepEqual(s3, ['2026-11-16 4A']);
+});
