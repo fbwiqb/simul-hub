@@ -33,6 +33,7 @@ CREATE TABLE eco2026.attempts (
  window_id uuid NOT NULL REFERENCES eco2026.windows,
  case_id text NOT NULL REFERENCES eco2026.cases,
  rerolls integer NOT NULL DEFAULT 0 CHECK(rerolls BETWEEN 0 AND 1),
+ original_case_id text REFERENCES eco2026.cases, case_pending boolean NOT NULL DEFAULT false,
  chain jsonb, chain_at timestamptz, draft jsonb NOT NULL DEFAULT '{}',
  essay text, submitted_at timestamptz, extension_until timestamptz,
  revision bigint NOT NULL DEFAULT 0,
@@ -95,7 +96,10 @@ BEGIN
   result:=result||jsonb_build_object('status','active','deadline',expiry,'revision',a.revision,'rerolls',a.rerolls,
     'case',c.public_data,'chain',a.chain,'chain_at',a.chain_at,'draft',a.draft,'answered',n,
     'prediction_total',5,'observed_step',CASE WHEN a.chain IS NOT NULL THEN n+1 ELSE 0 END,
-    'workflow_version','given-first-v2');
+    'workflow_version','given-first-v2','case_pending',a.case_pending);
+  IF a.case_pending THEN
+   result:=result||jsonb_build_object('case_choices',jsonb_build_array((SELECT public_data FROM eco2026.cases WHERE id=a.original_case_id),c.public_data));
+  END IF;
   IF a.chain IS NOT NULL THEN
    result:=result||jsonb_build_object('model_chain',c.solution->'chain',
     'frames',(SELECT jsonb_agg(value ORDER BY ordinality) FROM jsonb_array_elements(c.solution->'frames') WITH ORDINALITY WHERE ordinality<=n+2),
@@ -128,7 +132,8 @@ BEGIN
    'started_at',a.started_at,'submitted_at',a.submitted_at,'updated_at',a.updated_at,'revision',a.revision,
    'answered',(SELECT count(*) FROM eco2026.answers ans WHERE ans.student_id=s.student_id),
    'chain_confirmed',a.chain IS NOT NULL,'deadline',coalesce(a.extension_until,w.closes_at),'window_closed',w.closed,
-   'case_title',c.title) ORDER BY s.section_id,s.student_id),'[]'::jsonb)
+   'case_title',c.title,'rerolled',coalesce(a.rerolls,0)>0,'case_pending',a.case_pending,
+   'original_case_title',(SELECT title FROM eco2026.cases oc WHERE oc.id=a.original_case_id)) ORDER BY s.section_id,s.student_id),'[]'::jsonb)
  FROM eco2026.students s LEFT JOIN eco2026.attempts a USING(student_id)
  LEFT JOIN eco2026.windows w ON w.id=a.window_id LEFT JOIN eco2026.cases c ON c.id=a.case_id
  WHERE t.admin OR s.section_id=ANY(t.section_ids)),
@@ -288,10 +293,15 @@ BEGIN
  IF p_action<>'start' AND coalesce((p_payload->>'revision')::bigint,-1)<>a.revision THEN
   PERFORM eco2026.fail(409,'다른 화면에서 저장된 내용이 있습니다. 최신 상태를 다시 불러옵니다.');
  END IF;
+ IF a.case_pending AND p_action IN('chain','answer','submit') THEN PERFORM eco2026.fail(409,'먼저 두 상황 중 하나를 골라 주세요.'); END IF;
  IF p_action='reroll' THEN
   IF a.rerolls>=1 OR a.chain IS NOT NULL OR n>0 THEN PERFORM eco2026.fail(409,'상황 바꾸기는 답안 작성 전 한 번만 가능합니다.'); END IF;
   SELECT id INTO chosen FROM eco2026.cases WHERE id<>a.case_id ORDER BY random() LIMIT 1;
-  UPDATE eco2026.attempts SET case_id=chosen,rerolls=1,draft='{}' WHERE student_id=s.student_id;
+  UPDATE eco2026.attempts SET original_case_id=a.case_id,case_id=chosen,rerolls=1,case_pending=true,draft='{}' WHERE student_id=s.student_id;
+ ELSIF p_action='choose_case' THEN
+  IF NOT a.case_pending THEN PERFORM eco2026.fail(409,'이미 상황을 골랐습니다.'); END IF;
+  IF coalesce(p_payload->>'choice','') NOT IN('original','new') THEN PERFORM eco2026.fail(400,'두 상황 중 하나를 골라 주세요.'); END IF;
+  UPDATE eco2026.attempts SET case_id=CASE WHEN p_payload->>'choice'='original' THEN a.original_case_id ELSE a.case_id END,case_pending=false,draft='{}' WHERE student_id=s.student_id;
  ELSIF p_action='chain' THEN
   IF jsonb_typeof(p_payload->'chain')<>'array' OR jsonb_array_length(p_payload->'chain')<>3
     OR (SELECT count(DISTINCT value) FROM jsonb_array_elements_text(p_payload->'chain') AS picked(value))<>3

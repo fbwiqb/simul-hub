@@ -27,6 +27,21 @@ BEGIN
   PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','reroll',jsonb_build_object('revision',r->'revision'));
   RAISE EXCEPTION 'Second reroll accepted';
  EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
+ IF NOT (r->>'case_pending')::boolean OR jsonb_array_length(r->'case_choices')<>2 OR r->'case_choices'->0->'id'<>before_case THEN RAISE EXCEPTION 'Case choices missing'; END IF;
+ BEGIN
+  PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','chain',jsonb_build_object('revision',r->'revision','chain',jsonb_build_array('a','b','c')));
+  RAISE EXCEPTION 'Chain accepted before choosing a case';
+ EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
+ BEGIN
+  PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','choose_case',jsonb_build_object('revision',r->'revision','choice','other'));
+  RAISE EXCEPTION 'Foreign case accepted';
+ EXCEPTION WHEN SQLSTATE 'PT400' THEN NULL; END;
+ r:=public.eco_gateway(uid,'99991@cnsa.hs.kr','choose_case',jsonb_build_object('revision',r->'revision','choice','original'));
+ IF r->'case'->'id'<>before_case OR (r->>'case_pending')::boolean OR r?'case_choices' THEN RAISE EXCEPTION 'Case choice not applied'; END IF;
+ BEGIN
+  PERFORM public.eco_gateway(uid,'99991@cnsa.hs.kr','choose_case',jsonb_build_object('revision',r->'revision','choice','original'));
+  RAISE EXCEPTION 'Second choice accepted';
+ EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
  r:=public.eco_gateway(uid,'99991@cnsa.hs.kr','draft',
    jsonb_build_object('revision',r->'revision','draft',jsonb_build_object('reason',repeat('나',4000),'essay',repeat('가',12000))));
  IF length(r->'draft'->>'essay')<>12000 THEN RAISE EXCEPTION 'Korean draft byte boundary failed'; END IF;

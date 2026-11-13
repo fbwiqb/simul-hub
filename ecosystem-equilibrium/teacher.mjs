@@ -89,7 +89,7 @@ export class TeacherWorkspace{
   this.statBox.replaceChildren(...[['대상',students.length],['미응시',students.length-started-done],['진행·시간 종료',started],['제출 완료',done]].map(([name,n])=>el('div',{class:'stat'},name,el('b',{},n))));
   this.tableBox.replaceChildren(table(['분반','학번','이름','진행','마지막 저장','기록'],students.map(x=>{
    const closed=x.started_at&&!x.submitted_at&&(x.window_closed||new Date(x.deadline)<=new Date(s.server_time));
-   const status=progressLabel(x,closed);
+   const status=el('span',{},progressLabel(x,closed),x.case_pending?el('small',{class:'help'},' · 상황 고르는 중'):x.rerolled?el('small',{class:'help',title:(x.original_case_title||'')+' → '+(x.case_title||'')},' · 상황 바꿈'):null);
    return [x.section+'팩',x.id,el('span',{},x.name,x.note?el('small',{class:'help'},' · 명부 확인'):null),status,formatTime(x.updated_at),
     el('div',{class:'actions'},button('답안 보기',()=>this.record(x.id),'',!x.started_at),
      x.submitted_at?null:button('보충 열기',()=>this.makeup(x)))];
@@ -165,12 +165,12 @@ export class TeacherWorkspace{
   }
   const cases=new Map(data.cases.map(c=>[c.id,c]));
   const attempts=new Map((data.attempts||[]).map(a=>[a.student_id,a]));
-  const headers=['분반','학번','이름','상황','먹이사슬 첫 답안','1단계 제시 상황',...Array.from({length:5},(_,i)=>[(i+2)+'단계 선택',(i+2)+'단계 이유',(i+2)+'단계 확정시각']).flat(),'상태','최종 제출시각'];
+  const headers=['분반','학번','이름','상황','상황 바꾸기','먹이사슬 첫 답안','1단계 제시 상황',...Array.from({length:5},(_,i)=>[(i+2)+'단계 선택',(i+2)+'단계 이유',(i+2)+'단계 확정시각']).flat(),'상태','최종 제출시각'];
   const rows=(data.students||[]).map(s=>{
    const a=attempts.get(s.student_id),c=a?cases.get(a.case_id):null;
    const labels=new Map((c?.public_data.organisms||[]).map(o=>[o.id,o.label]));
    const answers=(data.answers||[]).filter(x=>x.student_id===s.student_id);
-   return [s.section_id,s.student_id,s.name,c?.title||'',a?.chain?.map(id=>labels.get(id)||id).join(' → ')||'',c?.public_data.article.event||'',
+   return [s.section_id,s.student_id,s.name,c?.title||'',a?.rerolls?(a.case_pending?'고르는 중 · ':'')+(cases.get(a.original_case_id)?.title||'')+' → '+(c?.title||''):'',a?.chain?.map(id=>labels.get(id)||id).join(' → ')||'',c?.public_data.article.event||'',
     ...Array.from({length:5},(_,i)=>{const r=answers.find(x=>x.step===i+2);return[r?directionNames[r.choice]:'',r?.reason||'',r?.confirmed_at||''];}).flat(),
     progressLabel({submitted_at:a?.submitted_at,started_at:a?.started_at,answered:answers.length,chain_confirmed:!!a?.chain},true),a?.submitted_at||''];
   });

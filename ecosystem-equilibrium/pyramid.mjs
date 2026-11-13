@@ -9,7 +9,7 @@ function svgElement(tag,attributes={},text){
  for(const [key,value] of Object.entries(attributes))node.setAttribute(key,String(value));
  if(text!=null)node.textContent=text;return node;
 }
-export function pyramidSvg(values,{reference=values,target=null,prediction=false,filled=()=>true,onLayer=null}={}){
+export function pyramidSvg(values,{reference=values,target=null,prediction=false,filled=()=>true,onLayer=null,names:layerText=[]}={}){
  const roles=['producer','primary','secondary'],names=['생산자 자원량','1차 소비자','2차 소비자'];
  const description=values.map((v,i)=>names[i]+(reference[i]===v?'':v<reference[i]?', 직전 단계보다 감소':', 직전 단계보다 증가')).join('. ');
  const svg=svgElement('svg',{class:'pyramid-svg',viewBox:'0 0 560 330',role:'img',
@@ -21,10 +21,17 @@ export function pyramidSvg(values,{reference=values,target=null,prediction=false
    'data-role':roles[i],points:pyramidPoints(i,values[i]),fill:['#b6ce70','#80bdc8','#e8a992'][i],
    stroke:target===roles[i]&&prediction?'#297e83':'#ffffff','stroke-width':target===roles[i]&&prediction?3:2,
    'fill-opacity':!filled(i)?0.25:prediction&&target===roles[i]?0.78:1,'stroke-linejoin':'round'});
-  if(onLayer)layer.addEventListener('click',()=>onLayer(i));
+  if(onLayer){layer.addEventListener('click',()=>onLayer(i));layer.setAttribute('data-drop','layer:'+i);}
   group.append(layer);
   if(reference[i]!==values[i]||target===roles[i])group.append(svgElement('polygon',{class:'pyramid-reference','data-role':roles[i],
    points:pyramidPoints(i,reference[i]),fill:'none',stroke:'#526b77','stroke-width':1.8,'stroke-dasharray':'6 5'}));
+  const label=layerText[i];
+  if(label){
+   const y=layerY[i]+(i===2?62:46),text=svgElement('text',{class:'pyramid-name',x:280,y,'text-anchor':'middle','pointer-events':'none'});
+   text.append(svgElement('tspan',{x:280,dy:0,'font-size':i===2?15:17,'font-weight':700},label[0]));
+   if(label[1])text.append(svgElement('tspan',{x:280,dy:i===2?17:21,'font-size':i===2?12:14},label[1]));
+   group.append(text);
+  }
   svg.append(group);
  }
  return svg;

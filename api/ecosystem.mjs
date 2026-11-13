@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const readActions = new Set(['state', 'teacher_demo', 'teacher_record', 'teacher_export']);
 const writeActions = new Set(['start', 'reroll', 'chain', 'answer', 'draft', 'submit',
-  'teacher_approve', 'teacher_window', 'teacher_close', 'teacher_extend', 'teacher_makeup',
+  'teacher_approve', 'teacher_window', 'teacher_close', 'teacher_extend', 'teacher_makeup', 'choose_case',
   'teacher_delete_window']);
 const basePath = '/ecosystem-equilibrium/';
 

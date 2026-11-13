@@ -48,7 +48,8 @@ export class StudentWorkspace {
    else if(this.dirty&&this.saveFailed&&!this.saving){this.saveFailed=false;void this.saveDraft();}
    return;
   }
-  if(action&&['answer','chain','reroll'].includes(action)){this.dirty=false;this.draftBaseRevision=state.revision;this.saveStatus='';this.clearBackup();}
+  if(action&&['answer','chain','reroll','choose_case'].includes(action)){this.dirty=false;this.draftBaseRevision=state.revision;this.saveStatus='';this.clearBackup();}
+  if(action==='reroll'||action==='choose_case'){this.chainDraft=[];this.resetPlacement();this.view='situation';}
   if(action==='answer'||state.answered>(previous?.answered||0)){
    clearTimeout(this.saveTimer);this.dirty=false;this.draftBaseRevision=state.revision;
    this.reason='';this.choice='';this.stage=observedStep(state);this.view='explore';
@@ -181,6 +182,7 @@ export class StudentWorkspace {
   this.options.clock?.();
  }
  situation(){
+  if(this.state.case_pending&&this.state.case_choices)return this.caseChoice();
   const s=this.state,a=s.case.article;
   const story=el('article',{class:'card article'},
    el('p',{class:'eyebrow'},'개체군 관찰 자료 · 학습용 가상 사례'),
@@ -210,22 +212,24 @@ export class StudentWorkspace {
     if(this.chainDraft.includes(o.id))continue;
     const b=button(o.label,()=>this.pickCard(o.id),this.picked===o.id?'selected':'',this.busy);
     b.setAttribute('aria-pressed',String(this.picked===o.id));candidates.append(b);
+    this.draggable(b,target=>{if(!target.startsWith('role:'))return;this.picked=o.id;this.assignRole(Number(target.slice(5)));});
    }
    const chain=el('div',{class:'chain','aria-label':'역할별 생물'});
    roles.forEach((role,i)=>{
     const id=this.chainDraft[i];
     const b=button(id?roleLabel(role)+': '+labels.get(id):roleLabel(role),()=>this.assignRole(i),'',this.busy);
-    b.className='slot'+(id?' filled':'');chain.append(b);
+    b.className='slot'+(id?' filled':'');b.dataset.drop='role:'+i;chain.append(b);
    });
    work.append(el('h3',{},'1. 역할 정하기'),
-    el('p',{class:'help'},'사례의 행동과 먹이 단서를 연결해, 생물 카드를 누른 뒤 알맞은 역할 칸을 누르세요.'),candidates,chain);
+    el('p',{class:'help'},'사례의 행동과 먹이 단서를 연결해, 생물 카드를 알맞은 역할 칸으로 끌어다 놓으세요. 카드를 누른 뒤 칸을 눌러도 됩니다.'),candidates,chain);
    if(this.chainMatched)work.append(el('h3',{},'2. 피라미드에 놓기'),
-    el('p',{class:'help'},'역할 카드를 누른 뒤 피라미드에서 알맞은 층을 누르세요.'),this.placementBoard(labels));
+    el('p',{class:'help'},'역할 카드를 피라미드의 알맞은 층으로 끌어다 놓으세요. 카드를 누른 뒤 층을 눌러도 됩니다.'),this.placementBoard(labels));
    if(this.chainNotice)work.append(el('p',{class:'help chain-notice',role:'status'},this.chainNotice));
    work.append(el('p',{class:'help'},'확정하면 첫 먹이사슬이 저장되고, 수정할 수 없습니다.'),
     el('div',{class:'actions'},button(this.busy?'저장 중…':'먹이사슬 확정',()=>this.send('chain',{chain:this.chainDraft}),'primary',!this.chainPlaced||this.busy),
      button('다시 놓기',()=>this.resetChain(),'quiet',this.busy)),
-    el('div',{class:'actions'},button(s.rerolls?'상황 바꾸기 사용 완료':'상황 바꾸기 · 1회',()=>this.send('reroll'),'',!!s.rerolls||this.busy)));
+    el('div',{class:'actions'},button(s.rerolls?'상황 바꾸기 사용 완료':'상황 바꾸기 · 1회',()=>this.send('reroll'),'',!!s.rerolls||this.busy)),
+    s.rerolls?null:el('p',{class:'help'},'상황 바꾸기를 누르면 새 상황이 나오고, 원래 상황과 비교해 하나를 고릅니다. 고른 뒤에는 바꿀 수 없습니다.'));
   }
   this.saved=el('p',{class:'saved','aria-live':'polite'},this.saveStatus||'');work.append(this.saved);
   return el('div',{class:'two-col'},story,work);
@@ -234,14 +238,14 @@ export class StudentWorkspace {
  get chainPlaced(){return this.chainMatched&&this.placed.length===3;}
  resetPlacement(){this.picked=null;this.pickedRole=null;this.placed=[];this.chainNotice='';}
  resetChain(){this.chainDraft=[];this.resetPlacement();this.render();this.queueDraft();}
- pickCard(id){this.picked=this.picked===id?null:id;this.chainNotice='';this.render();}
+ pickCard(id){if(this.suppressClick)return;this.picked=this.picked===id?null:id;this.chainNotice='';this.render();}
  assignRole(i){
   if(!this.picked&&!this.chainDraft[i]){this.chainNotice='먼저 생물 카드를 누르세요.';this.render();return;}
   const next=roles.map((_,n)=>this.chainDraft[n]||null);
   next[i]=this.picked;
   this.chainDraft=next;this.resetPlacement();this.render();this.queueDraft();
  }
- pickRole(i){this.pickedRole=this.pickedRole===i?null:i;this.chainNotice='';this.render();}
+ pickRole(i){if(this.suppressClick)return;this.pickedRole=this.pickedRole===i?null:i;this.chainNotice='';this.render();}
  placeOnLayer(layer){
   if(this.placed.includes(layer))return;
   if(this.pickedRole==null)this.chainNotice='먼저 역할 카드를 누르세요.';
@@ -255,32 +259,51 @@ export class StudentWorkspace {
    if(this.placed.includes(i))return;
    const b=button(roleLabel(role)+': '+labels.get(this.chainDraft[i]),()=>this.pickRole(i),this.pickedRole===i?'selected':'',this.busy);
    b.setAttribute('aria-pressed',String(this.pickedRole===i));cards.append(b);
+   this.draggable(b,target=>{if(!target.startsWith('layer:'))return;this.pickedRole=i;this.placeOnLayer(Number(target.slice(6)));});
   });
-  const rows=el('div',{class:'pyramid-labels'});
-  for(const i of [2,1,0]){
-   const done=this.placed.includes(i);
-   const b=el('button',{type:'button',class:'pyramid-label '+roles[i]+(done?' placed':''),disabled:done||this.busy,onClick:()=>this.placeOnLayer(i)},
-    el('strong',{},done?roleLabel(roles[i]):layerNames[i]),done?el('small',{},labels.get(this.chainDraft[i])):null);
-   rows.append(b);
-  }
+  const names=roles.map((role,i)=>this.placed.includes(i)?[roleLabel(role),labels.get(this.chainDraft[i])]:null);
   return el('div',{class:'placement'},cards,el('figure',{class:'diagram pyramid-figure','aria-label':'역할 카드를 놓을 피라미드'},
-   el('div',{class:'pyramid-layout'},rows,pyramidSvg([100,100,100],{filled:i=>this.placed.includes(i),onLayer:i=>this.placeOnLayer(i)}))));
+   pyramidSvg([100,100,100],{filled:i=>this.placed.includes(i),onLayer:i=>this.placeOnLayer(i),names})));
+ }
+ draggable(node,onDrop){
+  node.dataset.draggable='1';
+  node.addEventListener('pointerdown',down=>{
+   if(this.busy||down.button>0)return;
+   let ghost=null,over=null;
+   const find=e=>{const hit=document.elementFromPoint(e.clientX,e.clientY);return hit&&hit.closest?hit.closest('[data-drop]'):null;};
+   const move=e=>{
+    if(!ghost){if(Math.hypot(e.clientX-down.clientX,e.clientY-down.clientY)<6)return;ghost=node.cloneNode(true);ghost.classList.add('drag-ghost');document.body.append(ghost);node.classList.add('dragging');}
+    e.preventDefault();ghost.style.left=e.clientX+'px';ghost.style.top=e.clientY+'px';
+    const t=find(e);if(t!==over){over?.classList.remove('drop-over');over=t;over?.classList.add('drop-over');}
+   };
+   const end=e=>{
+    window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',end);window.removeEventListener('pointercancel',end);
+    if(!ghost)return;
+    ghost.remove();node.classList.remove('dragging');over?.classList.remove('drop-over');
+    this.suppressClick=true;setTimeout(()=>{this.suppressClick=false;},0);
+    const t=e.type==='pointerup'?find(e):null;if(t)onDrop(t.dataset.drop);
+   };
+   window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);
+  });
+ }
+ caseChoice(){
+  const s=this.state,[original,fresh]=s.case_choices;
+  const card=(c,choice,label)=>el('article',{class:'card case-option'},el('p',{class:'eyebrow'},label),el('h2',{},c.article.headline),
+   el('img',{src:c.image,alt:c.title+'의 서식환경과 생물을 표현한 삽화',loading:'eager'}),el('p',{},c.article.lead),
+   el('div',{class:'actions'},button(this.busy?'저장 중…':'이 상황으로 하기',()=>this.send('choose_case',{choice}),'primary',this.busy)));
+  return el('div',{},el('section',{class:'card'},el('h2',{},'두 상황 중 하나를 고르세요'),
+   el('p',{class:'help'},'원래 상황과 새 상황을 비교해 하나를 고릅니다. 고른 뒤에는 바꿀 수 없고, 응시 시간은 계속 흐릅니다.')),
+   el('div',{class:'two-col case-choices'},card(original,'original','원래 상황'),card(fresh,'new','새 상황')));
  }
  chainPyramid(title,names){
-  const rows=el('div',{class:'pyramid-labels'});
-  for(const i of [2,1,0])rows.append(el('div',{class:'pyramid-label '+roles[i]},el('strong',{},roleLabel(roles[i])),el('small',{},names[i])));
   return el('figure',{class:'diagram pyramid-figure'},el('figcaption',{class:'help'},title),
-   el('div',{class:'pyramid-layout'},rows,pyramidSvg([100,100,100])));
+   pyramidSvg([100,100,100],{names:roles.map((role,i)=>[roleLabel(role),names[i]])}));
  }
  diagram(values,target=null,reference=values,prediction=false){
   const names=Object.fromEntries(this.state.model_chain.map(o=>[o.role,o.label]));
   const box=el('figure',{class:'diagram pyramid-figure','aria-label':'생태계 피라미드'});
-  const labels=el('div',{class:'pyramid-labels'});
-  for(const role of [...roles].reverse()){
-   labels.append(el('div',{class:'pyramid-label '+role+(target===role?' target':'')},
-    el('strong',{},roleNames[role]),el('small',{},names[role])));
-  }
-  box.append(el('div',{class:'pyramid-layout'},labels,pyramidSvg(values,{reference,target,prediction})),
+  const inLayer=roles.map(role=>[roleNames[role].replace(' 자원량','')+(target===role?' (예측)':''),names[role]]);
+  box.append(pyramidSvg(values,{reference,target,prediction,names:inLayer}),
    el('figcaption',{class:'help'},prediction?'색 면: 내 예측 · 점선: 직전 단계':target?'점선: 직전 단계. 이 층이 점선보다 늘어날지 줄어들지 고르세요.':'색 면: 확인한 상태 · 변한 층의 점선: 직전 단계'),
    el('p',{class:'help'},'층의 폭은 증가와 감소 방향만 나타냅니다. 층끼리 양을 비교하는 그림이 아닙니다.'));
   return box;

@@ -11,3 +11,12 @@ input,textarea,select{border:1px solid #bdcfd6;border-radius:8px;background:whit
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}@media print{.header,.tabs,.actions,.record-head button,.notice,.nonprint{display:none!important}body:has(>dialog.record[open])> :not(dialog.record){display:none!important}.record{position:static;box-shadow:none;border:0;overflow:visible;width:100%;max-width:none;max-height:none;height:auto;margin:0;padding:0}.record pre{overflow-wrap:anywhere}.card{break-inside:avoid}body{background:white}main{padding:0}}
 .organisms .selected{background:#e5f2f3;border:2px solid var(--teal);color:var(--teal)}.chain{align-items:stretch}.slot{cursor:pointer;color:var(--ink,#243d47);font-weight:700}.slot.filled{background:#edf5f3;border-style:solid}.chain-notice{color:#a2482b;font-weight:700}.placement{margin-top:12px}.pyramid-layer.tappable{cursor:pointer}button.pyramid-label{background:transparent;border:0;border-left:3px solid transparent;border-radius:0;text-align:left;font:inherit;color:inherit;min-height:44px;cursor:pointer}button.pyramid-label.placed{cursor:default;color:inherit}.chain-compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.chain-compare figcaption{font-weight:700;margin:0 0 6px}@media(max-width:560px){button.pyramid-label{border-left:0;border-top:3px solid transparent;padding:6px 0 0}button.pyramid-label.secondary{border-top-color:#e8a992}button.pyramid-label.primary{border-top-color:#80bdc8}button.pyramid-label.producer{border-top-color:#b6ce70}}
 .profiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}.profile{margin:0;text-align:center}.profile img{display:block;width:100%;max-width:96px;aspect-ratio:1;object-fit:cover;border-radius:10px;margin:0 auto 6px}.profile figcaption{font-size:13px;font-weight:700;overflow-wrap:anywhere}
+[data-draggable]{touch-action:none;cursor:grab;user-select:none}
+.drag-ghost{position:fixed;left:0;top:0;transform:translate(-50%,-50%);pointer-events:none;z-index:1000;opacity:.92;box-shadow:0 8px 22px rgba(20,40,50,.25)}
+.dragging{opacity:.35}
+.slot.drop-over{outline:3px solid var(--teal);outline-offset:2px;background:#e5f2f3}
+polygon.drop-over{stroke:#297e83;stroke-width:5}
+.pyramid-name{fill:#1f3640}
+.placement .pyramid-svg,.chain-compare .pyramid-svg{max-width:460px;margin:0 auto;display:block}
+.case-choices .case-option img{width:100%;border-radius:10px;margin:8px 0}
+.case-choices .case-option h2{font-size:19px}
