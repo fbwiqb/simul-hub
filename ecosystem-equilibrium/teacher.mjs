@@ -8,11 +8,12 @@ export function periodWindow(date,period,minutes){
 const todayKst=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
 export const sectionSchedule={1:'화1 수1 목1 금1',2:'월2 화2 수2 금2',3:'월4A 수4A 목4A 금4A',4:'월5 화5 수5 목5',5:'화1 수1 목1 금1',6:'월1 화2 목2 금2',7:'월5 수5 목5 금5',8:'월1 수1 목1 금1',9:'월2 화2 수2 목2',10:'월4A 화4A 목4A 금4A',11:'화2 수2 목2 금2',12:'월4A 화4A 수4A 목4A',13:'월5 화5 수5 금5',14:'화6 수6 목6 금6',15:'화2 수2 목2 금2'};
 const weekdays='일월화수목금토';
+export const lastExamDate='2026-11-24';
 export function classSlots(section,nowMs,days=21){
  const plan=(sectionSchedule[section]||'').split(' ').filter(Boolean).map(x=>({day:weekdays.indexOf(x[0]),period:x.slice(1)}));
  const out=[],base=new Date(nowMs+9*3600000);
  for(let i=0;i<days;i++){
-  const d=new Date(Date.UTC(base.getUTCFullYear(),base.getUTCMonth(),base.getUTCDate()+i)),date=d.toISOString().slice(0,10);
+  const d=new Date(Date.UTC(base.getUTCFullYear(),base.getUTCMonth(),base.getUTCDate()+i)),date=d.toISOString().slice(0,10);if(date>lastExamDate)break;
   for(const x of plan.filter(x=>x.day===d.getUTCDay())){
    const p=periods.find(q=>q[0]===x.period);if(!p||new Date(date+'T'+p[3]+':00+09:00').getTime()<=nowMs)continue;
    out.push({date,period:x.period,label:(d.getUTCMonth()+1)+'/'+d.getUTCDate()+'('+weekdays[d.getUTCDay()]+') '+p[1]+' '+p[2]+'~'+p[3]});
@@ -55,7 +56,7 @@ export class TeacherWorkspace{
   const preview=el('p',{class:'help'});
   const hm=iso=>new Date(new Date(iso).getTime()+9*3600000).toISOString().slice(11,16);
   const chosen=()=>{const [date,period]=slot.value.split('|');return periodWindow(date,period,Number(minutes.value));};
-  const showPreview=()=>{const w=chosen();preview.textContent=w?'학생 접속 가능: '+slot.value.split('|')[0]+' '+hm(w.opens_at)+' ~ '+hm(w.closes_at)+' (교시 끝에서 '+minutes.value+'분)':'앞으로 3주 안에 이 분반 수업이 없습니다. 지금부터 열기를 쓰세요.';};
+  const showPreview=()=>{const w=chosen();preview.textContent=w?'학생 접속 가능: '+slot.value.split('|')[0]+' '+hm(w.opens_at)+' ~ '+hm(w.closes_at)+' (교시 끝에서 '+minutes.value+'분)':'마감(11월 24일)까지 남은 이 분반 수업이 없습니다. 지금부터 열기를 쓰세요.';};
   const fillSlots=()=>{slot.replaceChildren(...classSlots(Number(section.value),Date.now()).map(x=>el('option',{value:x.date+'|'+x.period},x.label)));showPreview();};
   section.addEventListener('change',fillSlots);slot.addEventListener('change',showPreview);minutes.addEventListener('input',showPreview);fillSlots();
   const open=async startNow=>{

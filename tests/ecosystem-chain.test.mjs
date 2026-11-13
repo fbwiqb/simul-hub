@@ -62,3 +62,10 @@ test('classSlots lists only the section class periods ahead', async () => {
   const s3 = classSlots(3, now, 4).map(x => x.date + ' ' + x.period);
   assert.deepEqual(s3, ['2026-11-16 4A']);
 });
+
+test('classSlots stops at the assessment deadline', async () => {
+  const {classSlots} = await import('../ecosystem-equilibrium/teacher.mjs');
+  const dates = classSlots(13, Date.parse('2026-11-13T05:00:00Z')).map(x => x.date);
+  assert.equal(dates.at(-1), '2026-11-24');
+  assert.ok(dates.every(d => d <= '2026-11-24'));
+});
