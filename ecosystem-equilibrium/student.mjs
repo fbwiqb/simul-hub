@@ -229,7 +229,7 @@ export class StudentWorkspace {
     el('div',{class:'actions'},button(this.busy?'저장 중…':'먹이사슬 확정',()=>this.send('chain',{chain:this.chainDraft}),'primary',!this.chainPlaced||this.busy),
      button('다시 놓기',()=>this.resetChain(),'quiet',this.busy)),
     el('div',{class:'actions'},button(s.rerolls?'상황 바꾸기 사용 완료':'상황 바꾸기 · 1회',()=>this.send('reroll'),'',!!s.rerolls||this.busy)),
-    s.rerolls?null:el('p',{class:'help'},'상황 바꾸기를 누르면 새 상황이 나오고, 원래 상황과 비교해 하나를 고릅니다. 고른 뒤에는 바꿀 수 없습니다.'));
+    s.rerolls?'':el('p',{class:'help'},'상황 바꾸기를 누르면 새 상황이 나오고, 원래 상황과 비교해 하나를 고릅니다. 고른 뒤에는 바꿀 수 없습니다.'));
   }
   this.saved=el('p',{class:'saved','aria-live':'polite'},this.saveStatus||'');work.append(this.saved);
   return el('div',{class:'two-col'},story,work);
@@ -302,7 +302,7 @@ export class StudentWorkspace {
  diagram(values,target=null,reference=values,prediction=false){
   const names=Object.fromEntries(this.state.model_chain.map(o=>[o.role,o.label]));
   const box=el('figure',{class:'diagram pyramid-figure','aria-label':'생태계 피라미드'});
-  const inLayer=roles.map(role=>[roleNames[role].replace(' 자원량','')+(target===role?' (예측)':''),names[role]]);
+  const inLayer=roles.map(role=>[roleNames[role].replace(' 자원량','')+(target===role?' 예측':''),names[role]]);
   box.append(pyramidSvg(values,{reference,target,prediction,names:inLayer}),
    el('figcaption',{class:'help'},prediction?'색 면: 내 예측 · 점선: 직전 단계':target?'점선: 직전 단계. 이 층이 점선보다 늘어날지 줄어들지 고르세요.':'색 면: 확인한 상태 · 변한 층의 점선: 직전 단계'),
    el('p',{class:'help'},'층의 폭은 증가와 감소 방향만 나타냅니다. 층끼리 양을 비교하는 그림이 아닙니다.'));
@@ -372,7 +372,7 @@ export class StudentWorkspace {
      el('p',{},frame.explanation),el('p',{class:'help'},'모형의 방향: '+directionNames[frame.expectedChoice]+' · 서술한 이유는 선생님이 확인합니다.')),
     el('div',{class:'actions'},s.question?button('다음 변화 예측',()=>{this.stage=s.question.step;this.render();},'primary'):
      button(this.busy?'제출 중…':'최종 제출',()=>this.send('submit',{}),'primary',this.busy)),
-    s.question?null:el('p',{class:'help'},'최종 제출 후에는 문제, 해설, 답안을 다시 열 수 없습니다.'));
+    s.question?'':el('p',{class:'help'},'최종 제출 후에는 문제, 해설, 답안을 다시 열 수 없습니다.'));
   }
   return el('div',{class:'two-col'},figure,work);
  }
