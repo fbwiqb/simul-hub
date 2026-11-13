@@ -184,6 +184,13 @@ BEGIN
    SELECT * INTO w FROM eco2026.windows WHERE id=(p_payload->>'window_id')::uuid FOR UPDATE;
    IF NOT FOUND OR (NOT t.admin AND NOT w.section_id=ANY(t.section_ids)) THEN PERFORM eco2026.fail(403,'담당 분반의 시간만 종료할 수 있습니다.'); END IF;
    UPDATE eco2026.windows SET closed=true WHERE id=w.id;
+  ELSIF p_action='teacher_delete_window' THEN
+   SELECT * INTO w FROM eco2026.windows WHERE id=(p_payload->>'window_id')::uuid FOR UPDATE;
+   IF NOT FOUND OR (NOT t.admin AND NOT w.section_id=ANY(t.section_ids)) THEN PERFORM eco2026.fail(403,'담당 분반의 시간만 삭제할 수 있습니다.'); END IF;
+   IF NOT w.closed THEN PERFORM eco2026.fail(409,'종료한 시간만 삭제할 수 있습니다.'); END IF;
+   IF EXISTS(SELECT 1 FROM eco2026.attempts WHERE window_id=w.id) THEN PERFORM eco2026.fail(409,'응시 기록이 있는 시간은 삭제할 수 없습니다.'); END IF;
+   DELETE FROM eco2026.windows WHERE id=w.id;
+   INSERT INTO eco2026.audit(actor,action,student_id,detail) VALUES(p_email,p_action,w.student_id,jsonb_build_object('window_id',w.id,'section',w.section_id,'opens_at',w.opens_at,'closes_at',w.closes_at));
   ELSIF p_action='teacher_makeup' THEN
    SELECT * INTO s FROM eco2026.students WHERE student_id=p_payload->>'student_id';
    IF NOT FOUND OR (NOT t.admin AND NOT s.section_id=ANY(t.section_ids)) THEN PERFORM eco2026.fail(403,'담당 학생만 변경할 수 있습니다.'); END IF;

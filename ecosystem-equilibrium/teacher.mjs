@@ -97,7 +97,7 @@ export class TeacherWorkspace{
   this.windowsBox.replaceChildren(...s.windows.map(w=>el('div',{class:'window-item'},
    el('span',{},w.section_id+'팩 · '+(w.student_id?w.student_id+' 보충 · ':'')+formatTime(w.opens_at)+' ~ '+formatTime(w.closes_at),
     el('small',{class:'help'},w.closed?' · 종료 처리됨':new Date(w.closes_at)<=new Date(s.server_time)?' · 시간 종료':' · 예약/진행')),
-   button('종료',()=>this.command('teacher_close',{window_id:w.id}),'danger',w.closed||new Date(w.closes_at)<=new Date(s.server_time)))));
+   w.closed?button('삭제',()=>{if(confirm('종료한 응시 시간을 목록에서 삭제할까요?'))this.command('teacher_delete_window',{window_id:w.id});},'danger'):button('종료',()=>this.command('teacher_close',{window_id:w.id}),'danger',new Date(w.closes_at)<=new Date(s.server_time)))));
  }
  makeup(x){
   const dialog=el('dialog',{class:'record','aria-label':x.name+' 보충 열기'});
