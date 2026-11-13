@@ -8,15 +8,17 @@ export function periodWindow(date,period,minutes){
 const todayKst=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
 export const sectionSchedule={1:'화1 수1 목1 금1',2:'월2 화2 수2 금2',3:'월4A 수4A 목4A 금4A',4:'월5 화5 수5 목5',5:'화1 수1 목1 금1',6:'월1 화2 목2 금2',7:'월5 수5 목5 금5',8:'월1 수1 목1 금1',9:'월2 화2 수2 목2',10:'월4A 화4A 목4A 금4A',11:'화2 수2 목2 금2',12:'월4A 화4A 수4A 목4A',13:'월5 화5 수5 금5',14:'화6 수6 목6 금6',15:'화2 수2 목2 금2'};
 const weekdays='일월화수목금토';
+export const dayOverrides={'2026-11-16':'목'};
 export const lastExamDate='2026-11-24';
 export function classSlots(section,nowMs,days=21){
  const plan=(sectionSchedule[section]||'').split(' ').filter(Boolean).map(x=>({day:weekdays.indexOf(x[0]),period:x.slice(1)}));
  const out=[],base=new Date(nowMs+9*3600000);
  for(let i=0;i<days;i++){
   const d=new Date(Date.UTC(base.getUTCFullYear(),base.getUTCMonth(),base.getUTCDate()+i)),date=d.toISOString().slice(0,10);if(date>lastExamDate)break;
-  for(const x of plan.filter(x=>x.day===d.getUTCDay())){
+  const runs=dayOverrides[date]?weekdays.indexOf(dayOverrides[date]):d.getUTCDay(),tag=dayOverrides[date]?', '+dayOverrides[date]+'요 시간표':'';
+  for(const x of plan.filter(x=>x.day===runs)){
    const p=periods.find(q=>q[0]===x.period);if(!p||new Date(date+'T'+p[3]+':00+09:00').getTime()<=nowMs)continue;
-   out.push({date,period:x.period,label:(d.getUTCMonth()+1)+'/'+d.getUTCDate()+'('+weekdays[d.getUTCDay()]+') '+p[1]+' '+p[2]+'~'+p[3]});
+   out.push({date,period:x.period,label:(d.getUTCMonth()+1)+'/'+d.getUTCDate()+'('+weekdays[d.getUTCDay()]+tag+') '+p[1]+' '+p[2]+'~'+p[3]});
   }
  }
  return out;

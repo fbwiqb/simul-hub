@@ -58,7 +58,7 @@ test('classSlots lists only the section class periods ahead', async () => {
   const {classSlots} = await import('../ecosystem-equilibrium/teacher.mjs');
   const now = Date.parse('2026-11-13T05:00:00Z');
   const s13 = classSlots(13, now, 7).map(x => x.date + ' ' + x.period);
-  assert.deepEqual(s13, ['2026-11-13 5','2026-11-16 5','2026-11-17 5','2026-11-18 5']);
+  assert.deepEqual(s13, ['2026-11-13 5','2026-11-17 5','2026-11-18 5']);
   const s3 = classSlots(3, now, 4).map(x => x.date + ' ' + x.period);
   assert.deepEqual(s3, ['2026-11-16 4A']);
 });
@@ -68,4 +68,13 @@ test('classSlots stops at the assessment deadline', async () => {
   const dates = classSlots(13, Date.parse('2026-11-13T05:00:00Z')).map(x => x.date);
   assert.equal(dates.at(-1), '2026-11-24');
   assert.ok(dates.every(d => d <= '2026-11-24'));
+});
+
+test('classSlots follows the Thursday timetable on Nov 16', async () => {
+  const {classSlots} = await import('../ecosystem-equilibrium/teacher.mjs');
+  const now = Date.parse('2026-11-15T00:00:00Z');
+  const on16 = s => classSlots(s, now, 2).filter(x => x.date === '2026-11-16').map(x => x.period);
+  assert.deepEqual(on16(13), []);
+  assert.deepEqual(on16(14), ['6']);
+  assert.match(classSlots(14, now, 2)[0].label, /11\/16\(월, 목요 시간표\) 6교시/);
 });
