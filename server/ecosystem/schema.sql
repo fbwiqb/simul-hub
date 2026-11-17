@@ -204,10 +204,13 @@ BEGIN
    IF FOUND AND a.submitted_at IS NOT NULL THEN PERFORM eco2026.fail(409,'제출 완료 답안은 다시 열 수 없습니다.'); END IF;
    IF coalesce((p_payload->>'minutes')::integer,0) NOT BETWEEN 1 AND 180 THEN PERFORM eco2026.fail(400,'응시 시간(분)을 확인해 주세요.'); END IF;
    IF length(trim(coalesce(p_payload->>'reason','')))<2 THEN PERFORM eco2026.fail(400,'보충 사유를 기록해 주세요.'); END IF;
-   start_time:=clock_timestamp();end_time:=start_time+make_interval(mins=>(p_payload->>'minutes')::integer);
+   start_time:=coalesce((p_payload->>'opens_at')::timestamptz,clock_timestamp());
+   IF start_time<clock_timestamp()-interval '5 minutes' THEN PERFORM eco2026.fail(400,'지난 시각으로는 보충 시간을 열 수 없습니다.'); END IF;
+   IF start_time<clock_timestamp() THEN start_time:=clock_timestamp(); END IF;
+   end_time:=start_time+make_interval(mins=>(p_payload->>'minutes')::integer);
    INSERT INTO eco2026.windows(section_id,student_id,opens_at,closes_at,created_by) VALUES(s.section_id,s.student_id,start_time,end_time,p_email) RETURNING * INTO w;
    UPDATE eco2026.attempts SET window_id=w.id,extension_until=NULL,revision=revision+1,updated_at=clock_timestamp() WHERE student_id=s.student_id;
-   INSERT INTO eco2026.audit(actor,action,student_id,detail) VALUES(p_email,p_action,s.student_id,jsonb_build_object('minutes',p_payload->'minutes','reason',trim(p_payload->>'reason')));
+   INSERT INTO eco2026.audit(actor,action,student_id,detail) VALUES(p_email,p_action,s.student_id,jsonb_build_object('minutes',p_payload->'minutes','opens_at',start_time,'reason',trim(p_payload->>'reason')));
   ELSIF p_action='teacher_extend' THEN
    SELECT * INTO s FROM eco2026.students WHERE student_id=p_payload->>'student_id';
    IF NOT FOUND OR (NOT t.admin AND NOT s.section_id=ANY(t.section_ids)) THEN PERFORM eco2026.fail(403,'담당 학생만 변경할 수 있습니다.'); END IF;

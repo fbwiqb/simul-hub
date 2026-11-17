@@ -10,11 +10,11 @@ export const sectionSchedule={1:'화1 수1 목1 금1',2:'월2 화2 수2 금2',3:
 const weekdays='일월화수목금토';
 export const dayOverrides={'2026-11-16':'목'};
 export const lastExamDate='2026-11-24';
-export function classSlots(section,nowMs,days=21){
+export function classSlots(section,nowMs,days=21,deadline=lastExamDate){
  const plan=(sectionSchedule[section]||'').split(' ').filter(Boolean).map(x=>({day:weekdays.indexOf(x[0]),period:x.slice(1)}));
  const out=[],base=new Date(nowMs+9*3600000);
  for(let i=0;i<days;i++){
-  const d=new Date(Date.UTC(base.getUTCFullYear(),base.getUTCMonth(),base.getUTCDate()+i)),date=d.toISOString().slice(0,10);if(date>lastExamDate)break;
+  const d=new Date(Date.UTC(base.getUTCFullYear(),base.getUTCMonth(),base.getUTCDate()+i)),date=d.toISOString().slice(0,10);if(deadline&&date>deadline)break;
   const runs=dayOverrides[date]?weekdays.indexOf(dayOverrides[date]):d.getUTCDay(),tag=dayOverrides[date]?', '+dayOverrides[date]+'요 시간표':'';
   for(const x of plan.filter(x=>x.day===runs)){
    const p=periods.find(q=>q[0]===x.period);if(!p||new Date(date+'T'+p[3]+':00+09:00').getTime()<=nowMs)continue;
@@ -26,6 +26,22 @@ export function classSlots(section,nowMs,days=21){
 const table=(headers,rows)=>el('table',{},el('thead',{},el('tr',{},headers.map(h=>el('th',{},h)))),
  el('tbody',{},rows.map(cells=>el('tr',{},cells.map(c=>el('td',{},c))))));
 
+const assessmentUrl='https://simul.cnsatools.com/ecosystem-equilibrium/';
+const kstParts=iso=>{const d=new Date(new Date(iso).getTime()+9*3600000);return {md:(d.getUTCMonth()+1)+'월 '+d.getUTCDate()+'일('+'일월화수목금토'[d.getUTCDay()]+')',hm:d.toISOString().slice(11,16)};};
+export function guideText(w,sectionLabel,studentName){
+ const a=kstParts(w.opens_at),b=kstParts(w.closes_at);
+ const when=a.md+' '+a.hm+'부터 '+(a.md===b.md?'':b.md+' ')+b.hm+'까지';
+ return [w.student_id?'[통합과학2 생태계 평형 보충 응시 안내]':'[통합과학2 생태계 평형 수행평가 안내]',
+  (w.student_id?(studentName||w.student_id)+' 학생은 ':sectionLabel+' 학생들은 ')+when+' 응시할 수 있습니다.',
+  '접속 주소: '+assessmentUrl,
+  '학교 구글 계정으로 로그인하세요. 시간이 되면 대기 화면이 저절로 시작 화면으로 바뀝니다.',
+  '응시 시간이 끝나면 저장된 답안만 남고 더 이어서 할 수 없습니다.'].join(String.fromCharCode(10));
+}
+async function copyText(text){
+ try{await navigator.clipboard.writeText(text);return true;}catch{}
+ const area=el('textarea',{value:text});document.body.append(area);area.select();
+ let ok=false;try{ok=document.execCommand('copy');}catch{}area.remove();return ok;
+}
 export function progressLabel(x,closed){
  if(x.submitted_at)return '제출 완료';
  if(!x.started_at)return '미응시';
@@ -96,22 +112,45 @@ export class TeacherWorkspace{
     el('div',{class:'actions'},button('답안 보기',()=>this.record(x.id),'',!x.started_at),
      x.submitted_at?null:button('보충 열기',()=>this.makeup(x)))];
   })));
+  const sectionLabel=id=>s.sections.find(x=>x.id===id)?.label||id+'팩';
+  const copyGuide=async w=>{const ok=await copyText(guideText(w,sectionLabel(w.section_id),s.roster.find(r=>r.id===w.student_id)?.name));this.options.notice(ok?'안내 메시지를 복사했습니다. 메신저에 붙여 넣으세요.':'복사하지 못했습니다. 브라우저 권한을 확인해 주세요.',!ok);};
   this.windowsBox.replaceChildren(...s.windows.map(w=>el('div',{class:'window-item'},
-   el('span',{},w.section_id+'팩 · '+(w.student_id?w.student_id+' 보충 · ':'')+formatTime(w.opens_at)+' ~ '+formatTime(w.closes_at),
+   el('span',{},w.section_id+'팩 · '+(w.student_id?w.student_id+' '+(s.roster.find(r=>r.id===w.student_id)?.name||'')+' 보충 · ':'')+formatTime(w.opens_at)+' ~ '+formatTime(w.closes_at),
     el('small',{class:'help'},w.closed?' · 종료 처리됨':new Date(w.closes_at)<=new Date(s.server_time)?' · 시간 종료':' · 예약/진행')),
-   w.closed?button('삭제',()=>{if(confirm('종료한 응시 시간을 목록에서 삭제할까요?'))this.command('teacher_delete_window',{window_id:w.id});},'danger'):button('종료',()=>this.command('teacher_close',{window_id:w.id}),'danger',new Date(w.closes_at)<=new Date(s.server_time)))));
+   el('div',{class:'actions'},w.closed||new Date(w.closes_at)<=new Date(s.server_time)?'':button('안내 복사',()=>copyGuide(w)),
+    w.closed?button('삭제',()=>{if(confirm('종료한 응시 시간을 목록에서 삭제할까요?'))this.command('teacher_delete_window',{window_id:w.id});},'danger'):button('종료',()=>this.command('teacher_close',{window_id:w.id}),'danger',new Date(w.closes_at)<=new Date(s.server_time))))));
  }
  makeup(x){
   const dialog=el('dialog',{class:'record','aria-label':x.name+' 보충 열기'});
   dialog.addEventListener('close',()=>dialog.remove());
   const minutes=el('input',{type:'number',min:1,max:180,value:20,required:true});
-  const reason=el('input',{required:true,minLength:2,placeholder:'결시, 기기 고장 등'});
+  const reason=el('input',{required:true,minLength:2,placeholder:'병결, 기기 고장 등'});
+  const when=el('select',{'aria-label':'보충 시작 시점'},el('option',{value:'now'},'지금 바로'),
+   classSlots(x.section,Date.now(),14,null).map(o=>el('option',{value:o.date+'|'+o.period},o.label+' (교시 끝 기준)')),
+   el('option',{value:'custom'},'직접 입력'));
+  const custom=el('input',{type:'datetime-local','aria-label':'보충 시작 시각'});
+  const customField=field('시작 시각 · 한국 시간',custom);customField.hidden=true;
+  const preview=el('p',{class:'help'});
+  const hm=iso=>new Date(new Date(iso).getTime()+9*3600000).toISOString().slice(5,16).replace('-','/').replace('T',' ');
+  const opensAt=()=>{
+   const m=Number(minutes.value);if(!(m>0))return null;
+   if(when.value==='now')return 'now';
+   if(when.value==='custom')return custom.value?new Date(custom.value+':00+09:00').toISOString():null;
+   const [date,period]=when.value.split('|');return periodWindow(date,period,m)?.opens_at||null;
+  };
+  const show=()=>{customField.hidden=when.value!=='custom';const o=opensAt(),m=Number(minutes.value);
+   preview.textContent=o==='now'?'누르는 즉시 '+m+'분 동안 이 학생만 응시할 수 있습니다.':o?'예약: '+hm(o)+' ~ '+hm(new Date(new Date(o).getTime()+m*60000).toISOString())+', 이 학생만 응시할 수 있습니다.':'시작 시각과 응시 시간(분)을 확인해 주세요.';};
+  for(const n of [when,custom,minutes]){n.addEventListener('input',show);n.addEventListener('change',show);}
   dialog.append(el('div',{class:'record-head'},el('h2',{},x.section+'팩 · '+x.id+' '+x.name+' 보충'),button('닫기',()=>dialog.close())),
-   el('p',{class:'help'},'지금부터 이 학생만 응시할 수 있습니다. 확정한 답은 유지되고 못 한 단계부터 이어서 합니다.'),
-   el('form',{onSubmit:async event=>{event.preventDefault();await this.command('teacher_makeup',{student_id:x.id,minutes:Number(minutes.value),reason:reason.value});dialog.close();}},
-    el('div',{class:'form-row'},field('응시 시간(분)',minutes),field('사유',reason)),
+   el('p',{class:'help'},'이 학생만 응시할 수 있습니다. 확정한 답은 유지되고 못 한 단계부터 이어서 합니다.'),
+   el('form',{onSubmit:async event=>{event.preventDefault();const o=opensAt();
+    if(!o){this.options.notice('시작 시각과 응시 시간(분)을 확인해 주세요.',true);return;}
+    await this.command('teacher_makeup',{student_id:x.id,minutes:Number(minutes.value),reason:reason.value,...(o==='now'?{}:{opens_at:o})});dialog.close();
+    this.options.notice('보충 시간을 열었습니다. 응시 시간 목록의 안내 복사로 학생에게 보낼 메시지를 복사할 수 있습니다.');}},
+    el('div',{class:'form-row'},field('시작',when),customField,field('응시 시간(분)',minutes)),
+    field('사유',reason),preview,
     el('button',{class:'btn primary',type:'submit'},'이 학생만 열기')));
-  document.body.append(dialog);dialog.showModal();
+  document.body.append(dialog);dialog.showModal();show();
  }
  teacherApproval(){
   const s=this.state;
