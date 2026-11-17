@@ -125,9 +125,7 @@ export class TeacherWorkspace{
   dialog.addEventListener('close',()=>dialog.remove());
   const minutes=el('input',{type:'number',min:1,max:180,value:20,required:true});
   const reason=el('input',{required:true,minLength:2,placeholder:'병결, 기기 고장 등'});
-  const when=el('select',{'aria-label':'보충 시작 시점'},el('option',{value:'now'},'지금 바로'),
-   classSlots(x.section,Date.now(),14,null).map(o=>el('option',{value:o.date+'|'+o.period},o.label+' (교시 끝 기준)')),
-   el('option',{value:'custom'},'직접 입력'));
+  const when=el('select',{'aria-label':'보충 시작 시점'},el('option',{value:'custom'},'시각 지정'),el('option',{value:'now'},'지금 바로'));
   const custom=el('input',{type:'datetime-local','aria-label':'보충 시작 시각'});
   const customField=field('시작 시각 · 한국 시간',custom);customField.hidden=true;
   const preview=el('p',{class:'help'});
@@ -135,8 +133,7 @@ export class TeacherWorkspace{
   const opensAt=()=>{
    const m=Number(minutes.value);if(!(m>0))return null;
    if(when.value==='now')return 'now';
-   if(when.value==='custom')return custom.value?new Date(custom.value+':00+09:00').toISOString():null;
-   const [date,period]=when.value.split('|');return periodWindow(date,period,m)?.opens_at||null;
+   return custom.value?new Date(custom.value+':00+09:00').toISOString():null;
   };
   const show=()=>{customField.hidden=when.value!=='custom';const o=opensAt(),m=Number(minutes.value);
    preview.textContent=o==='now'?'누르는 즉시 '+m+'분 동안 이 학생만 응시할 수 있습니다.':o?'예약: '+hm(o)+' ~ '+hm(new Date(new Date(o).getTime()+m*60000).toISOString())+', 이 학생만 응시할 수 있습니다.':'시작 시각과 응시 시간(분)을 확인해 주세요.';};
