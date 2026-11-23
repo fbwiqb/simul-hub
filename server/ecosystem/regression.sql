@@ -103,21 +103,15 @@ BEGIN
  IF attempts<>60 THEN RAISE EXCEPTION 'Not all sixty cases tested'; END IF;
 
  r:=public.eco_gateway(uid,'eco-test-teacher@example.test','state');
- IF jsonb_array_length(r->'roster')<>1 OR jsonb_array_length(r->'sections')<>1 THEN RAISE EXCEPTION 'Teacher cohort isolation failed'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(r->'roster') x WHERE x->>'id'='99992') OR r->'teacher'->'section_ids'<>'[99991]'::jsonb THEN RAISE EXCEPTION 'Teacher all-section view failed'; END IF;
  r:=public.eco_gateway(uid,'eco-test-teacher@example.test','teacher_export');
- IF r->>'format'<>'cnsa-ecosystem-assessment-v2' OR jsonb_array_length(r->'students')<>1
-    OR jsonb_array_length(r->'answers')<>5 OR jsonb_array_length(r->'cases')<>60
+ IF r->>'format'<>'cnsa-ecosystem-assessment-v2' OR NOT EXISTS(SELECT 1 FROM jsonb_array_elements(r->'students') x WHERE x->>'student_id'='99992')
+    OR (SELECT count(*) FROM jsonb_array_elements(r->'answers') x WHERE x->>'student_id'='99991')<>5 OR jsonb_array_length(r->'cases')<>60
     OR r->'workflow'->'given_steps'<>'[1]'::jsonb THEN
   RAISE EXCEPTION 'Scoped original export failed';
  END IF;
- BEGIN
-  PERFORM public.eco_gateway(uid,'eco-test-teacher@example.test','teacher_record','{"student_id":"99992"}');
-  RAISE EXCEPTION 'Teacher read foreign cohort';
- EXCEPTION WHEN SQLSTATE 'PT403' THEN NULL; END;
- BEGIN
-  PERFORM public.eco_gateway(uid,'eco-test-teacher@example.test','teacher_window','{"section":99992,"start_now":true,"closes_at":"2099-01-01T00:00:00Z"}');
-  RAISE EXCEPTION 'Teacher opened foreign cohort';
- EXCEPTION WHEN SQLSTATE 'PT403' THEN NULL; END;
+ PERFORM public.eco_gateway(uid,'eco-test-teacher@example.test','teacher_record','{"student_id":"99992"}');
+ PERFORM public.eco_gateway(uid,'eco-test-teacher@example.test','teacher_window','{"section":99992,"start_now":true,"closes_at":"2099-01-01T00:00:00Z"}'); DELETE FROM eco2026.windows WHERE section_id=99992;
  BEGIN
   PERFORM public.eco_gateway(uid,'eco-test-teacher@example.test','teacher_extend','{"student_id":"99991","until":"2099-01-01T00:00:00Z","reason":"검증"}');
   RAISE EXCEPTION 'Completed student extension allowed';

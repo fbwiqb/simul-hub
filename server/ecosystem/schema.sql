@@ -122,10 +122,11 @@ $$;
 
 CREATE FUNCTION eco2026.teacher_state(email_address text) RETURNS jsonb
 LANGUAGE plpgsql SET search_path='' AS $$
-DECLARE t eco2026.teachers;
+DECLARE t eco2026.teachers; own integer[];
 BEGIN
  SELECT * INTO STRICT t FROM eco2026.teachers WHERE email=email_address AND enabled;
- RETURN jsonb_build_object('role','teacher','teacher',to_jsonb(t),'server_time',clock_timestamp(),
+ own:=t.section_ids;t.section_ids:=ARRAY(SELECT id FROM eco2026.sections);
+ RETURN jsonb_build_object('role','teacher','teacher',to_jsonb(t)||jsonb_build_object('section_ids',to_jsonb(own)),'server_time',clock_timestamp(),
  'sections',(SELECT coalesce(jsonb_agg(to_jsonb(s) ORDER BY s.id),'[]'::jsonb) FROM eco2026.sections s WHERE t.admin OR s.id=ANY(t.section_ids)),
  'windows',(SELECT coalesce(jsonb_agg(to_jsonb(w) ORDER BY w.opens_at DESC),'[]'::jsonb) FROM eco2026.windows w WHERE t.admin OR w.section_id=ANY(t.section_ids)),
  'roster',(SELECT coalesce(jsonb_agg(jsonb_build_object('id',s.student_id,'name',s.name,'section',s.section_id,'note',s.roster_note,
@@ -155,6 +156,7 @@ BEGIN
  IF p_user_id IS NULL OR length(p_email)>254 OR p_email<>lower(trim(p_email)) THEN PERFORM eco2026.fail(403,'계정을 확인해 주세요.'); END IF;
  SELECT * INTO t FROM eco2026.teachers WHERE email=p_email AND enabled;
  IF FOUND THEN
+  t.section_ids:=ARRAY(SELECT id FROM eco2026.sections);
   IF p_action='state' THEN RETURN eco2026.teacher_state(p_email); END IF;
   IF p_action='teacher_demo' THEN
    SELECT * INTO c FROM eco2026.cases WHERE id=p_payload->>'case_id';
